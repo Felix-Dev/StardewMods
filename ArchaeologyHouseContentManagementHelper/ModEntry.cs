@@ -9,6 +9,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Locations;
+using Harmony;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper
 {
@@ -41,6 +42,9 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
             dialogService = new MuseumInteractionDialogService(modHelper, Monitor, Helper.Reflection);
 
             InputEvents.ButtonPressed += InputEvents_ButtonPressed;
+
+            var harmony = HarmonyInstance.Create("StardewMods.ArchaeologyHouseContentManagementHelper");
+            Patches.Patch.PatchAll(harmony);
         }
 
 
@@ -48,7 +52,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
         private void InputEvents_ButtonPressed(object sender, EventArgsInput e)
-        {
+        {    
             if (e.IsActionButton && Context.IsPlayerFree && museumHelper.IsPlayerAtCounter(Game1.player))
             {
                 LibraryMuseum museum = Game1.currentLocation as LibraryMuseum;
@@ -104,18 +108,9 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
                 else
                 {
                     // Show original game message. Currently in the following cases:
-                    //  - when player has no item in inventory to donate AND no item was donated yet (no rewards are available too)
+                    //  - When no item has been donated yet
                 }
             }
-
-            // working
-            //if (Context.IsPlayerFree && e.Button == SButton.K)
-            //{
-            //    Game1.drawDialogue(haley, "This is a dialogue test...$l");
-            //}             
-
-            // print button presses to the console window
-            //this.Monitor.Log($"{Game1.player.Name} pressed {e.Button}.");
         }
     }
 }

@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using xTile.Dimensions;
 
-namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
+namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 {
     public class MuseumMenuNoInventory : IClickableMenu
     {

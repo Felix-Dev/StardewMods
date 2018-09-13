@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
+namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 {
     public class MuseumMenuEx : MuseumMenu
     {

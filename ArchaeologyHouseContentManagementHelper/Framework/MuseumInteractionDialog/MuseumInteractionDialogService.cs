@@ -1,4 +1,5 @@
 ﻿using StardewModdingAPI;
+using StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus;
 using StardewValley;
 using StardewValley.Menus;
 using System;
@@ -23,9 +24,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
         private const string DialogOption_Rearrange = "Rearrange";
         private const string DialogOption_Collect = "Collect";
         private const string DialogOption_Status = "Status";
-        private const string DialogOption_Leave = "Leave";
-
-        private const string NPC_Name_Gunther = "Gunther";
+        private const string DialogOption_Leave = "Leave";      
 
         public MuseumInteractionDialogService(IModHelper modHelper, IMonitor monitor, IReflectionHelper reflectionHelper)
         {
@@ -36,7 +35,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 
             museumHelper = new LibraryMuseumHelper(modHelper, monitor, reflectionHelper);
 
-            gunther = Game1.getCharacterFromName(NPC_Name_Gunther);
+            gunther = Game1.getCharacterFromName(Constants.NPC_NAME_GUNTHER);
             if (gunther == null)
             {
                 monitor.Log("Error: NPC [Gunther] not found!", LogLevel.Error);

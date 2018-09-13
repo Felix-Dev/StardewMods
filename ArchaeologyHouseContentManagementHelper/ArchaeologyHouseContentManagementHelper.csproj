@@ -51,6 +51,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Lib.Harmony.1.2.0.1\lib\net45\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -61,12 +64,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Framework\LibraryMuseumHelper.cs" />
+    <Compile Include="Framework\Constants.cs" />
+    <Compile Include="Framework\Helpers\LibraryMuseumHelper.cs" />
     <Compile Include="Framework\MuseumInteractionDialog\MuseumInteractionDialogService.cs" />
     <Compile Include="Framework\MuseumInteractionDialog\MuseumInteractionDialogType.cs" />
-    <Compile Include="Framework\MuseumMenuEx.cs" />
-    <Compile Include="Framework\MuseumMenuNoInventory.cs" />
+    <Compile Include="Framework\Menus\MuseumMenu\MuseumMenuEx.cs" />
+    <Compile Include="Framework\Menus\MuseumMenu\MuseumMenuNoInventory.cs" />
     <Compile Include="ModEntry.cs" />
+    <Compile Include="Patches\AddItemToInventoryBoolPatch.cs" />
+    <Compile Include="Patches\Common\Patch.cs" />
+    <Compile Include="Patches\CouldInventoryAcceptThisObjectPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
