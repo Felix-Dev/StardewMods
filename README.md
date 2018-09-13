@@ -6,7 +6,8 @@ documentation and release notes.
   _This mod improves the management of the Library/Museum. Shows number of found books and contributed items. 
   Allows item rearrangement even if nothing to donate. Shows specific information of the selected item. 
   Items can be swapped to make rearrangement less tedious. Adds extended gamepad cursor support. 
-  Largely fixes the in-game item-placement bug._
+  Largely fixes the in-game item-placement bug.
+  Lost Books can be "grabbed & sent" to the library even if the player's inventory has no space._
   
 ## Translating the mods
 The mods can be translated into any language supported by the game, and SMAPI will automatically
@@ -16,8 +17,8 @@ use the right translations.
 
 &nbsp;     | Archaeology House Content Management Helper    | 
 ---------- | :--------------------------------------------- |
-Chinese    | ❑ untranslated
-German     | ❑ untranslated
+Chinese    | [✓](ArchaeologyHouseContentManagementHelper/i18n/zh.json)
+German     | [✓](ArchaeologyHouseContentManagementHelper/i18n/de.json)
 Japanese   | ❑ untranslated        
 Portuguese | ❑ untranslated      
 Russian    | ❑ untranslated  
