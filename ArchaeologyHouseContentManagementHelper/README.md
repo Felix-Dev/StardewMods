@@ -7,6 +7,8 @@ Furthermore, to help the user bringing structure into his museum pieces arrangem
 showing detailed item information. To make rearrangement less tedious, items can be directly swapped with each other and 
 gamepad cursors can now also be used to select an item (instead of only being usable when an item is selected). 
 
+Lost Books can now be "grabbed & sent" to the library even if the user's inventory is full. No longer will the user have to make space for a book which it doesn't occupy anyway and leaves the user with an empty slot in the inventory.
+
 Also fixes some small bugs in the original game (such as pressing the 'Ok' button next to the inventory will select the item 
 beneath it instead of exiting the menu).
 
@@ -41,10 +43,6 @@ To close the museum menu (shown when you donate/replace items), simply press the
 * Works with Stardew Valley 1.3 on Windows (Linux/Mac not tested).
 * Works in single player. Multiplayer works too, excluding lost books which do not seem to synchronize across players.
 * No known mod conflicts.
-
-## Important Notes
-Currently, the mod only supports English. Support for other languages will be added. If you want to add support for 
-other languages, feel free to contribute to the project!
 
 ## See also
 * [Release notes](release-notes.md)
