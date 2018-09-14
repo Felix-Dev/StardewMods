@@ -8,7 +8,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 {
     public class Constants
     {
-        public const int GAME_OBJECT_LOST_BOOKS_ID = 102;
+        public const int GAME_OBJECT_LOST_BOOK_ID = 102;
 
         public const string NPC_NAME_GUNTHER = "Gunther";
     }
