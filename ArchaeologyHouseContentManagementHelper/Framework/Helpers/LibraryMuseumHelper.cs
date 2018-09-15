@@ -98,5 +98,36 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     return false;
             }
         }
+
+        public static MuseumTileClassification GetTileMuseumClassification(int x, int y, bool canSwap)
+        {
+            // If items cannot be swapped, don't set visual "can place" indicator
+            if (!canSwap && Museum.museumPieces.ContainsKey(new Vector2((float)x, (float)y)))
+            {
+                return MuseumTileClassification.Invalid;
+            }
+
+            // Only indicate tiles belonging to the designated areas for the museum pieces
+            switch (Museum.getTileIndexAt(new Point(x, y), "Buildings"))
+            {
+                case 1072:
+                    return MuseumTileClassification.Valid;
+                case 1073:
+                    // https://stardewvalleywiki.com/Museum (see "unreachable tiles")
+                    if (x >= 31 && x <= 33 && y >= 14 && y <= 15)
+                    {
+                        return MuseumTileClassification.Limited;
+                    }
+
+                    return MuseumTileClassification.Valid;
+
+                case 1074:
+                case 1237:
+                case 1238:
+                    return MuseumTileClassification.Valid;
+                default:
+                    return MuseumTileClassification.Invalid;
+            }
+        }
     }
 }

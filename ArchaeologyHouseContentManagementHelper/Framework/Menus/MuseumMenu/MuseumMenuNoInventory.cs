@@ -27,8 +27,6 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
         private Item selectedItem;
 
-        private bool selectedInventoryItem;
-
         private static readonly int INFO_DISPLAY_TIME = 150;
 
         private int infoFadeTimer = INFO_DISPLAY_TIME;
@@ -115,7 +113,6 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
             if (!holdingMuseumPiece)
             {
                 this.heldItem = null;
-                selectedInventoryItem = false;
             }
 
             LibraryMuseum museum = Game1.currentLocation as LibraryMuseum;
@@ -175,7 +172,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
                 // Place item at an already in-use museum slot and swap it with its current item
                 else if (LibraryMuseumHelper.IsTileSuitableForMuseumPiece(x1, y1)
-                    && museum.isItemSuitableForDonation(this.heldItem) && !selectedInventoryItem)
+                    && museum.isItemSuitableForDonation(this.heldItem))
                 {
                     Vector2 keySrc = new Vector2((float)oldX1, (float)oldY1);
                     Vector2 keyDest = new Vector2((float)x1, (float)y1);
@@ -384,11 +381,19 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
                     {
                         for (int x = Game1.viewport.X / 64 - 1; x < (Game1.viewport.X + Game1.viewport.Width) / 64 + 1; ++x)
                         {
-                            if (LibraryMuseumHelper.IsTileSuitableForMuseumPiece(x, y))
+                            var tileClassification = LibraryMuseumHelper.GetTileMuseumClassification(x, y, true);
+                            if (tileClassification != MuseumTileClassification.Invalid)
                             {
+                                Color tileBorderColor = Color.LightGreen;
+
+                                if (tileClassification == MuseumTileClassification.Limited)
+                                {
+                                    tileBorderColor = Color.Black;
+                                }
+
                                 b.Draw(Game1.mouseCursors, Game1.GlobalToLocal(Game1.viewport, new Vector2((float)x, (float)y) * 64f),
                                     new Microsoft.Xna.Framework.Rectangle?(Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 29, -1, -1)),
-                                    Color.LightGreen);
+                                    tileBorderColor);
                             }
                         }
                     }

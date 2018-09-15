@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="Framework\Constants.cs" />
     <Compile Include="Framework\Helpers\LibraryMuseumHelper.cs" />
+    <Compile Include="Framework\Helpers\MuseumTileClassification.cs" />
     <Compile Include="Framework\LostBookFoundDialogExtended.cs" />
     <Compile Include="Framework\MuseumInteractionDialog\MuseumInteractionDialogService.cs" />
     <Compile Include="Framework\MuseumInteractionDialog\MuseumInteractionDialogType.cs" />

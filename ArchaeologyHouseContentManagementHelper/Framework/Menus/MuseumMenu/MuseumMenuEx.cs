@@ -232,11 +232,19 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
                     {
                         for (int x = Game1.viewport.X / 64 - 1; x < (Game1.viewport.X + Game1.viewport.Width) / 64 + 1; ++x)
                         {
-                            if ((Game1.currentLocation as LibraryMuseum).isTileSuitableForMuseumPiece(x, y))
+                            var tileClassification = LibraryMuseumHelper.GetTileMuseumClassification(x, y, !selectedInventoryItem);
+                            if (tileClassification != MuseumTileClassification.Invalid)
                             {
-                                b.Draw(Game1.mouseCursors, Game1.GlobalToLocal(Game1.viewport, new Vector2((float)x, (float)y) * 64f), 
-                                    new Rectangle?(Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 29, -1, -1)), 
-                                    Color.LightGreen);
+                                Color tileBorderColor = Color.LightGreen;
+
+                                if (tileClassification == MuseumTileClassification.Limited)
+                                {
+                                    tileBorderColor = Color.Black;
+                                }
+
+                                b.Draw(Game1.mouseCursors, Game1.GlobalToLocal(Game1.viewport, new Vector2((float)x, (float)y) * 64f),
+                                    new Microsoft.Xna.Framework.Rectangle?(Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 29, -1, -1)),
+                                    tileBorderColor);
                             }
                         }
                     }
