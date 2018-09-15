@@ -36,17 +36,12 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
         private int infoFadeTimer = INFO_DISPLAY_TIME;
 
-        public MuseumMenuEx(IReflectionHelper reflection, bool showInventory)
+        public MuseumMenuEx()
         {
-            holdingMuseumPieceRef = reflection.GetField<bool>(this, "holdingMuseumPiece");
-            multiplayer = reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
+            holdingMuseumPieceRef = ModEntry.CommonServices.ReflectionHelper.GetField<bool>(this, "holdingMuseumPiece");
+            multiplayer = ModEntry.CommonServices.ReflectionHelper.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
 
-            this.showInventory = showInventory;
-
-            if (!showInventory)
-            {
-                menuMovingDown = true;
-            }
+            showInventory = true;
         }
 
         // Enable free cursor movement when inventory is not shown
@@ -75,7 +70,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
             // Place item at a museum slot
             if (heldItem != null && this.heldItem != null 
                 && (y < Game1.viewport.Height - (height - (IClickableMenu.borderWidth + IClickableMenu.spaceToClearTopBorder + 192)) 
-                    || this.menuMovingDown || !showInventory))
+                    || this.menuMovingDown || !showInventory || !inventory.isWithinBounds(x, y)))
             {
                 int x1 = (x + Game1.viewport.X) / 64;
                 int y1 = (y + Game1.viewport.Y) / 64;

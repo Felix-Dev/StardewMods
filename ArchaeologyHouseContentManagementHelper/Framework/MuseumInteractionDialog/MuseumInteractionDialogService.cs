@@ -12,13 +12,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 {
     public class MuseumInteractionDialogService
     {
-        private ITranslationHelper translationHelper;
-        private IModHelper modHelper;
-        private IMonitor monitor;
-
         private NPC gunther;
-
-        private LibraryMuseumHelper museumHelper;
 
         private const string DialogOption_Donate = "Donate";
         private const string DialogOption_Rearrange = "Rearrange";
@@ -26,19 +20,12 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
         private const string DialogOption_Status = "Status";
         private const string DialogOption_Leave = "Leave";      
 
-        public MuseumInteractionDialogService(IModHelper modHelper, IMonitor monitor, IReflectionHelper reflectionHelper)
+        public MuseumInteractionDialogService()
         {
-            this.modHelper = modHelper ?? throw new ArgumentNullException(nameof(modHelper), "Error: [ModHelper] cannot be [null]!");
-            this.monitor = monitor;
-
-            translationHelper = modHelper.Translation;
-
-            museumHelper = new LibraryMuseumHelper(modHelper, monitor, reflectionHelper);
-
             gunther = Game1.getCharacterFromName(Constants.NPC_NAME_GUNTHER);
             if (gunther == null)
             {
-                monitor.Log("Error: NPC [Gunther] not found!", LogLevel.Error);
+                ModEntry.CommonServices.Monitor.Log("Error: NPC [Gunther] not found!", LogLevel.Error);
                 throw new Exception("Error: NPC [Gunther] not found!");
             }
         }
@@ -51,9 +38,9 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     Game1.player.currentLocation.createQuestionDialogue(
                             "",
                             new Response[3] {
-                                new Response(DialogOption_Donate, translationHelper.Get("Gunther_MuseumInteractionMenu_Donate")),
-                                new Response(DialogOption_Status, translationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
-                                new Response(DialogOption_Leave, translationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
+                                new Response(DialogOption_Donate, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Donate")),
+                                new Response(DialogOption_Status, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
+                                new Response(DialogOption_Leave, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
                             },
                             MuseumDialogAnswerHandler
                             );
@@ -63,10 +50,10 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     Game1.player.currentLocation.createQuestionDialogue(
                             "",
                             new Response[4] {
-                                new Response(DialogOption_Donate, translationHelper.Get("Gunther_MuseumInteractionMenu_Donate")),
-                                new Response(DialogOption_Collect, translationHelper.Get("Gunther_MuseumInteractionMenu_Collect")),
-                                new Response(DialogOption_Status, translationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
-                                new Response(DialogOption_Leave, translationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
+                                new Response(DialogOption_Donate, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Donate")),
+                                new Response(DialogOption_Collect, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Collect")),
+                                new Response(DialogOption_Status, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
+                                new Response(DialogOption_Leave, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
                             },
                             MuseumDialogAnswerHandler
                             );
@@ -76,9 +63,9 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     Game1.player.currentLocation.createQuestionDialogue(
                            "",
                            new Response[3] {
-                                new Response(DialogOption_Rearrange, translationHelper.Get("Gunther_MuseumInteractionMenu_Rearrange")),
-                                new Response(DialogOption_Status, translationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
-                                new Response(DialogOption_Leave, translationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
+                                new Response(DialogOption_Rearrange, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Rearrange")),
+                                new Response(DialogOption_Status, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
+                                new Response(DialogOption_Leave, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
                            },
                            MuseumDialogAnswerHandler
                            );
@@ -88,10 +75,10 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     Game1.player.currentLocation.createQuestionDialogue(
                            "",
                            new Response[4] {
-                                new Response(DialogOption_Rearrange, translationHelper.Get("Gunther_MuseumInteractionMenu_Rearrange")),
-                                new Response(DialogOption_Collect, translationHelper.Get("Gunther_MuseumInteractionMenu_Collect")),
-                                new Response(DialogOption_Status, translationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
-                                new Response(DialogOption_Leave, translationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
+                                new Response(DialogOption_Rearrange, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Rearrange")),
+                                new Response(DialogOption_Collect, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Collect")),
+                                new Response(DialogOption_Status, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
+                                new Response(DialogOption_Leave, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
                            },
                            MuseumDialogAnswerHandler
                            );
@@ -101,10 +88,10 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     Game1.player.currentLocation.createQuestionDialogue(
                         "",
                         new Response[4] {
-                            new Response(DialogOption_Donate, translationHelper.Get("Gunther_MuseumInteractionMenu_Donate")),
-                            new Response(DialogOption_Rearrange, translationHelper.Get("Gunther_MuseumInteractionMenu_Rearrange")),
-                            new Response(DialogOption_Status, translationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
-                            new Response(DialogOption_Leave, translationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
+                            new Response(DialogOption_Donate, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Donate")),
+                            new Response(DialogOption_Rearrange, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Rearrange")),
+                            new Response(DialogOption_Status, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
+                            new Response(DialogOption_Leave, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
                             },
                         MuseumDialogAnswerHandler
                         );
@@ -114,11 +101,11 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     Game1.player.currentLocation.createQuestionDialogue(
                         "",
                         new Response[5] {
-                            new Response(DialogOption_Donate, translationHelper.Get("Gunther_MuseumInteractionMenu_Donate")),
-                            new Response(DialogOption_Rearrange, translationHelper.Get("Gunther_MuseumInteractionMenu_Rearrange")),
-                            new Response(DialogOption_Collect, translationHelper.Get("Gunther_MuseumInteractionMenu_Collect")),
-                            new Response(DialogOption_Status, translationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
-                            new Response(DialogOption_Leave, translationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
+                            new Response(DialogOption_Donate, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Donate")),
+                            new Response(DialogOption_Rearrange, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Rearrange")),
+                            new Response(DialogOption_Collect, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Collect")),
+                            new Response(DialogOption_Status, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Status")),
+                            new Response(DialogOption_Leave, ModEntry.CommonServices.TranslationHelper.Get("Gunther_MuseumInteractionMenu_Leave"))
                             },
                         MuseumDialogAnswerHandler
                         );
@@ -134,40 +121,40 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
             switch (whichAnswer)
             {
                 case DialogOption_Donate:
-                    Game1.activeClickableMenu = new MuseumMenuEx(modHelper.Reflection, true);
+                    Game1.activeClickableMenu = new MuseumMenuEx();
                     break;
                 case DialogOption_Rearrange:
-                    Game1.activeClickableMenu = new MuseumMenuNoInventory(modHelper.Reflection);
+                    Game1.activeClickableMenu = new MuseumMenuNoInventory();
                     break;
                 case DialogOption_Collect:
-                    Game1.activeClickableMenu = (IClickableMenu)new ItemGrabMenu((IList<Item>)museumHelper.GetRewardsForPlayer(Game1.player), 
+                    Game1.activeClickableMenu = (IClickableMenu)new ItemGrabMenu((IList<Item>)LibraryMuseumHelper.GetRewardsForPlayer(Game1.player), 
                         false, true, (InventoryMenu.highlightThisItem)null, (ItemGrabMenu.behaviorOnItemSelect)null, 
-                        "Rewards", new ItemGrabMenu.behaviorOnItemSelect(museumHelper.CollectedReward), 
+                        "Rewards", new ItemGrabMenu.behaviorOnItemSelect(LibraryMuseumHelper.CollectedReward), 
                         false, false, false, false, false, 0, (Item)null, -1, (object)this);
                     break;
                 case DialogOption_Status:
-                    if (museumHelper.HasCollectedAllBooks && museumHelper.HasDonatedAllMuseumPieces)
+                    if (LibraryMuseumHelper.HasCollectedAllBooks && LibraryMuseumHelper.HasDonatedAllMuseumPieces)
                     {
-                        Game1.drawDialogue(gunther, translationHelper.Get("Gunther_ArchaeologyHouseStatus_Completed"));
+                        Game1.drawDialogue(gunther, ModEntry.CommonServices.TranslationHelper.Get("Gunther_ArchaeologyHouseStatus_Completed"));
                     }
                     else
                     {
                         // Work-around to create newlines
-                        string statusIntroLinePadding = translationHelper.Get("Gunther_ArchaeologyHouse_StatusIntroLinePadding");
+                        string statusIntroLinePadding = ModEntry.CommonServices.TranslationHelper.Get("Gunther_ArchaeologyHouse_StatusIntroLinePadding");
                         if (statusIntroLinePadding.StartsWith("(no translation:"))
                         {
                             statusIntroLinePadding = "";
                         }
 
-                        string libraryStatusLinePadding = translationHelper.Get("Gunther_ArchaeologyHouse_LibraryStatusLinePadding");
+                        string libraryStatusLinePadding = ModEntry.CommonServices.TranslationHelper.Get("Gunther_ArchaeologyHouse_LibraryStatusLinePadding");
                         if (libraryStatusLinePadding.StartsWith("(no translation:"))
                         {
                             libraryStatusLinePadding = "";
                         }
 
-                        Game1.drawDialogue(gunther, translationHelper.Get("Gunther_ArchaeologyHouse_StatusIntro") + statusIntroLinePadding +
-                            translationHelper.Get("Gunther_ArchaeologyHouse_LibraryStatus") + $"{ museumHelper.LibraryBooks}/{museumHelper.TotalLibraryBooks}" + libraryStatusLinePadding +
-                            translationHelper.Get("Gunther_ArchaeologyHouse_MuseumStatus") + $"{museumHelper.MuseumPieces}/{museumHelper.TotalMuseumPieces} ");
+                        Game1.drawDialogue(gunther, ModEntry.CommonServices.TranslationHelper.Get("Gunther_ArchaeologyHouse_StatusIntro") + statusIntroLinePadding +
+                            ModEntry.CommonServices.TranslationHelper.Get("Gunther_ArchaeologyHouse_LibraryStatus") + $"{ LibraryMuseumHelper.LibraryBooks}/{LibraryMuseumHelper.TotalLibraryBooks}" + libraryStatusLinePadding +
+                            ModEntry.CommonServices.TranslationHelper.Get("Gunther_ArchaeologyHouse_MuseumStatus") + $"{LibraryMuseumHelper.MuseumPieces}/{LibraryMuseumHelper.TotalMuseumPieces} ");
                     }                  
                     break;
                 case DialogOption_Leave:

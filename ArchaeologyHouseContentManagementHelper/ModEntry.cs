@@ -10,6 +10,7 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Locations;
 using Harmony;
+using StardewValley.Menus;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper
 {
@@ -20,6 +21,8 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
         private MuseumInteractionDialogService dialogService;
 
         private IModHelper modHelper;
+
+        public static CommonServices CommonServices { get; private set; }
 
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
@@ -33,15 +36,18 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
 
             modHelper = helper;
 
+            CommonServices = new CommonServices(Monitor, helper.Translation, helper.Reflection);
+
             SaveEvents.AfterLoad += Bootstrap;
         }
 
         private void Bootstrap(object sender, EventArgs e)
         {
-            museumHelper = new LibraryMuseumHelper(modHelper, Monitor, Helper.Reflection);
-            dialogService = new MuseumInteractionDialogService(modHelper, Monitor, Helper.Reflection);
+            dialogService = new MuseumInteractionDialogService();
 
             InputEvents.ButtonPressed += InputEvents_ButtonPressed;
+
+            LostBookFoundDialogExtended.Setup();
 
             var harmony = HarmonyInstance.Create("StardewMods.ArchaeologyHouseContentManagementHelper");
             Patches.Patch.PatchAll(harmony);
@@ -53,18 +59,19 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
         /// <param name="e">The event data.</param>
         private void InputEvents_ButtonPressed(object sender, EventArgsInput e)
         {    
-            if (e.IsActionButton && Context.IsPlayerFree && museumHelper.IsPlayerAtCounter(Game1.player))
+            if (e.IsActionButton && Context.IsPlayerFree && LibraryMuseumHelper.IsPlayerAtCounter(Game1.player))
             {
                 LibraryMuseum museum = Game1.currentLocation as LibraryMuseum;
-                bool canDonate = museumHelper.DoesFarmerHaveAnythingToDonate(Game1.player);
-                int donatedItems = museumHelper.MuseumPieces;
+                bool canDonate = museum.doesFarmerHaveAnythingToDonate(Game1.player);
+
+                int donatedItems = LibraryMuseumHelper.MuseumPieces;
             
                 if (canDonate)
                 {
                     if (donatedItems > 0)
                     {
                         // Can donate, rearrange museum and collect rewards
-                        if (museumHelper.HasPlayerCollectibleRewards(Game1.player))
+                        if (LibraryMuseumHelper.HasPlayerCollectibleRewards(Game1.player))
                         {
                             dialogService.ShowDialog(MuseumInteractionDialogType.DonateRearrangeCollect);
                         }
@@ -77,7 +84,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
                     }
 
                     // Can donate & collect rewards & no item donated yet (cannot rearrange museum)
-                    else if (museumHelper.HasPlayerCollectibleRewards(Game1.player))
+                    else if (LibraryMuseumHelper.HasPlayerCollectibleRewards(Game1.player))
                     {
                         dialogService.ShowDialog(MuseumInteractionDialogType.DonateCollect);
                     }
@@ -93,7 +100,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
                 else if (donatedItems > 0)
                 {
                     // Can rearrange and collect a reward
-                    if (museumHelper.HasPlayerCollectibleRewards(Game1.player))
+                    if (LibraryMuseumHelper.HasPlayerCollectibleRewards(Game1.player))
                     {
                         dialogService.ShowDialog(MuseumInteractionDialogType.RearrangeCollect);
                     }
