@@ -75,7 +75,8 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
             // Place item at a museum slot
             if (heldItem != null && this.heldItem != null 
                 && (y < Game1.viewport.Height - (height - (IClickableMenu.borderWidth + IClickableMenu.spaceToClearTopBorder + 192)) 
-                    || this.menuMovingDown || !showInventory))
+                    || this.menuMovingDown || !showInventory || !inventory.isWithinBounds(x, y)
+                    && (okButton == null || !okButton.containsPoint(x, y))))
             {
                 int x1 = (x + Game1.viewport.X) / 64;
                 int y1 = (y + Game1.viewport.Y) / 64;
