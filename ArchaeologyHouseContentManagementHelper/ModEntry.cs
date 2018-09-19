@@ -17,10 +17,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
     /// <summary>The mod entry point.</summary>
     public class ModEntry : Mod
     {
-        private LibraryMuseumHelper museumHelper;
         private MuseumInteractionDialogService dialogService;
-
-        private IModHelper modHelper;
 
         public static CommonServices CommonServices { get; private set; }
 
@@ -33,8 +30,6 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
                 Monitor.Log("Error: [modHelper] cannot be [null]!", LogLevel.Error);
                 throw new ArgumentNullException(nameof(helper), "Error: [modHelper] cannot be [null]!");
             }
-
-            modHelper = helper;
 
             CommonServices = new CommonServices(Monitor, helper.Translation, helper.Reflection);
 

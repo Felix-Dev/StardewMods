@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 {
@@ -34,20 +35,60 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
         private static readonly int INFO_DISPLAY_TIME = 150;
 
-        private int infoFadeTimer = INFO_DISPLAY_TIME;
+        private int infoFadeValue = INFO_DISPLAY_TIME;
+
+        private double granularity;
+
+        private int duration = 3000;
+
+        private double infoFadeTimerStartValue = 100;
+        private double infoFadeTimerCurrentValue = 100;
+
+        private static Timer infoFadeTimer;
+
+        private System.Object lockInfoFadeTimer = new System.Object();
 
         public MuseumMenuEx()
         {
             holdingMuseumPieceRef = ModEntry.CommonServices.ReflectionHelper.GetField<bool>(this, "holdingMuseumPiece");
             multiplayer = ModEntry.CommonServices.ReflectionHelper.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
 
+            infoFadeTimer = new System.Timers.Timer();
+            infoFadeTimer.Interval = 200;
+
+            double tmp = infoFadeTimer.Interval / duration;
+
+            granularity = infoFadeTimerStartValue / (duration / infoFadeTimer.Interval);
+
+            // Hook up the Elapsed event for the timer. 
+            infoFadeTimer.Elapsed += InfoFadeTimer_OnTimedEvent;
+
+            // Have the timer fire repeated events (true is the default)
+            infoFadeTimer.AutoReset = true;
+
             showInventory = true;
+        }
+
+        private void InfoFadeTimer_OnTimedEvent(object sender, ElapsedEventArgs e)
+        {
+            infoFadeTimerCurrentValue -= granularity;
         }
 
         // Enable free cursor movement when inventory is not shown
         public override bool overrideSnappyMenuCursorMovementBan()
         {
             return !showInventory || this.heldItem != null;
+        }
+
+        private void PrepareHideItemInfoTooltip()
+        {
+            // Stop the info fade timer
+            infoFadeTimer.Stop();
+
+            // Clear hover information
+            selectedItemDescription = null;
+            selectedItemTitle = null;
+            selectedItem = null;
         }
 
         // Added [item swap] support
@@ -70,7 +111,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
             // Place item at a museum slot
             if (heldItem != null && this.heldItem != null 
                 && (y < Game1.viewport.Height - (height - (IClickableMenu.borderWidth + IClickableMenu.spaceToClearTopBorder + 192)) 
-                    || this.menuMovingDown || !showInventory || !inventory.isWithinBounds(x, y)))
+                    || this.menuMovingDown || !selectedInventoryItem || !inventory.isWithinBounds(x, y)))
             {
                 int x1 = (x + Game1.viewport.X) / 64;
                 int y1 = (y + Game1.viewport.Y) / 64;
@@ -89,10 +130,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
                     Game1.playSound("stoneStep");
                     holdingMuseumPieceRef.SetValue(false);
 
-                    // Clear hover information
-                    selectedItemDescription = null;
-                    selectedItemTitle = null;
-                    selectedItem = null;
+                    PrepareHideItemInfoTooltip();
 
                     // Rewards
                     if (museum.getRewardsForPlayer(Game1.player).Count > count)
@@ -165,10 +203,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
                     Game1.playSound("stoneStep");
                     holdingMuseumPieceRef.SetValue(false);
 
-                    // Clear hover information
-                    selectedItemDescription = null;
-                    selectedItemTitle = null;
-                    selectedItem = null;
+                    PrepareHideItemInfoTooltip();
 
                     Game1.playSound("newArtifact");
 
@@ -199,7 +234,12 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
                     selectedItem = this.heldItem;
 
-                    infoFadeTimer = INFO_DISPLAY_TIME;
+                    // Restart the info fade timer
+                    lock (lockInfoFadeTimer)
+                    {
+                        infoFadeTimerCurrentValue = infoFadeTimerStartValue;
+                        infoFadeTimer.Start();
+                    }
 
                     currentLocation.museumPieces.Remove(key);
                     holdingMuseumPieceRef.SetValue(!currentLocation.museumAlreadyHasArtifact(this.heldItem.ParentSheetIndex));
@@ -265,13 +305,19 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
                 drawMouse(b);
                 sparkleText?.draw(b, Game1.GlobalToLocal(Game1.viewport, globalLocationOfSparklingArtifact));
 
-                //draw clicked item information
-                if (selectedItemDescription != null && !selectedItemDescription.Equals("") && infoFadeTimer > 0)
+                if (selectedItemDescription != null && !selectedItemDescription.Equals(""))
                 {
-                    drawToolTip(b, this.selectedItemDescription, this.selectedItemTitle, selectedItem,
+                        if (infoFadeTimerCurrentValue > 0)
+                        {
+                            // Show selected item information
+                            drawToolTip(b, this.selectedItemDescription, this.selectedItemTitle, selectedItem,
                                 selectedItem != null, -1, 0, -1, -1, (CraftingRecipe)null, -1);
-                    infoFadeTimer--;
-                }
+                        }
+                        else
+                        {
+                            infoFadeTimer.Stop();
+                        }
+                }                
             }
 
             b.Draw(Game1.fadeToBlackRect, new Rectangle(0, 0, Game1.viewport.Width, Game1.viewport.Height), Color.Black * blackFadeAlpha);
