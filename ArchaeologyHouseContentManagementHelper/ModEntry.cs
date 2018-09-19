@@ -33,6 +33,9 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
 
             modHelper = helper;
 
+            var harmony = HarmonyInstance.Create("StardewMods.ArchaeologyHouseContentManagementHelper");
+            Patches.Patch.PatchAll(harmony);
+
             SaveEvents.AfterLoad += Bootstrap;
         }
 
@@ -42,9 +45,6 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
             dialogService = new MuseumInteractionDialogService(modHelper, Monitor, Helper.Reflection);
 
             InputEvents.ButtonPressed += InputEvents_ButtonPressed;
-
-            var harmony = HarmonyInstance.Create("StardewMods.ArchaeologyHouseContentManagementHelper");
-            Patches.Patch.PatchAll(harmony);
         }
 
 
