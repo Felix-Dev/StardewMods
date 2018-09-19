@@ -10,7 +10,6 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Locations;
 using Harmony;
-using StardewValley.Menus;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper
 {
@@ -33,6 +32,9 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
 
             CommonServices = new CommonServices(Monitor, helper.Translation, helper.Reflection);
 
+            var harmony = HarmonyInstance.Create("StardewMods.ArchaeologyHouseContentManagementHelper");
+            Patches.Patch.PatchAll(harmony);
+
             SaveEvents.AfterLoad += Bootstrap;
         }
 
@@ -43,9 +45,6 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
             InputEvents.ButtonPressed += InputEvents_ButtonPressed;
 
             LostBookFoundDialogExtended.Setup();
-
-            var harmony = HarmonyInstance.Create("StardewMods.ArchaeologyHouseContentManagementHelper");
-            Patches.Patch.PatchAll(harmony);
         }
 
 
