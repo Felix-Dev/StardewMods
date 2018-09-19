@@ -22,7 +22,7 @@ German     | [✓](ArchaeologyHouseContentManagementHelper/i18n/de.json)
 Japanese   | ❑ untranslated        
 Portuguese | ❑ untranslated      
 Russian    | ❑ untranslated  
-Spanish    | ❑ untranslated     
+Spanish    | [✓](ArchaeologyHouseContentManagementHelper/i18n/es.json)     
 
 Here's how to translate one of my mods:
 
