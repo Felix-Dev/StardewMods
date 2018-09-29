@@ -1,11 +1,12 @@
 ﻿using StardewModdingAPI;
+using StardewMods.ArchaeologyHouseContentManagementHelper.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StardewMods.ArchaeologyHouseContentManagementHelper
+namespace StardewMods.Common
 {
     public class CommonServices
     {

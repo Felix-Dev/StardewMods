@@ -33,13 +33,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
         private bool selectedInventoryItem;
 
-        private static readonly int INFO_DISPLAY_TIME = 150;
-
-        private int infoFadeValue = INFO_DISPLAY_TIME;
-
         private double granularity;
-
-        private int duration = 3000;
 
         private double infoFadeTimerStartValue = 100;
         private double infoFadeTimerCurrentValue = 100;
@@ -53,18 +47,30 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
             holdingMuseumPieceRef = ModEntry.CommonServices.ReflectionHelper.GetField<bool>(this, "holdingMuseumPiece");
             multiplayer = ModEntry.CommonServices.ReflectionHelper.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
 
-            infoFadeTimer = new System.Timers.Timer();
-            infoFadeTimer.Interval = 200;
+            int duration = ModEntry.ModConfig.MuseumItemDisplayTime;
+            if (duration > 0)
+            {
+                infoFadeTimer = new System.Timers.Timer
+                {
+                    Interval = 200
+                };
 
-            double tmp = infoFadeTimer.Interval / duration;
+                if (duration < 200)
+                    duration = 200;
 
-            granularity = infoFadeTimerStartValue / (duration / infoFadeTimer.Interval);
+                granularity = infoFadeTimerStartValue / (duration / infoFadeTimer.Interval);
 
-            // Hook up the Elapsed event for the timer. 
-            infoFadeTimer.Elapsed += InfoFadeTimer_OnTimedEvent;
+                // Hook up the Elapsed event for the timer. 
+                infoFadeTimer.Elapsed += InfoFadeTimer_OnTimedEvent;
 
-            // Have the timer fire repeated events (true is the default)
-            infoFadeTimer.AutoReset = true;
+                // Have the timer fire repeated events (true is the default)
+                infoFadeTimer.AutoReset = true;
+            }
+            else
+            {
+                infoFadeTimerCurrentValue = 0;
+            }
+           
 
             showInventory = true;
         }
@@ -83,7 +89,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
         private void PrepareHideItemInfoTooltip()
         {
             // Stop the info fade timer
-            infoFadeTimer.Stop();
+            infoFadeTimer?.Stop();
 
             // Clear hover information
             selectedItemDescription = null;
@@ -237,8 +243,11 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
                     // Restart the info fade timer
                     lock (lockInfoFadeTimer)
                     {
-                        infoFadeTimerCurrentValue = infoFadeTimerStartValue;
-                        infoFadeTimer.Start();
+                        if (infoFadeTimer != null)
+                        {
+                            infoFadeTimerCurrentValue = infoFadeTimerStartValue;
+                            infoFadeTimer.Start();
+                        }
                     }
 
                     currentLocation.museumPieces.Remove(key);
@@ -307,7 +316,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
                 if (selectedItemDescription != null && !selectedItemDescription.Equals(""))
                 {
-                        if (infoFadeTimerCurrentValue > 0)
+                        if (infoFadeTimerCurrentValue > 0 || infoFadeTimerCurrentValue == 0)
                         {
                             // Show selected item information
                             drawToolTip(b, this.selectedItemDescription, this.selectedItemTitle, selectedItem,
@@ -315,7 +324,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
                         }
                         else
                         {
-                            infoFadeTimer.Stop();
+                            infoFadeTimer?.Stop();
                         }
                 }                
             }

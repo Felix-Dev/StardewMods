@@ -10,15 +10,19 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Locations;
 using Harmony;
+using StardewMods.Common;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper
 {
     /// <summary>The mod entry point.</summary>
-    public class ModEntry : Mod
+    internal class ModEntry : Mod
     {
         private MuseumInteractionDialogService dialogService;
 
         public static CommonServices CommonServices { get; private set; }
+
+        /// <summary>The mod configuration from the player.</summary>
+        public  static ModConfig ModConfig { get; private set; }
 
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
@@ -30,8 +34,11 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
                 throw new ArgumentNullException(nameof(helper), "Error: [modHelper] cannot be [null]!");
             }
 
+            // Set services and mod configurations
             CommonServices = new CommonServices(Monitor, helper.Translation, helper.Reflection);
+            ModConfig = Helper.ReadConfig<ModConfig>();
 
+            // Patch the game
             var harmony = HarmonyInstance.Create("StardewMods.ArchaeologyHouseContentManagementHelper");
             Patches.Patch.PatchAll(harmony);
 
