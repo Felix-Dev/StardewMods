@@ -11,6 +11,8 @@ using StardewValley;
 using StardewValley.Locations;
 using Harmony;
 using StardewMods.Common;
+using StardewValley.Menus;
+using Microsoft.Xna.Framework;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper
 {
@@ -24,6 +26,10 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
         /// <summary>The mod configuration from the player.</summary>
         public  static ModConfig ModConfig { get; private set; }
 
+        private bool switchBackToCollectionsMenu;
+        private bool ignoreMenuChanged;
+        private GameMenu savedGameMenu;
+
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
@@ -35,12 +41,14 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
             }
 
             // Set services and mod configurations
-            CommonServices = new CommonServices(Monitor, helper.Translation, helper.Reflection);
+            CommonServices = new CommonServices(Monitor, helper.Translation, helper.Reflection, helper.Content);
             ModConfig = Helper.ReadConfig<ModConfig>();
 
             // Patch the game
             var harmony = HarmonyInstance.Create("StardewMods.ArchaeologyHouseContentManagementHelper");
             Patches.Patch.PatchAll(harmony);
+
+            MenuEvents.MenuChanged += MenuEvents_MenuChanged;
 
             SaveEvents.AfterLoad += Bootstrap;
         }
@@ -50,8 +58,75 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
             dialogService = new MuseumInteractionDialogService();
 
             InputEvents.ButtonPressed += InputEvents_ButtonPressed;
+            
+            MenuEvents.MenuClosed += MenuEvents_MenuClosed;
 
             LostBookFoundDialogExtended.Setup();
+        }
+
+        private void MenuEvents_MenuClosed(object sender, EventArgsClickableMenuClosed e)
+        {
+            ignoreMenuChanged = false;
+
+            if (e.PriorMenu is LetterViewerMenu && switchBackToCollectionsMenu)
+            {           
+                List<IClickableMenu> pages = CommonServices.ReflectionHelper.GetField<List<IClickableMenu>>(savedGameMenu, "pages").GetValue();
+
+                CollectionsPage collectionPage;
+                int i = 0;
+
+                foreach (var page in pages)
+                {
+                    if (page is CollectionsPage)
+                    {
+                        collectionPage = (CollectionsPage)page;
+                        break;
+                    }
+                    i++;
+                }
+
+                pages.RemoveAt(i);
+                pages.Insert(i, new CollectionsPageEx(
+                        savedGameMenu.xPositionOnScreen, savedGameMenu.yPositionOnScreen,
+                        savedGameMenu.width - 64 - 16, savedGameMenu.height, CollectionsPageEx.lostBooksTab));
+
+                ignoreMenuChanged = true;
+                Game1.activeClickableMenu = savedGameMenu;
+            }
+
+            switchBackToCollectionsMenu = false;
+        }
+
+        private void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
+        {
+            if (e.NewMenu is GameMenu gameMenu && !ignoreMenuChanged)
+            {
+                List<IClickableMenu> pages = CommonServices.ReflectionHelper.GetField<List<IClickableMenu>>(gameMenu, "pages").GetValue();
+
+                int i = 0;
+                CollectionsPage collectionPage;
+
+                foreach (var page in pages)
+                {
+                    if (page is CollectionsPage)
+                    {
+                        collectionPage = (CollectionsPage)page;
+                        break;
+                    }
+                    i++;
+                }
+
+                pages.RemoveAt(i);
+                pages.Insert(i, new CollectionsPageEx(gameMenu.xPositionOnScreen, gameMenu.yPositionOnScreen, gameMenu.width - 64 - 16, gameMenu.height));
+            }
+
+            else if (e.NewMenu is LetterViewerMenu && e.PriorMenu is GameMenu gameMenu2)
+            {
+                switchBackToCollectionsMenu = true;
+                savedGameMenu = gameMenu2;
+            }
+
+            ignoreMenuChanged = false;
         }
 
 

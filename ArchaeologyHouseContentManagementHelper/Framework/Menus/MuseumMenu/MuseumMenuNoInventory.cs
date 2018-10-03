@@ -381,7 +381,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
                     {
                         for (int x = Game1.viewport.X / 64 - 1; x < (Game1.viewport.X + Game1.viewport.Width) / 64 + 1; ++x)
                         {
-                            var tileClassification = LibraryMuseumHelper.GetTileMuseumClassification(x, y, true);
+                            var tileClassification = LibraryMuseumHelper.GetTileMuseumClassification(x, y, ModEntry.ModConfig.ShowVisualSwapIndicator);
                             if (tileClassification != MuseumTileClassification.Invalid)
                             {
                                 Color tileBorderColor = Color.LightGreen;

@@ -32,6 +32,8 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
         public static bool HasDonatedAllMuseumPieces => MuseumPieces == TotalMuseumPieces;
         public static bool HasCollectedAllBooks => LibraryBooks == TotalLibraryBooks;
 
+        private static IReflectedMethod getLostBooksLocationsRef = ModEntry.CommonServices.ReflectionHelper.GetMethod(Museum, "getLostBooksLocations");
+
         public static bool IsPlayerAtCounter(Farmer farmer)
         {
             if (farmer == null)
@@ -42,6 +44,11 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
             }
 
             return farmer.currentLocation is LibraryMuseum && LibraryCounterTiles.Contains(farmer.getTileLocation());
+        }
+
+        public static int[] GetLostBookIndexList()
+        {
+            return getLostBooksLocationsRef.Invoke<Dictionary<int, Vector2>>().Select(e => e.Key).ToArray();
         }
 
         public static bool HasPlayerCollectibleRewards(Farmer farmer)
@@ -99,10 +106,10 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
             }
         }
 
-        public static MuseumTileClassification GetTileMuseumClassification(int x, int y, bool canSwap)
+        public static MuseumTileClassification GetTileMuseumClassification(int x, int y, bool showSwapVisualIndicator)
         {
             // If items cannot be swapped, don't set visual "can place" indicator
-            if (!canSwap && Museum.museumPieces.ContainsKey(new Vector2((float)x, (float)y)))
+            if (!showSwapVisualIndicator && Museum.museumPieces.ContainsKey(new Vector2((float)x, (float)y)))
             {
                 return MuseumTileClassification.Invalid;
             }

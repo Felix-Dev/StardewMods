@@ -40,7 +40,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
         private static Timer infoFadeTimer;
 
-        private System.Object lockInfoFadeTimer = new System.Object();
+        private readonly System.Object lockInfoFadeTimer = new System.Object();
 
         public MuseumMenuEx()
         {
@@ -66,9 +66,18 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
                 // Have the timer fire repeated events (true is the default)
                 infoFadeTimer.AutoReset = true;
             }
-            else
+
+            /* Don't display item tooltip */
+            else if (duration == 0)
             {
                 infoFadeTimerCurrentValue = 0;
+            }
+
+            /* Display item tooltip without time limits */
+            else
+            {
+                // We only need to set it to a value > 0, specific value doesn't matter
+                infoFadeTimerCurrentValue = 1;
             }
            
 
@@ -281,7 +290,8 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
                     {
                         for (int x = Game1.viewport.X / 64 - 1; x < (Game1.viewport.X + Game1.viewport.Width) / 64 + 1; ++x)
                         {
-                            var tileClassification = LibraryMuseumHelper.GetTileMuseumClassification(x, y, !selectedInventoryItem);
+                            var tileClassification = LibraryMuseumHelper.GetTileMuseumClassification(
+                                x, y, (!selectedInventoryItem && ModEntry.ModConfig.ShowVisualSwapIndicator));
                             if (tileClassification != MuseumTileClassification.Invalid)
                             {
                                 Color tileBorderColor = Color.LightGreen;
@@ -316,7 +326,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
                 if (selectedItemDescription != null && !selectedItemDescription.Equals(""))
                 {
-                        if (infoFadeTimerCurrentValue > 0 || infoFadeTimerCurrentValue == 0)
+                        if (infoFadeTimerCurrentValue > 0)
                         {
                             // Show selected item information
                             drawToolTip(b, this.selectedItemDescription, this.selectedItemTitle, selectedItem,
