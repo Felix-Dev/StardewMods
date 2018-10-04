@@ -40,7 +40,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Patches
             Item obj1 = farmer.IsLocalPlayer ? farmer.addItemToInventory(item) : (Item)null;
 
             // Patch: Added [... || obj1.ParentSheetIndex == Constants.GAME_OBJECT_LOST_BOOK_ID]
-            bool flag = obj1 == null || obj1.Stack != item.Stack || item is SpecialItem || obj1.ParentSheetIndex == Constants.GAME_OBJECT_LOST_BOOK_ID;
+            bool flag = obj1 == null || obj1.Stack != item.Stack || item is SpecialItem || obj1.ParentSheetIndex == Constants.ID_GAME_OBJECT_LOST_BOOK;
             if (item is Object)
             {
                 (item as Object).reloadSprite();
@@ -84,7 +84,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Patches
                         farmer.foundArtifact((item as Object).ParentSheetIndex, 1);
                     }
 
-                    if (item.ParentSheetIndex == Constants.GAME_OBJECT_LOST_BOOK_ID)
+                    if (item.ParentSheetIndex == Constants.ID_GAME_OBJECT_LOST_BOOK)
                     {
                         farmer.foundArtifact((item as Object).ParentSheetIndex, 1);
                         farmer.removeItemFromInventory(item);
@@ -127,7 +127,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Patches
                     {
                         switch ((item as Object).ParentSheetIndex)
                         {
-                            case Constants.GAME_OBJECT_LOST_BOOK_ID:
+                            case Constants.ID_GAME_OBJECT_LOST_BOOK:
                                 ++Game1.stats.NotesFound;
                                 Game1.playSound("newRecipe");
                                 farmer.holdUpItemThenMessage(item, true);

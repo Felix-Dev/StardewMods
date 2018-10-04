@@ -22,8 +22,8 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
         public static int MuseumPieces => Museum.museumPieces.Count();
 
         // TODO: What about Game1.stats.NotesFound as an alternative?
-        public static int LibraryBooks => Game1.player.archaeologyFound.ContainsKey(Constants.GAME_OBJECT_LOST_BOOK_ID) 
-            ? Game1.player.archaeologyFound[Constants.GAME_OBJECT_LOST_BOOK_ID][0] 
+        public static int LibraryBooks => Game1.player.archaeologyFound.ContainsKey(Constants.ID_GAME_OBJECT_LOST_BOOK) 
+            ? Game1.player.archaeologyFound[Constants.ID_GAME_OBJECT_LOST_BOOK][0] 
             : 0;
 
         public static int TotalMuseumPieces => LibraryMuseum.totalArtifacts;

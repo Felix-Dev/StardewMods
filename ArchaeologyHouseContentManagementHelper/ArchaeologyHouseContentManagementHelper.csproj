@@ -67,17 +67,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Framework\Constants.cs" />
     <Compile Include="Framework\Helpers\LibraryMuseumHelper.cs" />
     <Compile Include="Framework\Helpers\MuseumTileClassification.cs" />
     <Compile Include="Framework\LostBookFoundDialogExtended.cs" />
-    <Compile Include="Framework\Menus\CollectionsPageEx.cs" />
+    <Compile Include="Framework\Menus\CollectionsPage\CollectionsPageEx.cs" />
     <Compile Include="Framework\ModConfig.cs" />
     <Compile Include="Framework\MuseumInteractionDialog\MuseumInteractionDialogService.cs" />
     <Compile Include="Framework\MuseumInteractionDialog\MuseumInteractionDialogType.cs" />
     <Compile Include="Framework\Menus\MuseumMenu\MuseumMenuEx.cs" />
     <Compile Include="Framework\Menus\MuseumMenu\MuseumMenuNoInventory.cs" />
-    <Compile Include="i18n\Constants.cs" />
+    <Compile Include="Common\Constants.cs" />
     <Compile Include="ModEntry.cs" />
     <Compile Include="Patches\AddItemToInventoryBoolPatch.cs" />
     <Compile Include="Patches\Common\Patch.cs" />
@@ -89,6 +88,7 @@
     <None Include="i18n\de.json" />
     <None Include="i18n\default.json" />
     <None Include="i18n\es.json" />
+    <None Include="i18n\pt.json" />
     <None Include="i18n\zh.json" />
     <None Include="manifest.json" />
     <None Include="packages.config" />

@@ -10,5 +10,6 @@
   "Gunther_ArchaeologyHouse_LibraryStatusLinePadding": "             ",
   "Gunther_ArchaeologyHouse_MuseumStatus": "Museum Pieces: ",
   "Gunther_ArchaeologyHouseStatus_Completed": "The library is complete and the museum looks amazing! Thanks again for all your help!",
-  "GameMenu_CollectionsPage_LostBookTabLabel":  "Lost Books"
+  "Message_Library_Books_Collected": "Horray! You have found all \"Lost Books\"!",
+  "GameMenu_CollectionsPage_LostBookTabLabel": "Lost Books"
 }
