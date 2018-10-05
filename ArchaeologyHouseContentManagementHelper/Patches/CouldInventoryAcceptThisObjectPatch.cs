@@ -1,5 +1,6 @@
 ﻿using Netcode;
 using StardewMods.ArchaeologyHouseContentManagementHelper.Framework;
+using StardewMods.Common.StardewValley;
 using StardewValley;
 using System;
 using System.Collections.Generic;

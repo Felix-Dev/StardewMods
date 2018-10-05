@@ -15,7 +15,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
         public int MuseumItemDisplayTime { get; set; } = 3000;
 
         /// <summary>
-        /// Whether to show the tile indicator for tiles with a placed item placement as well.
+        /// Whether to show the tile can-place indicator for tiles with a placed item placement as well.
         /// </summary>
         public bool ShowVisualSwapIndicator { get; set; } = false;
 

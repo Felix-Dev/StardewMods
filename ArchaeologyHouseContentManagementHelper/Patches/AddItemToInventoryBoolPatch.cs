@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Netcode;
 using StardewMods.ArchaeologyHouseContentManagementHelper.Framework;
+using StardewMods.Common.StardewValley;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;

@@ -10,28 +10,55 @@ using System.Threading.Tasks;
 
 using Constants = StardewMods.ArchaeologyHouseContentManagementHelper.Common.Constants;
 
-namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
+namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Services
 {
-    public static class LostBookFoundDialogExtended
+    /// <summary>
+    /// This class is responsible for firing the [All Lost Books found] message.
+    /// </summary>
+    internal class LostBookFoundDialogService
     {
-        private static bool ShowMessage;
+        private bool showMessage;
 
-        private static bool calledSetup;
+        private bool running;
 
-        public static void Setup()
+        private IMonitor monitor;
+
+        public LostBookFoundDialogService()
         {
-            if (calledSetup)
+            monitor = ModEntry.CommonServices.Monitor;
+
+            running = false;
+        }
+
+        public void Start()
+        {
+            if (running)
             {
+                monitor.Log("[LostBookFoundDialogService] is already running!", LogLevel.Info);
                 return;
             }
 
+            running = true;
+
             MenuEvents.MenuChanged += MenuEvents_MenuChanged;
             MenuEvents.MenuClosed += MenuEvents_MenuClosed;
+        }
 
-            calledSetup = true;
-        }       
+        public void Stop()
+        {
+            if (!running)
+            {
+                monitor.Log("[LostBookFoundDialogService] is not running or has already been stopped!", LogLevel.Info);
+                return;
+            }
 
-        private static void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
+            MenuEvents.MenuChanged -= MenuEvents_MenuChanged;
+            MenuEvents.MenuClosed -= MenuEvents_MenuClosed;
+
+            running = false;
+        }     
+
+        private void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
         {
             if (e.NewMenu is DialogueBox box)
             {
@@ -42,18 +69,18 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     if (dialogues.Count == 1 && dialogues[0].Equals(mostRecentlyGrabbed.checkForSpecialItemHoldUpMeessage()) 
                         && LibraryMuseumHelper.LibraryBooks == LibraryMuseumHelper.TotalLibraryBooks)
                     {
-                        ShowMessage = true;
+                        showMessage = true;
                     }
                 }
             }
         }
 
-        private static void MenuEvents_MenuClosed(object sender, EventArgsClickableMenuClosed e)
+        private void MenuEvents_MenuClosed(object sender, EventArgsClickableMenuClosed e)
         {
-            if (e.PriorMenu is DialogueBox box && ShowMessage)
+            if (e.PriorMenu is DialogueBox box && showMessage)
             {
                 Game1.drawObjectDialogue(ModEntry.CommonServices.TranslationHelper.Get(Constants.TRANSLATION_KEY_MESSAGE_LIBRARY_BOOKS_COMPLETED));
-                ShowMessage = false;
+                showMessage = false;
             }
         }
     }

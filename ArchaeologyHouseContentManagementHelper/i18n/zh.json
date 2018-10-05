@@ -10,5 +10,6 @@
   "Gunther_ArchaeologyHouse_LibraryStatusLinePadding": "                                                                              ",
   "Gunther_ArchaeologyHouse_MuseumStatus": "博物馆目录: ",
   "Gunther_ArchaeologyHouseStatus_Completed": "图书馆已经收集完成了，博物馆看起来很棒！再次感谢你的帮助！",
-  "GameMenu_CollectionsPage_LostBookTabLabel": "Lost Books"
+  "Message_Library_Books_Collected": "万岁！ 你找到了所有“遗失之书”！",
+  "GameMenu_CollectionsPage_LostBookTabLabel": "遗失之书"
 }

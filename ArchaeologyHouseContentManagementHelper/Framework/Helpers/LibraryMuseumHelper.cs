@@ -9,9 +9,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Constants = StardewMods.Common.StardewValley.Constants;
+
 namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 {
-    public class LibraryMuseumHelper
+    internal class LibraryMuseumHelper
     {
         private static readonly Vector2[] LibraryCounterTiles = new Vector2[] { new Vector2(3f, 10f) };
 

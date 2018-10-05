@@ -10,11 +10,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using xTile.Dimensions;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 {
-    public class MuseumMenuNoInventory : IClickableMenu
+    internal class MuseumMenuNoInventory : IClickableMenu
     {
         private bool holdingMuseumPiece;
 
@@ -27,11 +28,16 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
         private Item selectedItem;
 
-        private static readonly int INFO_DISPLAY_TIME = 150;
-
-        private int infoFadeTimer = INFO_DISPLAY_TIME;
-
         private Item heldItem;
+
+        private double granularity;
+
+        private double infoFadeTimerStartValue = 100;
+        private double infoFadeTimerCurrentValue = 100;
+
+        private static Timer infoFadeTimer;
+
+        private readonly System.Object lockInfoFadeTimer = new System.Object();
 
         public int fadeTimer;
         public int state;
@@ -43,6 +49,39 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
             this.fadeTimer = 800;
             this.fadeIntoBlack = true;
 
+            int duration = ModEntry.ModConfig.MuseumItemDisplayTime;
+            if (duration > 0)
+            {
+                infoFadeTimer = new System.Timers.Timer
+                {
+                    Interval = 200
+                };
+
+                if (duration < 200)
+                    duration = 200;
+
+                granularity = infoFadeTimerStartValue / (duration / infoFadeTimer.Interval);
+
+                // Hook up the Elapsed event for the timer. 
+                infoFadeTimer.Elapsed += InfoFadeTimer_OnTimedEvent;
+
+                // Have the timer fire repeated events (true is the default)
+                infoFadeTimer.AutoReset = true;
+            }
+
+            /* Don't display item tooltip */
+            else if (duration == 0)
+            {
+                infoFadeTimerCurrentValue = 0;
+            }
+
+            /* Display item tooltip without time limits */
+            else
+            {
+                // We only need to set it to a value > 0, specific value doesn't matter
+                infoFadeTimerCurrentValue = 1;
+            }
+
             this.movePosition(0, Game1.viewport.Height - this.yPositionOnScreen - this.height);
             Game1.player.forceCanMove();
             if (!Game1.options.SnappyMenus)
@@ -51,6 +90,11 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
             //this.populateClickableComponentList();
             //this.currentlySnappedComponent = this.getComponentWithID(0);
             //this.snapCursorToCurrentSnappedComponent();
+        }
+
+        private void InfoFadeTimer_OnTimedEvent(object sender, ElapsedEventArgs e)
+        {
+            infoFadeTimerCurrentValue -= granularity;
         }
 
         public void movePosition(int dx, int dy)
@@ -232,7 +276,15 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
                     selectedItem = this.heldItem;
 
-                    infoFadeTimer = INFO_DISPLAY_TIME;
+                    // Restart the info fade timer
+                    lock (lockInfoFadeTimer)
+                    {
+                        if (infoFadeTimer != null)
+                        {
+                            infoFadeTimerCurrentValue = infoFadeTimerStartValue;
+                            infoFadeTimer.Start();
+                        }
+                    }
 
                     currentLocation.museumPieces.Remove(key);
                     holdingMuseumPiece = !currentLocation.museumAlreadyHasArtifact(this.heldItem.ParentSheetIndex);
@@ -399,28 +451,23 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
                     }
                 }
 
-                //if (!holdingMuseumPieceRef.GetValue() && showInventory)
-                //{
-                //    base.draw(b, false, false);
-                //}
-
-                //if (!hoverText.Equals(""))
-                //{
-                //    drawHoverText(b, hoverText, Game1.smallFont, 0, 0, -1, (string)null, -1, (string[])null, (Item)null, 0, -1, -1, -1, -1, 1f, (CraftingRecipe)null);
-                //}
-
                 heldItem?.drawInMenu(b, new Vector2((float)(Game1.getOldMouseX() + 8), (float)(Game1.getOldMouseY() + 8)), 1f);
 
                 drawMouse(b);
 
-                //sparkleText?.draw(b, Game1.GlobalToLocal(Game1.viewport, globalLocationOfSparklingArtifact));
-
                 //draw clicked item information
-                if (selectedItemDescription != null && !selectedItemDescription.Equals("") && infoFadeTimer > 0)
+                if (selectedItemDescription != null && !selectedItemDescription.Equals(""))
                 {
-                    drawToolTip(b, this.selectedItemDescription, this.selectedItemTitle, selectedItem,
-                                selectedItem != null, -1, 0, -1, -1, (CraftingRecipe)null, -1);
-                    infoFadeTimer--;
+                    if (infoFadeTimerCurrentValue > 0)
+                    {
+                        // Show selected item information
+                        drawToolTip(b, this.selectedItemDescription, this.selectedItemTitle, selectedItem,
+                            selectedItem != null, -1, 0, -1, -1, (CraftingRecipe)null, -1);
+                    }
+                    else
+                    {
+                        infoFadeTimer?.Stop();
+                    }
                 }
             }
 

@@ -15,7 +15,7 @@ using Constants = StardewMods.ArchaeologyHouseContentManagementHelper.Common.Con
 namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 {
     /// <summary>
-    /// 
+    /// This class extends the in-game collections page and adds a [Lost Books] sidetab to the page.
     /// </summary>
     internal class CollectionsPageEx : CollectionsPage
     {
@@ -73,7 +73,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
             {
                 myID = region_sideTabLostBooks,
                 upNeighborID = showSecretNotesTab ? region_sideTabSecretNotes : region_sideTabAchivements,
-                rightNeighborID = LostBooksTab_ItemBaseId
+                rightNeighborID = 0
             };
 
             this.sideTabs.Add(stLostBooks);
@@ -229,12 +229,25 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 
                     // Code added: Sets the correct snapped component (first lost book) when the [Lost Books] sidetab is selected
                     // and the player presses the [Right] button to snap to a book item. Previously, the snapped component was set to
-                    // the component with ID = 0 in the collections page. The first item with ID = 0 is the first item in the [Shipped] tab.
+                    // the component with ID = 0 in the collections page. The first item with ID = 0 is the first item in the [Shipped] tab
+                    // and has the wrong item offset. As a result, continous right-snapping or below snapping would fail to snap to the correct
+                    // [Lost Book].
                     else if (this.currentlySnappedComponent.myID >= region_sideTabShipped
                         && this.currentlySnappedComponent.myID <= region_sideTabLostBooks
                         && ModEntry.CommonServices.ReflectionHelper.GetField<int>(this, "currentTab").GetValue() == lostBooksTabPageIndex)
                     {
                         this.currentlySnappedComponent = this.getComponentWithID(LostBooksTab_ItemBaseId);
+                    }
+
+                    // Code added: Sets the correct snapped component (first lost book) when a sidetab other than [Lost Books] is selected
+                    // and the player presses the [Right] button to snap to an item while the [Lost Books] item is snapped. 
+                    // Without this code the snapped item will be treated as a [Lost Book] (with its non-standard item offset).
+                    // Since the item offset is the same for every sidetab other than [Lost Books], we simply set the currently snapped item
+                    // to the first item with ID = 0 which is the first item for every original sidetab.
+                    else if (this.currentlySnappedComponent.myID == region_sideTabLostBooks 
+                        && ModEntry.CommonServices.ReflectionHelper.GetField<int>(this, "currentTab").GetValue() != lostBooksTabPageIndex)
+                    {
+                        this.currentlySnappedComponent = this.getComponentWithID(0);
                     }
 
                     else
@@ -278,14 +291,17 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     else if (this.currentlySnappedComponent.leftNeighborID == -7777)
                         this.customSnapBehavior(3, this.currentlySnappedComponent.region, this.currentlySnappedComponent.myID);
                     else
-                    {                        
+                    {
                         //this.currentlySnappedComponent = this.getComponentWithID(this.currentlySnappedComponent.leftNeighborID);
 
                         // Addd code: This addition makes sure that the cursor will snap to the selected sidetab (and not the first tab)
                         // when the player presses [Left] when on the leftmost column of a collections page.
-                        if (this.currentlySnappedComponent.leftNeighborID == sideTabs_FirstIndex)
+                        var currentTab = ModEntry.CommonServices.ReflectionHelper.GetField<int>(this, "currentTab").GetValue();
+                        if (this.currentlySnappedComponent.leftNeighborID >= sideTabs_FirstIndex 
+                            && this.currentlySnappedComponent.leftNeighborID <= sideTabs_FirstIndex + secretNotesTab
+                            && this.currentlySnappedComponent.leftNeighborID != sideTabs_FirstIndex + currentTab)
                         {
-                            var currentTab = ModEntry.CommonServices.ReflectionHelper.GetField<int>(this, "currentTab").GetValue();
+                            //var currentTab = ModEntry.CommonServices.ReflectionHelper.GetField<int>(this, "currentTab").GetValue();
 
                             this.currentlySnappedComponent.leftNeighborID = sideTabs_FirstIndex + currentTab;
                             this.currentlySnappedComponent = this.getComponentWithID(sideTabs_FirstIndex + currentTab);
@@ -498,6 +514,19 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 
             this.currentlySnappedComponent = (ClickableComponent)this.backButton;
             Game1.setMousePosition(this.currentlySnappedComponent.bounds.Center);
+        }
+
+        public override void draw(SpriteBatch b)
+        {
+            if (snappedItem != null)
+            {
+                this.currentlySnappedComponent = snappedItem;
+                this.snapCursorToCurrentSnappedComponent();
+
+                snappedItem = null;
+            }
+
+            base.draw(b);
         }
     }
 }

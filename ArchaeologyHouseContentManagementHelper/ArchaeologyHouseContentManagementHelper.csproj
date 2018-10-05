@@ -69,11 +69,12 @@
   <ItemGroup>
     <Compile Include="Framework\Helpers\LibraryMuseumHelper.cs" />
     <Compile Include="Framework\Helpers\MuseumTileClassification.cs" />
-    <Compile Include="Framework\LostBookFoundDialogExtended.cs" />
     <Compile Include="Framework\Menus\CollectionsPage\CollectionsPageEx.cs" />
     <Compile Include="Framework\ModConfig.cs" />
-    <Compile Include="Framework\MuseumInteractionDialog\MuseumInteractionDialogService.cs" />
-    <Compile Include="Framework\MuseumInteractionDialog\MuseumInteractionDialogType.cs" />
+    <Compile Include="Framework\Services\CollectionPageExMenuService.cs" />
+    <Compile Include="Framework\Services\DialogServices\LostBookFoundDialogService.cs" />
+    <Compile Include="Framework\Services\DialogServices\MuseumInteractionDialogService.cs" />
+    <Compile Include="Framework\Services\DialogServices\MuseumInteractionDialogType.cs" />
     <Compile Include="Framework\Menus\MuseumMenu\MuseumMenuEx.cs" />
     <Compile Include="Framework\Menus\MuseumMenu\MuseumMenuNoInventory.cs" />
     <Compile Include="Common\Constants.cs" />

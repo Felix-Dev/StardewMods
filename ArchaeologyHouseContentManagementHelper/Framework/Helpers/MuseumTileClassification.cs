@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 {
-    public enum MuseumTileClassification
+    internal enum MuseumTileClassification
     {
         Valid = 0,
         Limited,

@@ -15,7 +15,7 @@ using System.Timers;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 {
-    public class MuseumMenuEx : MuseumMenu
+    internal class MuseumMenuEx : MuseumMenu
     {
         private bool showInventory;
         private readonly IReflectedField<bool> holdingMuseumPieceRef;
