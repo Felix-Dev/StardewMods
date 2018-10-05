@@ -40,8 +40,8 @@ These are the available settings:
 
 | setting           | what it affects
 | ----------------- | -------------------
-| `MuseumItemDisplayTime` | Default `3000`. The display duration of a museum item description when a museum item is selected in the museum to be rearranged. In milliseconds. Available options:<ul><li>`-1`: infinite display duration.</li><li>`0`: No description will be shown.</li><li>`Greater than 0`: The specified display duration.</li></ul>
-| `ShowVisualSwapIndicator` | Default `false`. If enabled, the visual "can-place"museum space indicator is also shown for spaces which are already filled.
+| `MuseumItemDisplayTime` | Default `3000`. The display duration of a museum item description when a museum item is selected in the museum to be rearranged. In **milliseconds**. Available options:<ul><li>`-1`: infinite display duration.</li><li>`0`: No description will be shown.</li><li>`Greater than 0`: The specified display duration.</li></ul>
+| `ShowVisualSwapIndicator` | Default `false`. If enabled, the visual "can-place" museum space indicator is also shown for spaces which are already filled.
 
 ## Showcase
 * Talk to Gunther to see the extended interaction menu.
