@@ -54,7 +54,7 @@ These are the available settings:
   ![](screenshots/contributed-items-status.png)
   
 * The [Lost Books] tab in the "Collections" page in action:
-  ![](screenshots/collectionsPage-lostBooks-tab.png)
+  ![](screenshots/collectionsPage-lostBooks-tab2.png)
 
 ## Compatibility
 * Works with Stardew Valley 1.3 on Windows (Linux/Mac not tested).
