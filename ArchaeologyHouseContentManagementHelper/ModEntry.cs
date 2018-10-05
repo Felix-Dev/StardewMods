@@ -7,12 +7,8 @@ using System.Threading.Tasks;
 using StardewMods.ArchaeologyHouseContentManagementHelper.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewValley;
-using StardewValley.Locations;
 using Harmony;
 using StardewMods.Common;
-using StardewValley.Menus;
-using Microsoft.Xna.Framework;
 using StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Services;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper
@@ -27,8 +23,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
         public static CommonServices CommonServices { get; private set; }
 
         /// <summary>The mod configuration from the player.</summary>
-        public  static ModConfig ModConfig { get; private set; }
-
+        public static ModConfig ModConfig { get; private set; }
 
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>

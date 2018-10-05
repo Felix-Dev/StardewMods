@@ -32,6 +32,8 @@ Just talk to Gunther and you will be presented with the updated menu.
 To close the museum menu (shown when you donate/replace items), simply press the [Exit] key you use for the game 
 (default: key 'E') or press the [Cancel] button on your gamepad.
 
+To read your found Lost Books, open the game menu -> select the Collections page -> select the "Lost Books" tab.
+
 ## Configure
 The mod creates a `config.json` file in its mod folder the first time you run it. You can open that
 file in a text editor to configure the mod.
@@ -53,7 +55,7 @@ These are the available settings:
 * See how you many books and items you have contributed so far.
   ![](screenshots/contributed-items-status.png)
   
-* The [Lost Books] tab in the "Collections" page in action:
+* The [Lost Books] tab of the "Collections" page in action:
   ![](screenshots/collectionsPage-lostBooks-tab2.png)
 
 ## Compatibility
