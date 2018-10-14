@@ -6,10 +6,10 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ToolUpgradeDeliveryService")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("StardewValley Mod")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ToolUpgradeDeliveryService")]
+[assembly: AssemblyProduct("StardewMods")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
