@@ -9,6 +9,8 @@ documentation and release notes.
   Largely fixes the in-game item-placement bug.
   Lost Books can be "grabbed & sent" to the library even if the player's inventory has no space.
   Lost Books can be read without having to go the library._
+* **[ToolUpgradeDeliveryService]((http://www.nexusmods.com/stardewvalley/mods/2938)** <small>([source](ArchaeologyHouseContentManagementHelper))</small> 
+ _This mod makes retrieving upgraded farm tools less tedious. With this mod, Clint (the blacksmith) will simply send you an e-mail with the upgraded tool included as soon as the upgrade is finished. No more going to the blacksmith simply to get your improved farm tool!_
   
 ## Translating the mods
 The mods can be translated into any language supported by the game, and SMAPI will automatically
@@ -16,14 +18,14 @@ use the right translations.
 
 (❑ = untranslated, ↻ = partly translated, ✓ = fully translated)
 
-&nbsp;     | Archaeology House Content Management Helper    | 
----------- | :--------------------------------------------- |
-Chinese    | [✓](ArchaeologyHouseContentManagementHelper/i18n/zh.json)
-German     | [✓](ArchaeologyHouseContentManagementHelper/i18n/de.json)
-Japanese   | ❑ untranslated        
-Portuguese | [✓](ArchaeologyHouseContentManagementHelper/i18n/pt.json)      
-Russian    | ❑ untranslated  
-Spanish    | [✓](ArchaeologyHouseContentManagementHelper/i18n/es.json)     
+&nbsp;     | Archaeology House Content Management Helper    | Tool-Upgrade Delivery Service    |
+---------- | :--------------------------------------------- | :------------------------------- |
+Chinese    | [✓](ArchaeologyHouseContentManagementHelper/i18n/zh.json) | ❑ untranslated 
+German     | [✓](ArchaeologyHouseContentManagementHelper/i18n/de.json) | [✓](ToolUpgradeDeliveryService/i18n/de.json)
+Japanese   | ❑ untranslated                                            | ❑ untranslated 
+Portuguese | [✓](ArchaeologyHouseContentManagementHelper/i18n/pt.json) | ❑ untranslated      
+Russian    | ❑ untranslated                                            | ❑ untranslated 
+Spanish    | [✓](ArchaeologyHouseContentManagementHelper/i18n/es.json) | ❑ untranslated 
 
 Here's how to translate one of my mods:
 
