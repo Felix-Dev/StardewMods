@@ -60,7 +60,7 @@ These are the available settings:
 
 ## Compatibility
 * Works with Stardew Valley 1.3 on Windows (Linux/Mac not tested).
-* Works in single player. Multiplayer works too, excluding lost books which do not seem to synchronize across players.
+* Works in single-player. Multiplayer works too, excluding lost books which do not seem to synchronize across players.
 * No known mod conflicts.
 
 ## See also

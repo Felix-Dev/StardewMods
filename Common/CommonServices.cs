@@ -1,5 +1,4 @@
 ﻿using StardewModdingAPI;
-using StardewMods.ArchaeologyHouseContentManagementHelper.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
