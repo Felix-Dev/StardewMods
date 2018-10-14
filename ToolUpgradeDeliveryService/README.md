@@ -30,8 +30,8 @@ If you want, you can still receive the tool by visiting the blacksmith. In this 
 ## Remarks
 * This mod works with the mod [Rented Tools](https://www.nexusmods.com/stardewvalley/mods/1307). When you add the upgraded tool 
 to your inventory, Clint's rented tool will be send back to him.
-* This mod works with the mod [Prismatic Tools](https://www.nexusmods.com/stardewvalley/mods/2428?tab=description).
+* This mod works with the mod [Prismatic Tools](https://www.nexusmods.com/stardewvalley/mods/2428).
 
 ## See also
 * [Release notes](release-notes.md)
-* [Nexus mod]()
+* [Nexus mod](https://www.nexusmods.com/stardewvalley/mods/2938)
