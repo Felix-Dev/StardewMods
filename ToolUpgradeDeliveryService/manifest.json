@@ -6,5 +6,5 @@
   "UniqueID": "Felix-Dev.ToolUpgradeDeliveryService",
   "EntryDll": "ToolUpgradeDeliveryService.dll",
   "MinimumApiVersion": "2.6",
-  "UpdateKeys": []
+  "UpdateKeys": [ "Nexus:2938" ]
 }
