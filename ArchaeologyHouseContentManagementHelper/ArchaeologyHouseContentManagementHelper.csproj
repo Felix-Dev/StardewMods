@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\Constants\Translation.cs" />
     <Compile Include="Framework\Helpers\LibraryMuseumHelper.cs" />
     <Compile Include="Framework\Helpers\MuseumTileClassification.cs" />
     <Compile Include="Framework\Menus\CollectionsPage\CollectionsPageEx.cs" />
@@ -77,7 +78,7 @@
     <Compile Include="Framework\Services\DialogServices\MuseumInteractionDialogType.cs" />
     <Compile Include="Framework\Menus\MuseumMenu\MuseumMenuEx.cs" />
     <Compile Include="Framework\Menus\MuseumMenu\MuseumMenuNoInventory.cs" />
-    <Compile Include="Common\Constants.cs" />
+    <Compile Include="Common\Constants\Constants.cs" />
     <Compile Include="ModEntry.cs" />
     <Compile Include="Patches\AddItemToInventoryBoolPatch.cs" />
     <Compile Include="Patches\CouldInventoryAcceptThisObjectPatch.cs" />
