@@ -24,5 +24,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Common
         public const string TRANSLATION_KEY_MESSAGE_LIBRARY_BOOKS_COMPLETED = "Message_Library_Books_Collected";
 
         public const string TRANSLATION_KEY_GAMEMENU_COLLECTIONSPAGE_TAB_LABEL_LOST_BOOKS = "GameMenu_CollectionsPage_LostBookTabLabel";
+
+        public const string GAME_ID = "StardewMods.ArchaeologyHouseContentManagementHelper";
     }
 }

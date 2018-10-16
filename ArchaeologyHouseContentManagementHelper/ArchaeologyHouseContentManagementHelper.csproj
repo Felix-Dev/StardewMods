@@ -80,9 +80,7 @@
     <Compile Include="Common\Constants.cs" />
     <Compile Include="ModEntry.cs" />
     <Compile Include="Patches\AddItemToInventoryBoolPatch.cs" />
-    <Compile Include="Patches\Common\Patch.cs" />
     <Compile Include="Patches\CouldInventoryAcceptThisObjectPatch.cs" />
-    <Compile Include="Patches\ShowReceiveNewItemMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
