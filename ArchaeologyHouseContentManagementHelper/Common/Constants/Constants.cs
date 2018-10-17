@@ -8,6 +8,6 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Common
 {
     internal class Constants
     {
-        public const string GAME_ID = "StardewMods.ArchaeologyHouseContentManagementHelper";
+        public const string MOD_ID = "StardewMods.ArchaeologyHouseContentManagementHelper";
     }
 }

@@ -43,14 +43,12 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
             ModConfig = Helper.ReadConfig<ModConfig>();
 
             // Apply game patches
-            var harmony = HarmonyInstance.Create(Constants.GAME_ID);
+            var harmony = HarmonyInstance.Create(Constants.MOD_ID);
             var addItemToInventoryBoolPatch = new AddItemToInventoryBoolPatch();
             var couldInventoryAcceptThisObjectPatch = new CouldInventoryAcceptThisObjectPatch();
 
             addItemToInventoryBoolPatch.Apply(harmony);
             couldInventoryAcceptThisObjectPatch.Apply(harmony);
-
-            //Patches.Patch.PatchAll(harmony);
 
             collectionPageExMenuService = new CollectionPageExMenuService();
             collectionPageExMenuService.Start();

@@ -21,10 +21,11 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
         /*
          * Format for tool upgrade mail keys:
          * 
-         * [CONTENT_UPGRADE]:[TOOL_TYPE]:[UPGRADE_LEVEL]
+         * [CONTENT_TYPE]:[TOOL_TYPE]:[UPGRADE_LEVEL]
          * 
-         * There are 5 tools: Axe, Pickaxe, Hoe, Shears, Watering Can
-         * There are 4 upgrade levels per tool: Cooper, Steel, Gold, Iridium
+         * There are 4 blacksmith-upgradable tools: Axe, Pickaxe, Hoe, Watering Can
+         * There are 5 (4) upgrade levels per tool: Cooper, Steel, Gold, Iridium, Prismatic
+         * (Level 5 represents the tool upgrade introduced by the mod [Prismatic Tools]).
          * 
          * With this format, we can map each mail to a specific tool upgrade.
          */
@@ -36,7 +37,10 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
         private const string TOOL_AXE = "1";
         private const string TOOL_PICKAXE = "2";
         private const string TOOL_HOE = "3";
-        private const string TOOL_SHEARS = "4";
+
+        // Watering can is entry "5" because the non-upgradable tool [Shears] was erroneously 
+        // included as entry "4". To avoid a breaking change, the number assigned to the
+        // watering can has not been changed.
         private const string TOOL_WATERING_CAN = "5";
 
         // UPGRADE_LEVEL
@@ -64,12 +68,6 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
         private const string TOOL_UPGRADE_HOE_4 = TOOL_UPGRADE + ":" + TOOL_HOE + ":" + TOOL_UPGRADE_LEVEL_IRIDIUM;
         private const string TOOL_UPGRADE_HOE_5 = TOOL_UPGRADE + ":" + TOOL_HOE + ":" + TOOL_UPGRADE_LEVEL_PRISMATIC;
 
-        private const string TOOL_UPGRADE_SHEARS_1 = TOOL_UPGRADE + ":" + TOOL_SHEARS + ":" + TOOL_UPGRADE_LEVEL_COPPER;
-        private const string TOOL_UPGRADE_SHEARS_2 = TOOL_UPGRADE + ":" + TOOL_SHEARS + ":" + TOOL_UPGRADE_LEVEL_STEEL;
-        private const string TOOL_UPGRADE_SHEARS_3 = TOOL_UPGRADE + ":" + TOOL_SHEARS + ":" + TOOL_UPGRADE_LEVEL_GOLD;
-        private const string TOOL_UPGRADE_SHEARS_4 = TOOL_UPGRADE + ":" + TOOL_SHEARS + ":" + TOOL_UPGRADE_LEVEL_IRIDIUM;
-        private const string TOOL_UPGRADE_SHEARS_5 = TOOL_UPGRADE + ":" + TOOL_SHEARS + ":" + TOOL_UPGRADE_LEVEL_PRISMATIC;
-
         private const string TOOL_UPGRADE_WATERING_CAN_1 = TOOL_UPGRADE + ":" + TOOL_WATERING_CAN + ":" + TOOL_UPGRADE_LEVEL_COPPER;
         private const string TOOL_UPGRADE_WATERING_CAN_2 = TOOL_UPGRADE + ":" + TOOL_WATERING_CAN + ":" + TOOL_UPGRADE_LEVEL_STEEL;
         private const string TOOL_UPGRADE_WATERING_CAN_3 = TOOL_UPGRADE + ":" + TOOL_WATERING_CAN + ":" + TOOL_UPGRADE_LEVEL_GOLD;
@@ -85,7 +83,6 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
             translationHelper = ModEntry.CommonServices.TranslationHelper;
         }
 
-
         public string GenerateMail(Tool tool)
         {
             switch (Game1.player.toolBeingUpgraded.Value)
@@ -96,8 +93,6 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
                     return TOOL_UPGRADE + $":{TOOL_PICKAXE}:{t.UpgradeLevel}";
                 case Hoe t:
                     return TOOL_UPGRADE + $":{TOOL_HOE}:{t.UpgradeLevel}";
-                case Shears t:
-                    return TOOL_UPGRADE + $":{TOOL_SHEARS}:{t.UpgradeLevel}";
                 case WateringCan t:
                     return TOOL_UPGRADE + $":{TOOL_WATERING_CAN}:{t.UpgradeLevel}";
                 default:
@@ -169,12 +164,6 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
             mails.Add(TOOL_UPGRADE_HOE_4, translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_HOE));
             mails.Add(TOOL_UPGRADE_HOE_5, translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_HOE));
 
-            mails.Add(TOOL_UPGRADE_SHEARS_1, translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_SHEARS));
-            mails.Add(TOOL_UPGRADE_SHEARS_2, translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_SHEARS));
-            mails.Add(TOOL_UPGRADE_SHEARS_3, translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_SHEARS));
-            mails.Add(TOOL_UPGRADE_SHEARS_4, translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_SHEARS));
-            mails.Add(TOOL_UPGRADE_SHEARS_5, translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_SHEARS));
-
             mails.Add(TOOL_UPGRADE_WATERING_CAN_1, translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_WATERING_CAN));
             mails.Add(TOOL_UPGRADE_WATERING_CAN_2, translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_WATERING_CAN));
             mails.Add(TOOL_UPGRADE_WATERING_CAN_3, translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_WATERING_CAN));
@@ -196,9 +185,6 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
                         return true;
                     case TOOL_HOE:
                         result = typeof(Hoe);
-                        return true;
-                    case TOOL_SHEARS:
-                        result = typeof(Shears);
                         return true;
                     case TOOL_WATERING_CAN:
                         result = typeof(WateringCan);
