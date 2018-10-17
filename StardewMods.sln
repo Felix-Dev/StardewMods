@@ -36,8 +36,8 @@ Global
 		{B60C7009-A672-490B-AD9B-DE3C2BEC0171}.Debug|x86.Build.0 = Debug|x86
 		{B60C7009-A672-490B-AD9B-DE3C2BEC0171}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B60C7009-A672-490B-AD9B-DE3C2BEC0171}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B60C7009-A672-490B-AD9B-DE3C2BEC0171}.Release|x86.ActiveCfg = Release|Any CPU
-		{B60C7009-A672-490B-AD9B-DE3C2BEC0171}.Release|x86.Build.0 = Release|Any CPU
+		{B60C7009-A672-490B-AD9B-DE3C2BEC0171}.Release|x86.ActiveCfg = Release|x86
+		{B60C7009-A672-490B-AD9B-DE3C2BEC0171}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
