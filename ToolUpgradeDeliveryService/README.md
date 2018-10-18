@@ -7,7 +7,6 @@ the upgrade is finished. No more visiting the blacksmith simply to get your impr
 * [Use](#use)
 * [Showcase](#showcase)
 * [Compatibility](#compatibility)
-* [Remarks](#remarks)
 * [See also](#see-also)
 
 ## Install
@@ -26,8 +25,6 @@ If you want, you can still receive the tool by visiting the blacksmith. In this 
 ## Compatibility
 * Compatible with Stardew Valley 1.3 on Windows (Linux/Mac not tested).
 * Works in both single-player and multiplayer.
-
-## Remarks
 * This mod is compatible with the mod [Rented Tools](https://www.nexusmods.com/stardewvalley/mods/1307). When you add the upgraded tool to your inventory, Clint's rented tool will be sent back to him.
 * This mod is compatible with the mod [Prismatic Tools](https://www.nexusmods.com/stardewvalley/mods/2428).
 
