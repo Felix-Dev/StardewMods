@@ -100,26 +100,29 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
             }
         }
 
-        public (Type toolType, int level)? GetMailAssignedTool(string mailKey)
+        public bool TryGetMailAssignedTool(string mailKey, out Type toolType, out int level)
         {
+            toolType = null;
+            level = -1;
+
             if (mailKey == null)
             {
-                return null;
+                return false;
 
             }
 
             var keyParts = mailKey.Split(':');
             if (keyParts.Count() != 3)
             {
-                return null;
+                return false;
             }
 
-            if (ToolHelper.TryParse(keyParts[1], out Type tool) && int.TryParse(keyParts[2], out int level))
+            if (ToolHelper.TryParse(keyParts[1], out toolType) && int.TryParse(keyParts[2], out level))
             {
-                return (tool, level);
+                return true;
             }
 
-            return null;
+            return false;
         }
 
         public bool IsToolMail(string mail)

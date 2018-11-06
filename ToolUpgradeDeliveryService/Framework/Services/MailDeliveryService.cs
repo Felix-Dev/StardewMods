@@ -89,14 +89,13 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
                     return;
                 }
 
-                var pToolData = mailGenerator.GetMailAssignedTool(mailTitle);
-                if (!pToolData.HasValue)
+                if (!mailGenerator.TryGetMailAssignedTool(mailTitle, out Type toolType, out int level))
                 {
                     monitor.Log("Failed to retrive tool data from mail!", LogLevel.Error);
+                    return;
                 }
 
                 Tool toolForMail = Game1.player.toolBeingUpgraded.Value;
-                var (toolType, level) = pToolData.Value;  
                 
                 /*
                  * Check if the current upgrade tool matches with the tool which was assigned to this mail.
