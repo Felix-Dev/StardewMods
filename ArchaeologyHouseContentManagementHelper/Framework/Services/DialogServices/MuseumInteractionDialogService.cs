@@ -1,11 +1,10 @@
 ﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.ArchaeologyHouseContentManagementHelper.Common;
 using StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus;
-using StardewMods.Common.StardewValley;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
+using StardewMods.Common.StardewValley;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +21,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Services
     /// </summary>
     internal class MuseumInteractionDialogService
     {
-        private NPC gunther;
+        private readonly NPC gunther;
 
         private const string DialogOption_Donate = "Donate";
         private const string DialogOption_Rearrange = "Rearrange";

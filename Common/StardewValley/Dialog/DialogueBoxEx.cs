@@ -1,7 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using StardewModdingAPI;
-using StardewMods.Common.StardewValley;
-using StardewValley;
+﻿using StardewValley;
 using StardewValley.BellsAndWhistles;
 using StardewValley.Menus;
 using System;
