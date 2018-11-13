@@ -32,11 +32,15 @@ namespace StardewMods.Common.StardewValley
         public DialogueBoxEx(Dialogue dialogue) : base(dialogue)
         {
             dialogueBoxType = typeof(DialogueBox);
-            characterDialoguesBrokenUpRef = dialogueBoxType.GetField("characterDialoguesBrokenUp",
-                BindingFlags.NonPublic | BindingFlags.Instance);
+            characterDialoguesBrokenUpRef = dialogueBoxType.GetField(
+                "characterDialoguesBrokenUp",
+                BindingFlags.NonPublic | BindingFlags.Instance)
+                ?? throw new MissingFieldException(nameof(DialogueBox), "characterDialoguesBrokenUp");
 
-            characterDialogueRef = dialogueBoxType.GetField("characterDialogue",
-                BindingFlags.NonPublic | BindingFlags.Instance);
+            characterDialogueRef = dialogueBoxType.GetField(
+                "characterDialogue",
+                BindingFlags.NonPublic | BindingFlags.Instance)
+                ?? throw new MissingFieldException(nameof(DialogueBox), "characterDialogue");
 
             var currentDialogPages = (Stack<string>)characterDialoguesBrokenUpRef.GetValue(this);
             dialogueBefore = currentDialogPages.Peek();
