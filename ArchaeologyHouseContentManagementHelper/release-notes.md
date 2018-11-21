@@ -1,4 +1,7 @@
 # Release notes
+## 1.2.1
+* Updated for Stardew Valley 1.3.32. 
+
 ## 1.2.0
 * Added a [Lost Books] tab to the collections page displaying the currently found books. Each found book shows a content preview on mouse hover and can be read directly.
 * Added a Congratulations-message when the player has found all lost books.
