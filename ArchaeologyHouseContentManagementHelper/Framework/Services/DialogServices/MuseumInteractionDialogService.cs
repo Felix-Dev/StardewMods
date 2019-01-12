@@ -6,10 +6,6 @@ using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewMods.Common.StardewValley;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Translation = StardewMods.ArchaeologyHouseContentManagementHelper.Common.Translation;
 
@@ -49,7 +45,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Services
             running = false;
         }
 
-        public void Start()
+        public void Start(IModEvents events)
         {
             if (running)
             {
@@ -58,10 +54,10 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Services
             }
 
             running = true;
-            InputEvents.ButtonPressed += InputEvents_ButtonPressed;     
+            events.Input.ButtonPressed += OnButtonPressed;
         }
 
-        public void Stop()
+        public void Stop(IModEvents events)
         {
             if (!running)
             {
@@ -69,16 +65,16 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Services
                 return;
             }
 
-            InputEvents.ButtonPressed -= InputEvents_ButtonPressed;
+            events.Input.ButtonPressed -= OnButtonPressed;
             running = false;
         }
 
-        /// <summary>The method invoked when the player presses a controller, keyboard, or mouse button.</summary>
+        /// <summary>Raised after the player presses a button on the keyboard, controller, or mouse.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
-        private void InputEvents_ButtonPressed(object sender, EventArgsInput e)
+        private void OnButtonPressed(object sender, ButtonPressedEventArgs e)
         {
-            if (e.IsActionButton && Context.IsPlayerFree && LibraryMuseumHelper.IsPlayerAtCounter(Game1.player))
+            if (e.Button.IsActionButton() && Context.IsPlayerFree && LibraryMuseumHelper.IsPlayerAtCounter(Game1.player))
             {
                 LibraryMuseum museum = Game1.currentLocation as LibraryMuseum;
                 bool canDonate = museum.doesFarmerHaveAnythingToDonate(Game1.player);

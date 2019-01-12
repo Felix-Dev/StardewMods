@@ -6,10 +6,6 @@ using StardewValley.Menus;
 using StardewValley.Tools;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using StardewMods.ToolUpgradeDeliveryService.Common;
 
 namespace StardewMods.ToolUpgradeDeliveryService.Framework
 {
@@ -34,7 +30,7 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
             running = false;
         }
 
-        public void Start()
+        public void Start(IModEvents events)
         {
             if (running)
             {
@@ -43,11 +39,11 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
             }
 
             running = true;
-            TimeEvents.AfterDayStarted += TimeEvents_OnAfterDayStarted;
-            MenuEvents.MenuChanged += MenuEvents_OnMenuChanged;
+            events.GameLoop.DayStarted += OnDayStarted;
+            events.Display.MenuChanged += OnMenuChanged;
         }
 
-        public void Stop()
+        public void Stop(IModEvents events)
         {
             if (!running)
             {
@@ -55,12 +51,15 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
                 return;
             }
 
-            TimeEvents.AfterDayStarted -= TimeEvents_OnAfterDayStarted;
-            MenuEvents.MenuChanged -= MenuEvents_OnMenuChanged;
+            events.GameLoop.DayStarted -= OnDayStarted;
+            events.Display.MenuChanged -= OnMenuChanged;
             running = false;
         }
 
-        private void TimeEvents_OnAfterDayStarted(object sender, EventArgs e)
+        /// <summary>Raised after the game begins a new day (including when the player loads a save).</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
             if (Game1.player.daysLeftForToolUpgrade.Value == 1)
             {
@@ -76,9 +75,12 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
             }
         }
 
-        private void MenuEvents_OnMenuChanged(object sender, EventArgsClickableMenuChanged e)
+        /// <summary>Raised after a game menu is opened, closed, or replaced.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
-            if (!(e.PriorMenu is LetterViewerMenu) && e.NewMenu is LetterViewerMenu letterViewerMenu)
+            if (!(e.OldMenu is LetterViewerMenu) && e.NewMenu is LetterViewerMenu letterViewerMenu)
             {
                 var mailTitle = reflectionHelper.GetField<string>(letterViewerMenu, "mailTitle").GetValue();
                 if (mailTitle == null || !mailGenerator.IsToolMail(mailTitle))

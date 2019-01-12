@@ -1,11 +1,6 @@
 ﻿using StardewModdingAPI;
 using StardewMods.Common;
 using StardewMods.ToolUpgradeDeliveryService.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StardewMods.ToolUpgradeDeliveryService
 {
@@ -29,7 +24,7 @@ namespace StardewMods.ToolUpgradeDeliveryService
             mailDeliveryService = new MailDeliveryService(mailGenerator);
 
             // Start services
-            mailDeliveryService.Start();
+            mailDeliveryService.Start(helper.Events);
         }
     }
 }

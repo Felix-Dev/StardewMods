@@ -2,11 +2,7 @@
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Translation = StardewMods.ArchaeologyHouseContentManagementHelper.Common.Translation;
 
@@ -30,7 +26,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Services
             running = false;
         }
 
-        public void Start()
+        public void Start(IModEvents events)
         {
             if (running)
             {
@@ -40,11 +36,10 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Services
 
             running = true;
 
-            MenuEvents.MenuChanged += MenuEvents_MenuChanged;
-            MenuEvents.MenuClosed += MenuEvents_MenuClosed;
+            events.Display.MenuChanged += OnMenuChanged;
         }
 
-        public void Stop()
+        public void Stop(IModEvents events)
         {
             if (!running)
             {
@@ -52,14 +47,17 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Services
                 return;
             }
 
-            MenuEvents.MenuChanged -= MenuEvents_MenuChanged;
-            MenuEvents.MenuClosed -= MenuEvents_MenuClosed;
+            events.Display.MenuChanged -= OnMenuChanged;
 
             running = false;
         }     
 
-        private void MenuEvents_MenuChanged(object sender, EventArgsClickableMenuChanged e)
+        /// <summary>Raised after a game menu is opened, closed, or replaced.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
+            // menu opened or changed
             if (e.NewMenu is DialogueBox box)
             {
                 var mostRecentlyGrabbed = Game1.player.mostRecentlyGrabbedItem;
@@ -73,11 +71,9 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Services
                     }
                 }
             }
-        }
 
-        private void MenuEvents_MenuClosed(object sender, EventArgsClickableMenuClosed e)
-        {
-            if (e.PriorMenu is DialogueBox box && showMessage)
+            // menu closed
+            else if (e.NewMenu == null && e.OldMenu is DialogueBox && showMessage)
             {
                 Game1.drawObjectDialogue(ModEntry.CommonServices.TranslationHelper.Get(Translation.MESSAGE_LIBRARY_BOOKS_COMPLETED));
                 showMessage = false;

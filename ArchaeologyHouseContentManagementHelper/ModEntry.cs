@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using StardewMods.ArchaeologyHouseContentManagementHelper.Framework;
 using StardewModdingAPI;
@@ -51,19 +47,19 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
             couldInventoryAcceptThisObjectPatch.Apply(harmony);
 
             collectionPageExMenuService = new CollectionPageExMenuService();
-            collectionPageExMenuService.Start();
+            collectionPageExMenuService.Start(helper.Events);
 
-            SaveEvents.AfterLoad += Bootstrap;
+            helper.Events.GameLoop.SaveLoaded += Bootstrap;
         }
 
-        private void Bootstrap(object sender, EventArgs e)
+        private void Bootstrap(object sender, SaveLoadedEventArgs e)
         {
             // Start remaining services
             menuInteractDialogService = new MuseumInteractionDialogService();
             lostBookFoundDialogService = new LostBookFoundDialogService();
 
-            menuInteractDialogService.Start();
-            lostBookFoundDialogService.Start();
+            menuInteractDialogService.Start(this.Helper.Events);
+            lostBookFoundDialogService.Start(this.Helper.Events);
         }
     }
 }
