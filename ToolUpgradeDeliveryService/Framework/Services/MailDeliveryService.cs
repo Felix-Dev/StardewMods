@@ -21,11 +21,13 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
         private bool running;
 
         private IMonitor monitor;
+        private IModEvents events;
         private IReflectionHelper reflectionHelper;
         private MailGenerator mailGenerator;
 
         public MailDeliveryService(MailGenerator generator)
         {
+            events = ModEntry.CommonServices.Events;
             reflectionHelper = ModEntry.CommonServices.ReflectionHelper;
             monitor = ModEntry.CommonServices.Monitor;
 
@@ -38,29 +40,37 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
         {
             if (running)
             {
-                monitor.Log("[MuseumDeliveryService] is already running!", LogLevel.Info);
+                monitor.Log("[MailDeliveryService] is already running!", LogLevel.Info);
                 return;
             }
 
             running = true;
-            TimeEvents.AfterDayStarted += TimeEvents_OnAfterDayStarted;
-            MenuEvents.MenuChanged += MenuEvents_OnMenuChanged;
+
+            events.GameLoop.DayStarted += OnDayStarted;
+            events.Display.MenuChanged += OnMenuChanged;
         }
 
         public void Stop()
         {
             if (!running)
             {
-                monitor.Log("[MuseumDeliveryService] is not running or has already been stopped!", LogLevel.Info);
+                monitor.Log("[MailDeliveryService] is not running or has already been stopped!", LogLevel.Info);
                 return;
             }
 
-            TimeEvents.AfterDayStarted -= TimeEvents_OnAfterDayStarted;
-            MenuEvents.MenuChanged -= MenuEvents_OnMenuChanged;
+            events.GameLoop.DayStarted -= OnDayStarted;
+            events.Display.MenuChanged -= OnMenuChanged;
+
             running = false;
         }
 
-        private void TimeEvents_OnAfterDayStarted(object sender, EventArgs e)
+        /// <summary>
+        /// Raised after the game begins a new day (including when the player loads a save).
+        /// Checks, if a mail with the upgraded tool should be sent to the player for the next day.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
             if (Game1.player.daysLeftForToolUpgrade.Value == 1)
             {
@@ -76,9 +86,16 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
             }
         }
 
-        private void MenuEvents_OnMenuChanged(object sender, EventArgsClickableMenuChanged e)
+        /// <summary>
+        /// Raised after a game menu is opened, closed, or replaced.
+        /// Responsible for displaying the actual content of a [Tool-Upgrade] mail, such as 
+        /// whether to show an attached tool, set the attached tool.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
-            if (!(e.PriorMenu is LetterViewerMenu) && e.NewMenu is LetterViewerMenu letterViewerMenu)
+            if (!(e.OldMenu is LetterViewerMenu) && e.NewMenu is LetterViewerMenu letterViewerMenu)
             {
                 var mailTitle = reflectionHelper.GetField<string>(letterViewerMenu, "mailTitle").GetValue();
                 if (mailTitle == null || !mailGenerator.IsToolMail(mailTitle))
@@ -93,7 +110,7 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
                 }
 
                 Tool toolForMail = Game1.player.toolBeingUpgraded.Value;
-                
+
                 /*
                  * Check if the current upgrade tool matches with the tool which was assigned to this mail.
                  * 
