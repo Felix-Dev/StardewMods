@@ -53,10 +53,10 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper
             collectionPageExMenuService = new CollectionPageExMenuService();
             collectionPageExMenuService.Start();
 
-            SaveEvents.AfterLoad += Bootstrap;
+            helper.Events.GameLoop.SaveLoaded += Bootstrap;
         }
 
-        private void Bootstrap(object sender, EventArgs e)
+        private void Bootstrap(object sender, SaveLoadedEventArgs e)
         {
             // Start remaining services
             menuInteractDialogService = new MuseumInteractionDialogService();
