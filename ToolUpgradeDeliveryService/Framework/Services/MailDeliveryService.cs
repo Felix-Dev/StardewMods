@@ -1,6 +1,5 @@
 ﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewMods.ToolUpgradeDeliveryService.Framework.Menus;
 using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Tools;
@@ -9,12 +8,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using StardewMods.ToolUpgradeDeliveryService.Common;
+using Common.StardewValley.LetterMenu;
 
 namespace StardewMods.ToolUpgradeDeliveryService.Framework
 {
     /// <summary>
-    /// This class is responsible for sending Clint's [upgraded-tool] mail to the player.
+    /// This class is responsible for sending Clint's [upgraded-tool] mail to the player and adding the tool
+    /// to the player's inventory.
     /// </summary>
     internal class MailDeliveryService
     {
@@ -122,15 +122,42 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
                     toolForMail = null;
                 }
 
-                // Set the water level to full for the upgraded watering can.
+                // Bonus: Set the water level to full for the upgraded watering can.
                 if (toolForMail is WateringCan can)
                 {
                     can.WaterLeft = can.waterCanMax;
                 }
 
                 var mailMessage = reflectionHelper.GetField<List<string>>(letterViewerMenu, "mailMessage").GetValue();
-                Game1.activeClickableMenu = new LetterViewerMenuForToolUpgrade(mailMessage[0], toolForMail);
+
+                var itemMenu = new ItemLetterMenuHelper(mailMessage[0], toolForMail);
+                itemMenu.MenuClosed += OnToolMailClosed;
+
+                itemMenu.Show();
             }
+        }
+
+        private void OnToolMailClosed(object sender, ItemLetterMenuClosedEventArgs e)
+        {
+            // Do nothing if no mail-included tool was selected
+            if (e.SelectedItem == null)
+            {
+                return;
+            }
+
+            // Adds compatibility for mod [Rented Tools]. Tools of the same tool class (Axe, Hoe,...)
+            // will be removed from the player's inventory (i.e. rented tools will be removed).
+            var removableItems = Game1.player.Items.Where(item => (item is Tool) && (item as Tool).BaseName.Equals(((Tool)e.SelectedItem).BaseName));
+            foreach (var item in removableItems)
+            {
+                Game1.player.removeItemFromInventory(item);
+            }
+
+            // Add selected tool item to the player's inventory
+            Game1.player.addItemByMenuIfNecessary(e.SelectedItem);
+
+            // Mark the tool upgrade process as finished, so that Clint won't hand it out when visiting him.
+            Game1.player.toolBeingUpgraded.Value = null;
         }
     }
 }
