@@ -65,7 +65,7 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
         }
 
         /// <summary>
-        /// Raised after the game begins a new day (including when the player loads a save).
+        /// Called after the game begins a new day (including when the player loads a save).
         /// Checks, if a mail with the upgraded tool should be sent to the player for the next day.
         /// </summary>
         /// <param name="sender">The event sender.</param>
@@ -87,7 +87,7 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
         }
 
         /// <summary>
-        /// Raised after a game menu is opened, closed, or replaced.
+        /// Called after a game menu is opened, closed, or replaced.
         /// Responsible for displaying the actual content of a [Tool-Upgrade] mail, such as 
         /// whether to show an attached tool, set the attached tool.
         /// </summary>
@@ -137,6 +137,12 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
             }
         }
 
+        /// <summary>
+        /// Called after a tool-mail has been closed. Handles adding the selected tool
+        /// to the player's inventory.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private void OnToolMailClosed(object sender, ItemLetterMenuClosedEventArgs e)
         {
             // Do nothing if no mail-included tool was selected
