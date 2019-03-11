@@ -10,7 +10,7 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
     internal class ModConfig
     {
         /// <summary>
-        /// The display duration of the description for a museum item. In milliseconds. 
+        /// Indicates whether to remove tool duplicates from the player's inventory when retrieving upgraded tools by mail.
         /// </summary>
         public bool RemoveToolDuplicates { get; set; } = false;
     }
