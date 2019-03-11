@@ -36,8 +36,8 @@ These are the available settings:
 ## Compatibility
 * Compatible with Stardew Valley 1.3 on Windows/Linux (Mac likely, but not tested).
 * Works in both single-player and multiplayer.
-* This mod is compatible with the mod [Rented Tools](https://www.nexusmods.com/stardewvalley/mods/1307). When you add the upgraded tool to your inventory, Clint's rented tool will be sent back to him.
-* This mod is compatible with the mod [Prismatic Tools](https://www.nexusmods.com/stardewvalley/mods/2428). Enable the option `RemoveToolDuplicates` so that rented tools will be removed from the inventory. See [Configure](#configure) for more details.
+* This mod is compatible with the mod [Rented Tools](https://www.nexusmods.com/stardewvalley/mods/1307). Enable the option `RemoveToolDuplicates` so that rented tools will be removed from the inventory. See [Configure](#configure) for more details.
+* This mod is compatible with the mod [Prismatic Tools](https://www.nexusmods.com/stardewvalley/mods/2428).
 
 ## See also
 * [Release notes](release-notes.md)
