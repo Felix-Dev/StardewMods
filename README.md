@@ -26,6 +26,11 @@ Japanese   | ❑ untranslated                                            | ❑ u
 Portuguese | [✓](ArchaeologyHouseContentManagementHelper/i18n/pt.json) | [✓](ToolUpgradeDeliveryService/i18n/pt.json)      
 Russian    | ❑ untranslated                                            | ❑ untranslated 
 Spanish    | [✓](ArchaeologyHouseContentManagementHelper/i18n/es.json) | [✓](ToolUpgradeDeliveryService/i18n/es.json) 
+French     | ❑ untranslated                                            | ❑ untranslated 
+Korean     | [✓](ArchaeologyHouseContentManagementHelper/i18n/ko.json) | [✓](ToolUpgradeDeliveryService/i18n/ko.json) 
+Italian    | ❑ untranslated                                            | ❑ untranslated 
+Hungarian  | ❑ untranslated                                            | ❑ untranslated 
+Turkish    | ❑ untranslated                                            | ❑ untranslated 
 
 Here's how to translate one of my mods:
 
