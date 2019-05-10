@@ -9,6 +9,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Common.StardewValley.LetterMenu;
+using StardewMods.ToolUpgradeDeliveryService.Compatibility;
+
+using SObject = StardewValley.Object;
+using Microsoft.Xna.Framework;
 
 namespace StardewMods.ToolUpgradeDeliveryService.Framework
 {
@@ -18,18 +22,27 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
     /// </summary>
     internal class MailDeliveryService
     {
+        private const string MOD_RUSH_ORDERS_MOD_ID = "spacechase0.RushOrders";
+
         private bool running;
 
-        private IMonitor monitor;
-        private IModEvents events;
-        private IReflectionHelper reflectionHelper;
+        private readonly IMonitor monitor;
+        private readonly IModEvents events;
+        private readonly IReflectionHelper reflectionHelper;
+        private readonly IModRegistry modRegistry;
+
         private MailGenerator mailGenerator;
 
-        public MailDeliveryService(MailGenerator generator)
+        private bool isPlayerUsingRushedOrders;
+        private IRushOrdersApi rushOrdersApi;
+
+        public MailDeliveryService(MailGenerator generator, IModRegistry registry)
         {
             events = ModEntry.CommonServices.Events;
             reflectionHelper = ModEntry.CommonServices.ReflectionHelper;
             monitor = ModEntry.CommonServices.Monitor;
+
+            modRegistry = registry ?? throw new ArgumentNullException(nameof(registry));
 
             mailGenerator = generator ?? throw new ArgumentNullException(nameof(generator));
 
@@ -46,8 +59,14 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
 
             running = true;
 
+            events.GameLoop.GameLaunched += OnGameLaunched;
             events.GameLoop.DayStarted += OnDayStarted;
             events.Display.MenuChanged += OnMenuChanged;
+
+            if (isPlayerUsingRushedOrders)
+            {
+                rushOrdersApi.ToolRushed += OnPlacedRushOrder;
+            }
         }
 
         public void Stop()
@@ -58,10 +77,34 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
                 return;
             }
 
+            if (isPlayerUsingRushedOrders)
+            {
+                rushOrdersApi.ToolRushed -= OnPlacedRushOrder;
+            }
+
+            events.GameLoop.GameLaunched -= OnGameLaunched;
             events.GameLoop.DayStarted -= OnDayStarted;
             events.Display.MenuChanged -= OnMenuChanged;
 
             running = false;
+        }
+
+        /// <summary>
+        /// Raised after the game is launched, right before the first update tick. 
+        /// All mods are loaded and initialised at this point.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            if (modRegistry != null)
+            {
+                AddModCompatibility();
+            }
+            else
+            {
+                monitor.Log("No mod registry provided => mod compatibility not available for certain mods!", LogLevel.Warn);
+            }
         }
 
         /// <summary>
@@ -72,18 +115,27 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
         /// <param name="e">The event arguments.</param>
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
+            Game1.player.Money = 100000;
+            Game1.player.addItemToInventoryBool(new SObject(Vector2.Zero, 336, 100));
+
             if (Game1.player.daysLeftForToolUpgrade.Value == 1)
             {
-                string mailKey = mailGenerator.GenerateMailKey(Game1.player.toolBeingUpgraded.Value);
-                if (mailKey == null)
-                {
-                    monitor.Log("Failed to generate mail for upgraded tool!", LogLevel.Error);
-                    return;
-                }
-
-                Game1.addMailForTomorrow(mailKey);
-                monitor.Log("Added [tool upgrade] mail to tomorrow's mailbox.", LogLevel.Info);
+                AddToolMailForTomorrow(Game1.player.toolBeingUpgraded.Value);
             }
+        }
+
+        /// <summary>
+        /// Called after the player placed a rushed order at Clint's for a faster tool upgrade.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The ordered tool.</param>
+        /// <remarks>
+        /// This handler makes ToolUpgradeDeliveryService compatible with the mod [RushOrders].
+        /// </remarks>
+        private void OnPlacedRushOrder(object sender, Tool e)
+        {
+            // A rushed order as provided by the mod [Rush Orders] always finishes in one day or less.
+            AddToolMailForTomorrow(e);
         }
 
         /// <summary>
@@ -169,6 +221,59 @@ namespace StardewMods.ToolUpgradeDeliveryService.Framework
 
             // Mark the tool upgrade process as finished, so that Clint won't hand it out when visiting him.
             Game1.player.toolBeingUpgraded.Value = null;
+        }
+
+        /// <summary>
+        /// Adds a mail with the specified tool included to the player's mailbox for the next day.
+        /// </summary>
+        /// <param name="tool">The tool to include in the mail.</param>
+        private void AddToolMailForTomorrow(Tool tool)
+        {
+            string mailKey = mailGenerator.GenerateMailKey(tool);
+            if (mailKey == null)
+            {
+                monitor.Log("Failed to generate mail for upgraded tool!", LogLevel.Error);
+                return;
+            }
+
+            Game1.addMailForTomorrow(mailKey);
+            monitor.Log("Added [tool upgrade] mail to tomorrow's mailbox.", LogLevel.Info);
+        }
+
+        /// <summary>
+        /// Sets up compatibility with other external mods.
+        /// </summary>
+        private void AddModCompatibility()
+        {
+            isPlayerUsingRushedOrders = false;
+
+            // check if a mod is loaded
+            bool isLoaded = modRegistry.IsLoaded(MOD_RUSH_ORDERS_MOD_ID);
+            if (!isLoaded)
+            {
+                return;
+            }
+
+            // get info for a mod
+            IModInfo mod = modRegistry.Get(MOD_RUSH_ORDERS_MOD_ID);
+            if (!mod.Manifest.Version.IsNewerThan("1.1.3"))
+            {
+                monitor.Log($"You are running an unsupported version of the mod [{mod.Manifest.Name}]! " +
+                    $"Please use at least [{mod.Manifest.Name} 1.1.4] for compatibility!", LogLevel.Info);
+                return;
+            }
+
+            rushOrdersApi = modRegistry.GetApi<IRushOrdersApi>(MOD_RUSH_ORDERS_MOD_ID);
+            if (rushOrdersApi == null)
+            {
+                monitor.Log($"Could not add compatibility for the mod [{mod.Manifest.Name}]! " +
+                    $"A new version of the mod [ToolUpgradeDeliveryService] might be needed.", LogLevel.Error);
+                return;
+            }
+
+            rushOrdersApi.ToolRushed += OnPlacedRushOrder;
+            isPlayerUsingRushedOrders = true;
+
         }
     }
 }
