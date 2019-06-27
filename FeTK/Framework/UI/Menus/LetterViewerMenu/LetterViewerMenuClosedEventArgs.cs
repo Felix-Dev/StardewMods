@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace FelixDev.StardewMods.FeTK.Menus
+namespace FelixDev.StardewMods.FeTK.UI.Menus
 {
     /// <summary>
     /// Provides data for the [ItemLetterMenuHelper.MenuClosed] event.

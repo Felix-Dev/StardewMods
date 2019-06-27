@@ -16,9 +16,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)StardewValley\Dialog\DialogHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StardewValley\Dialog\DialogueBoxEx.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StardewValley\Input\CursorDirection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)StardewValley\LetterMenu\ItemLetterMenuHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)StardewValley\LetterMenu\ItemLetterMenuClosedEventArgs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)StardewValley\UI\Menus\LetterViewerMenu\LetterViewerMenuClosedEventArgs.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)StardewValley\UI\Menus\LetterViewerMenu\LetterViewerMenuWrapper.cs" />
   </ItemGroup>
 </Project>

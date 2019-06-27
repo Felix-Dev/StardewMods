@@ -44,8 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Framework\Menus\LetterViewerMenu\LetterViewerMenuClosedEventArgs.cs" />
-    <Compile Include="Framework\Menus\LetterViewerMenu\LetterViewerMenuWrapper.cs" />
+    <Compile Include="Framework\UI\Menus\LetterViewerMenu\LetterViewerMenuClosedEventArgs.cs" />
+    <Compile Include="Framework\UI\Menus\LetterViewerMenu\LetterViewerMenuWrapper.cs" />
     <Compile Include="Framework\ModHelpers\ModSaveDataHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Framework\Serialization\ItemSerializer\IItemSerializeHelper.cs" />

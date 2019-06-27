@@ -2,7 +2,7 @@
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
-using FelixDev.StardewMods.FeTK.Menus;
+using FelixDev.StardewMods.FeTK.UI.Menus;
 using FelixDev.StardewMods.FeTK.ModHelpers;
 using FelixDev.StardewMods.FeTK.Serialization;
 using StardewValley;
