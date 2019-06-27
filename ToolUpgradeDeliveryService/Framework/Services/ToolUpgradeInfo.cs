@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StardewMods.ToolUpgradeDeliveryService.Framework
+namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
 {
     internal class ToolUpgradeInfo
     {

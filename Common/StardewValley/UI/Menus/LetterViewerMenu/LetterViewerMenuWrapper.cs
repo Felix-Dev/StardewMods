@@ -1,62 +1,60 @@
 ﻿using Microsoft.Xna.Framework;
+using StardewModdingAPI;
+using StardewMods.Common.StardewValley.LetterMenu;
 using StardewValley;
 using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text;
 
-namespace StardewMods.Common.StardewValley.LetterMenu
+namespace StardewMods.Common.StardewValley.UI
 {
-    /// <summary>
-    /// A helper class for a [LetterViewerMenu]. Enables simplified creation and interaction such as a Show() method
-    /// or a event raised when a [LetterViewerMenu] is closed.
-    /// </summary>
-    //public class ItemLetterMenuHelper
+    //public class LetterViewerMenuWrapper
     //{
+    //    private LetterViewerMenuEx letterMenu;
+
     //    /// <summary>
     //    /// Raised after the letter menu is closed. Exposes information such as the selected item, if any.
     //    /// </summary>
-    //    public event EventHandler<ItemLetterMenuClosedEventArgs> MenuClosed;
+    //    public event EventHandler<LetterViewerMenuClosedEventArgs> MenuClosed;
 
-    //    private ItemLetterViewerMenu itemMenu;
-
-    //    public ItemLetterMenuHelper(string text, Item item)
+    //    public LetterViewerMenuWrapper(IReflectionHelper reflectionHelper, string mailTitle, string mailContent, Item attachedItem = null)
     //    {
-    //        if (text == null)
+    //        letterMenu = new LetterViewerMenuEx(reflectionHelper, mailTitle, mailContent, attachedItem)
     //        {
-    //            throw new ArgumentNullException(nameof(text));
-    //        }
-
-    //        itemMenu = new ItemLetterViewerMenu(text, item);
+    //            exitFunction = new IClickableMenu.onExit(OnExit)
+    //        };
     //    }
 
     //    public void Show()
     //    {
-    //        itemMenu.exitFunction = new IClickableMenu.onExit(OnExit);
-    //        Game1.activeClickableMenu = itemMenu;
+    //        Game1.activeClickableMenu = letterMenu;
     //    }
 
     //    private void OnExit()
     //    {
-    //        MenuClosed?.Invoke(this, new ItemLetterMenuClosedEventArgs(itemMenu.SelectedItem));
+    //        MenuClosed?.Invoke(this, new LetterViewerMenuClosedEventArgs(letterMenu.MailTitle, letterMenu.SelectedItem));
     //    }
 
-    //    private class ItemLetterViewerMenu : LetterViewerMenu
+    //    private class LetterViewerMenuEx : LetterViewerMenu
     //    {
+    //        public string MailTitle { get; private set; }
+
     //        public Item SelectedItem { get; private set; }
 
-    //        public ItemLetterViewerMenu(string text, Item item) : base(text)
+    //        public LetterViewerMenuEx(IReflectionHelper reflectionHelper, string title, string content, Item attachedItem = null) : base(content)
     //        {
-    //            Type letterViewerMenuType = typeof(LetterViewerMenu);
-    //            FieldInfo isMailRef = letterViewerMenuType.GetField(
-    //                "isMail",
-    //                BindingFlags.NonPublic | BindingFlags.Instance)
-    //                ?? throw new MissingFieldException(nameof(LetterViewerMenu), "isMail");
+    //            var isMailRef = reflectionHelper
+    //                .GetField<bool>(this, "isMail");
+    //            var mailTitleRef = reflectionHelper
+    //                .GetField<string>(this, "mailTitle");
 
-    //            isMailRef.SetValue(this, true);
+    //            isMailRef?.SetValue(true);
+    //            mailTitleRef?.SetValue(title);
 
-    //            if (item == null)
+    //            MailTitle = title;
+
+    //            if (attachedItem == null)
     //            {
     //                return;
     //            }
@@ -65,7 +63,7 @@ namespace StardewMods.Common.StardewValley.LetterMenu
     //            this.itemsToGrab.Add(
     //                new ClickableComponent(
     //                    new Rectangle(this.xPositionOnScreen + this.width / 2 - 48, this.yPositionOnScreen + this.height - 32 - 96, 96, 96),
-    //                    item)
+    //                    attachedItem)
     //                {
     //                    myID = region_itemGrabButton,
     //                    leftNeighborID = region_backButton,
@@ -89,7 +87,7 @@ namespace StardewMods.Common.StardewValley.LetterMenu
     //                    SelectedItem = clickableComponent.item;
 
     //                    Game1.playSound("coin");
-    //                    clickableComponent.item = (Item)null;
+    //                    clickableComponent.item = null;
 
     //                    return;
     //                }

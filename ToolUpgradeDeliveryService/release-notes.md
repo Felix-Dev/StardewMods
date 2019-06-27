@@ -1,4 +1,7 @@
 ﻿# Release notes
+## 1.4.0
+* Added compatibility for the mod "Rush Orders" (Rush Orders version 1.1.4 and above).
+
 ## 1.3.0
 * The feature removing tool duplicates when retrieving an upgraded tool by mail is now optional. It is disabled by default.
 * Added Korean translation (thanks to user "S2SKY" from github).

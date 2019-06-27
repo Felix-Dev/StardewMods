@@ -1,0 +1,10 @@
+{
+  "Name": "Felix-Dev's Stardew-Valley Toolkit",
+  "Author": "Felix-Dev",
+  "Version": "1.0.0",
+  "Description": "Provides a set of helper classes/services for common mod tasks.",
+  "UniqueID": "Felix-Dev.FeTK",
+  "EntryDll": "FeTK.dll",
+  "MinimumApiVersion": "2.10.1",
+  "UpdateKeys": [ "TODO" ]
+}

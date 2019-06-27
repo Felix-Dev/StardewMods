@@ -1,5 +1,5 @@
 ﻿using StardewModdingAPI;
-using StardewMods.ToolUpgradeDeliveryService.Common;
+using FelixDev.StardewMods.ToolUpgradeDeliveryService.Common;
 using StardewValley;
 using StardewValley.Tools;
 using System;
@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Translation = StardewMods.ToolUpgradeDeliveryService.Common.Translation;
+using Translation = FelixDev.StardewMods.ToolUpgradeDeliveryService.Common.Translation;
 
-namespace StardewMods.ToolUpgradeDeliveryService.Framework
+namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
 {
     /// <summary>
     /// This class adds Tool Mails to the game.
