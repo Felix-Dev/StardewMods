@@ -10,7 +10,7 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
 {
     public class LetterViewerMenuWrapper
     {
-        private LetterViewerMenuEx letterMenu;
+        private readonly LetterViewerMenuEx letterMenu;
 
         /// <summary>
         /// Raised after the letter menu is closed. Exposes information such as the selected item, if any.

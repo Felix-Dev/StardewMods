@@ -233,7 +233,9 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         private void AddToolMailForTomorrow(Tool tool)
         {
             string mailId = TOOL_MAIL_ID_PREFIX + tool.BaseName + tool.UpgradeLevel;
+
             string content = GetTranslatedMailContent(tool);
+            content = content.Replace("@", Game1.player.Name);
 
             mailManager.AddMail(1, mailId, content, tool);
         }
