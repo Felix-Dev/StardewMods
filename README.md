@@ -21,7 +21,7 @@ use the right translations.
 &nbsp;     | Archaeology House Content Management Helper    | Tool-Upgrade Delivery Service    |
 ---------- | :--------------------------------------------- | :------------------------------- |
 Chinese    | [✓](ArchaeologyHouseContentManagementHelper/i18n/zh.json) | [✓](ToolUpgradeDeliveryService/i18n/zh.json) 
-French     | ❑ untranslated                                            | ❑ untranslated 
+French     | ❑ untranslated                                            | [✓](ToolUpgradeDeliveryService/i18n/fr.json)
 German     | [✓](ArchaeologyHouseContentManagementHelper/i18n/de.json) | [✓](ToolUpgradeDeliveryService/i18n/de.json)
 Hungarian  | ❑ untranslated                                            | ❑ untranslated 
 Italian    | ❑ untranslated                                            | ❑ untranslated 
