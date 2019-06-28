@@ -70,8 +70,6 @@
     <Compile Include="Compatibility\IRushOrdersApi.cs" />
     <Compile Include="Framework\ModConfig.cs" />
     <Compile Include="Framework\Services\MailDeliveryService.cs" />
-    <Compile Include="Framework\Services\MailGenerator.cs" />
-    <Compile Include="Framework\Services\ToolUpgradeInfo.cs" />
     <Compile Include="ModEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
