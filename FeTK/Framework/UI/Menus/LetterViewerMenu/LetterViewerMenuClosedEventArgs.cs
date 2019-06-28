@@ -6,20 +6,29 @@ using System.Text;
 namespace FelixDev.StardewMods.FeTK.UI.Menus
 {
     /// <summary>
-    /// Provides data for the [ItemLetterMenuHelper.MenuClosed] event.
+    /// Provides data for the <see cref="LetterViewerMenuWrapper.MenuClosed"/> event.
     /// </summary>
     public class LetterViewerMenuClosedEventArgs : EventArgs
     {
-        public LetterViewerMenuClosedEventArgs(string mailId, List<Item> items)
+        /// <summary>
+        /// Create a new instance of the <see cref="LetterViewerMenuClosedEventArgs"/> class.
+        /// </summary>
+        /// <param name="mailId">The ID of the mail to be closed.</param>
+        /// <param name="selectedItems">Sets the items of the mail which were selected. Can be <c>null</c>.</param>
+        /// <exception cref="ArgumentNullException">If the <paramref name="mailId"/> is <c>null</c>.</exception>
+        public LetterViewerMenuClosedEventArgs(string mailId, List<Item> selectedItems)
         {
             MailId = mailId ?? throw new ArgumentNullException(nameof(mailId));
-            SelectedItems = items ?? throw new ArgumentNullException(nameof(items));
+            SelectedItems = selectedItems ?? new List<Item>();
         }
 
+        /// <summary>
+        /// The ID of the closed mail.
+        /// </summary>
         public string MailId { get; }
 
         /// <summary>
-        /// The selected items or an empty list.
+        /// Gets a list that contains the items that were selected.
         /// </summary>
         public List<Item> SelectedItems { get; }
     }

@@ -8,15 +8,31 @@ using System.Text;
 
 namespace FelixDev.StardewMods.FeTK.UI.Menus
 {
+    /// <summary>
+    /// This class is a wrapper around the <see cref="LetterViewerMenu"/> class to provide additional functionality, 
+    /// such as:
+    ///     - Provides a <see cref="MenuClosed"/> event
+    ///     - Can set attached items
+    /// </summary>
     public class LetterViewerMenuWrapper
     {
+        /// <summary>
+        /// The private <see cref="LetterViewerMenuEx"/> instance used to display the mail.
+        /// </summary>
         private readonly LetterViewerMenuEx letterMenu;
 
         /// <summary>
-        /// Raised after the letter menu is closed. Exposes information such as the selected item, if any.
+        /// Raised when the letter viewer menu has been closed.
         /// </summary>
         public event EventHandler<LetterViewerMenuClosedEventArgs> MenuClosed;
 
+        /// <summary>
+        /// Create a new instance of the <see cref="LetterViewerMenuWrapper"/> class./>
+        /// </summary>
+        /// <param name="reflectionHelper">An instance of the <see cref="IReflectionHelper"/> class.</param>
+        /// <param name="mailTitle">The title of mail to display.</param>
+        /// <param name="mailContent">The content of the mail to display.</param>
+        /// <param name="attachedItems">The attached items of the mail to display. May be <c>null</c>.</param>
         public LetterViewerMenuWrapper(IReflectionHelper reflectionHelper, string mailTitle, string mailContent, List<Item> attachedItems = null)
         {
             letterMenu = new LetterViewerMenuEx(reflectionHelper, mailTitle, mailContent, attachedItems)
@@ -25,22 +41,45 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
             };
         }
 
+        /// <summary>
+        /// Display the menu.
+        /// </summary>
         public void Show()
         {
             Game1.activeClickableMenu = letterMenu;
         }
 
+        /// <summary>
+        /// Called when the letter viewer menu is closed. Raises the <see cref="MenuClosed"/> event./>
+        /// </summary>
         private void OnExit()
         {
             MenuClosed?.Invoke(this, new LetterViewerMenuClosedEventArgs(letterMenu.MailTitle, letterMenu.SelectedItems));
         }
 
+        /// <summary>
+        /// This class extends the <see cref="LetterViewerMenu"/> class with additional functionality such as 
+        /// managing the selected items.
+        /// </summary>
         private class LetterViewerMenuEx : LetterViewerMenu
         {
+            /// <summary>
+            /// The title of the mail.
+            /// </summary>
             public string MailTitle { get; private set; }
 
+            /// <summary>
+            /// A list containing the selected items.
+            /// </summary>
             public List<Item> SelectedItems { get; private set; }
 
+            /// <summary>
+            /// Creates an instance of the <see cref="LetterViewerMenuEx"/> class. Visualizes a mail.
+            /// </summary>
+            /// <param name="reflectionHelper"></param>
+            /// <param name="title">The title of the mail.</param>
+            /// <param name="content">The content of the mail.</param>
+            /// <param name="attachedItems">The items attached to the mail. Can be <c>null</c>.</param>
             public LetterViewerMenuEx(IReflectionHelper reflectionHelper, string title, string content, List<Item> attachedItems = null) : base(content)
             {
                 reflectionHelper
@@ -51,12 +90,13 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
                     .SetValue(title);
 
                 MailTitle = title;
-                SelectedItems = new List<Item>();
 
                 if (attachedItems == null || attachedItems.Count == 0)
                 {
                     return;
                 }
+
+                SelectedItems = new List<Item>();
 
                 // Add item(s) to mail
                 foreach (var item in attachedItems)
@@ -79,6 +119,12 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
                 this.snapToDefaultClickableComponent();
             }
 
+            /// <summary>
+            /// Adds functionality to add a clicked item to the <see cref="SelectedItems"/> list./>
+            /// </summary>
+            /// <param name="x">X-coordinate of the click.</param>
+            /// <param name="y">Y-coordinate of the click.</param>
+            /// <param name="playSound">Not used.</param>
             public override void receiveLeftClick(int x, int y, bool playSound = true)
             {
                 foreach (ClickableComponent clickableComponent in this.itemsToGrab)

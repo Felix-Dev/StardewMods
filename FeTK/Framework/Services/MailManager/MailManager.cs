@@ -46,12 +46,12 @@ namespace FelixDev.StardewMods.FeTK.Services
         private MailCore currentlyOpenedMail;
 
         /// <summary>
-        /// Occurs when a mail begins to open.
+        /// Raised when a mail begins to open. The mail content can still be changed at this point.
         /// </summary>
         public event EventHandler<MailOpeningEventArgs> MailOpening;
 
         /// <summary>
-        /// Occurs when a mail has been closed.
+        /// Raised when a mail has been closed.
         /// </summary>
         public event EventHandler<MailClosedEventArgs> MailClosed;
 
