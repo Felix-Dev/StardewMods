@@ -139,7 +139,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         }
 
         /// <summary>
-        /// Called when a mail is being opened by the player. Checks if the atatched tool should be displayed
+        /// Called when a mail is being opened by the player. Checks if the attached tool should be displayed.
         /// (i.e. in cases where the tool has already been received by Clint, the tool won't be attached to the mail)
         /// and sets the mail content accordingly (adding a hint that the tool was already received, if applicable).
         /// </summary>
@@ -217,7 +217,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         }
 
         /// <summary>
-        /// Checks if the mail with the specified ID is a tool-upgrade mail.
+        /// Check if the mail with the specified ID is a tool-upgrade mail.
         /// </summary>
         /// <param name="mailId">The mail ID.</param>
         /// <returns>True, if the mail is a tool-upgrade mail, otherwise false.</returns>
@@ -227,7 +227,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         }
 
         /// <summary>
-        /// Adds a mail with the specified tool included to the player's mailbox for the next day.
+        /// Add a mail with the specified tool included to the player's mailbox for the next day.
         /// </summary>
         /// <param name="tool">The tool to include in the mail.</param>
         private void AddToolMailForTomorrow(Tool tool)
@@ -270,7 +270,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         }
 
         /// <summary>
-        /// Sets up compatibility with other external mods.
+        /// Set up compatibility with other external mods.
         /// </summary>
         private void AddModCompatibility()
         {

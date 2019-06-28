@@ -11,15 +11,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Serialization;
 
 namespace FelixDev.StardewMods.FeTK.Services
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class MailManager : IAssetEditor
     {
         private const string SAVE_DATA_KEY_MAIL_MANAGER_PREFIX = "SAVE_DATA_MAIL_MANAGER";
@@ -40,13 +39,20 @@ namespace FelixDev.StardewMods.FeTK.Services
         private readonly ModSaveDataHelper saveDataHelper;
         private readonly SaveDataBuilder saveDataBuilder;
 
-        private Dictionary<int, Dictionary<string, MailCore>> mailList = new Dictionary<int, Dictionary<string, MailCore>>();
+        private readonly List<MailCore> mailsRead = new List<MailCore>();
 
-        private List<MailCore> mailsRead = new List<MailCore>();
+        private Dictionary<int, Dictionary<string, MailCore>> mailList = new Dictionary<int, Dictionary<string, MailCore>>();
 
         private MailCore currentlyOpenedMail;
 
+        /// <summary>
+        /// Occurs when a mail begins to open.
+        /// </summary>
         public event EventHandler<MailOpeningEventArgs> MailOpening;
+
+        /// <summary>
+        /// Occurs when a mail has been closed.
+        /// </summary>
         public event EventHandler<MailClosedEventArgs> MailClosed;
 
         private static readonly string[] MAIL_USER_ID_BLACKLIST =
@@ -77,11 +83,37 @@ namespace FelixDev.StardewMods.FeTK.Services
             events.Display.MenuChanged += OnMenuChanged;
         }
 
+        /// <summary>
+        /// Add a mail to the player's mailbox.
+        /// </summary>
+        /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
+        /// <param name="id">The ID of the mail.</param>
+        /// <param name="content">The mail content.</param>
+        /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
+        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to greater than <c>0</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// The <paramref name="id"/> has to be a valid mod ID OR
+        /// a mail with the <paramref name="id"/> has already been registered for the same day for the calling mod.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="content"/> cannot be <c>null</c>.</exception>
         public void AddMail(int daysFromNow, string id, string content, Item attachedItem = null)
         {
             AddMail(daysFromNow, id, content, attachedItem != null ? new List<Item>() { attachedItem } : null);
         }
 
+        /// <summary>
+        /// Add a mail to the player's mailbox.
+        /// </summary>
+        /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
+        /// <param name="id">The ID of the mail.</param>
+        /// <param name="content">The mail content.</param>
+        /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
+        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to greater than <c>0</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// The <paramref name="id"/> has to be a valid mod ID OR
+        /// a mail with the <paramref name="id"/> has already been registered for the same day for the calling mod.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="content"/> cannot be <c>null</c>.</exception>
         public void AddMail(int daysFromNow, string id, string content, List<Item> attachedItems)
         {
             if (daysFromNow <= 0)
@@ -91,7 +123,7 @@ namespace FelixDev.StardewMods.FeTK.Services
 
             if (string.IsNullOrWhiteSpace(id))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException(nameof(id), "The mail ID needs to contain at least one non-whitespace character!");
             }
 
             string blacklistEntry = MAIL_USER_ID_BLACKLIST.Where(s => id.Contains(s)).First();
@@ -139,6 +171,11 @@ namespace FelixDev.StardewMods.FeTK.Services
             mailList[arrivalDay].Add(id, mail);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event parameters.</param>
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
             if (!(e.OldMenu is LetterViewerMenu) && e.NewMenu is LetterViewerMenu letterMenu)
@@ -150,10 +187,10 @@ namespace FelixDev.StardewMods.FeTK.Services
                 var mailId = reflectionHelper.GetField<string>(letterMenu, "mailTitle").GetValue();
                 if (mailId != null)
                 {
+                    // Retrieve the registered mail from its ID. Do nothing if there is no mail with such an ID.
                     var cMail = GetMailFromId(mailId);
                     if (cMail == null)
-                    {
-                        // TODO: Error case once we rewrote the code so that this mail is definitly a custom mail! 
+                    {                       
                         return;
                     }
 
@@ -162,11 +199,14 @@ namespace FelixDev.StardewMods.FeTK.Services
                         AttachedItems = cMail.AttachedItems
                     };
 
+                    // Raise the Mail Opening event for this mail
                     MailOpening?.Invoke(this, new MailOpeningEventArgs(mail));
 
+                    // Create the letter viewer menu for this mail.
                     var nLetterMenu = new LetterViewerMenuWrapper(reflectionHelper, mail.Id, mail.Content, mail.AttachedItems);                 
                     nLetterMenu.MenuClosed += OnLetterMenuClosed;
 
+                    // Show the menu.
                     nLetterMenu.Show();
                     currentlyOpenedMail = cMail;
                 }
