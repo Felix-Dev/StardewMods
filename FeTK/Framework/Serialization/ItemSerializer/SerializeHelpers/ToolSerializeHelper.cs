@@ -9,8 +9,20 @@ using System.Threading.Tasks;
 
 namespace FelixDev.StardewMods.FeTK.Serialization
 {
+    /// <summary>
+    /// This class provides an API to help serialize/deserialize instances of the <see cref="Tool"/> class.
+    /// 
+    /// See <seealso cref="ItemSerializeHelper"/> for more information why we have to use a serialization
+    /// helper here.
+    /// </summary>
     public class ToolSerializeHelper : IItemSerializeHelper<Tool>
     {
+        /// <summary>
+        /// Deconstruct a <see cref="Tool"/> instance into a format which can be serialized.
+        /// </summary>
+        /// <param name="item">The <see cref="Tool"/> instance to deconstruct.</param>
+        /// <returns>A serializable representation of the <see cref="Tool"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="item"/> is <c>null</c>.</exception>
         public Dictionary<string, string> Deconstruct(Tool item)
         {
             if (item == null)
@@ -32,6 +44,13 @@ namespace FelixDev.StardewMods.FeTK.Serialization
             return data;
         }
 
+        /// <summary>
+        /// Construct a matching <see cref="Tool"/> instance from the provided data.
+        /// </summary>
+        /// <param name="data">The data to reconstruct into a <see cref="Tool"/> instance.</param>
+        /// <returns>A <see cref="Tool"/> instance matching the data specified in <paramref name="data"/>.</returns>
+        /// <exception cref="ArgumentException">The given <paramref name="data"/> does not contain the necessary data to create a <see cref="Tool"/> instance.</exception>
+        /// <exception cref="NotImplementedException">The given <paramref name="data"/> does not represent a supported <see cref="Tool"/> instance.</exception>
         public Tool Construct(Dictionary<string, string> data)
         {
             if (data == null || !data.ContainsKey("ToolType") || !data.ContainsKey("UpgradeLevel") 

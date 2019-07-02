@@ -15,7 +15,7 @@ namespace FelixDev.StardewMods.FeTK.Services
         /// </summary>
         /// <param name="mailId">The ID of the mail to be closed.</param>
         /// <param name="selectedItems">Sets the items of the mail which were selected. Can be <c>null</c>.</param>
-        /// <exception cref="ArgumentNullException">If the <paramref name="mailId"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">The given <paramref name="mailId"/> is <c>null</c>.</exception>
         public MailClosedEventArgs(string mailId, List<Item> selectedItems)
         {
             MailId = mailId ?? throw new ArgumentNullException(nameof(mailId));
@@ -28,7 +28,7 @@ namespace FelixDev.StardewMods.FeTK.Services
         public string MailId { get; }
 
         /// <summary>
-        /// Gets a list that contains the items that were selected.
+        /// Get a list that contains the items that were selected.
         /// </summary>
         public List<Item> SelectedItems { get; }
     }

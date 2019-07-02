@@ -90,7 +90,7 @@ namespace FelixDev.StardewMods.FeTK.Services
         /// <param name="id">The ID of the mail.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
-        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to greater than <c>0</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> is less than or equal to <c>0</c>.</exception>
         /// <exception cref="ArgumentException">
         /// The <paramref name="id"/> has to be a valid mod ID OR
         /// a mail with the <paramref name="id"/> has already been registered for the same day for the calling mod.
@@ -118,7 +118,7 @@ namespace FelixDev.StardewMods.FeTK.Services
         {
             if (daysFromNow <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(daysFromNow));
+                throw new ArgumentOutOfRangeException(nameof(daysFromNow), "The day offset has to be greater than 0!");
             }
 
             if (string.IsNullOrWhiteSpace(id))
@@ -199,14 +199,14 @@ namespace FelixDev.StardewMods.FeTK.Services
                         AttachedItems = cMail.AttachedItems
                     };
 
-                    // Raise the Mail Opening event for this mail
+                    // Raise the Mail Opening event for this mail.
                     MailOpening?.Invoke(this, new MailOpeningEventArgs(mail));
 
                     // Create the letter viewer menu for this mail.
                     var nLetterMenu = new LetterViewerMenuWrapper(reflectionHelper, mail.Id, mail.Content, mail.AttachedItems);                 
                     nLetterMenu.MenuClosed += OnLetterMenuClosed;
 
-                    // Show the menu.
+                    // Show the letter viewer menu for this mail.
                     nLetterMenu.Show();
                     currentlyOpenedMail = cMail;
                 }
@@ -256,6 +256,7 @@ namespace FelixDev.StardewMods.FeTK.Services
             // Mark mail as "read" so we can remove it when the day is over
             mailsRead.Add(currentlyOpenedMail);
 
+            // Raise the Mail Closed event.
             MailClosed?.Invoke(this, new MailClosedEventArgs(currentlyOpenedMail.Id, e.SelectedItems));
 
             currentlyOpenedMail = null;
@@ -278,7 +279,7 @@ namespace FelixDev.StardewMods.FeTK.Services
             foreach (var mail in mailsForDay.Values)
             {
                 Game1.addMailForTomorrow(mail.Id);
-                monitor.Log($"MailManager: Added the mail with the id {mail.UserId} to tomorrow's inbox!");
+                monitor.Log($"MailManager: Added the mail with id \"{mail.UserId}\" to tomorrow's inbox!");
             }
         }
 

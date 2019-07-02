@@ -11,13 +11,13 @@ namespace FelixDev.StardewMods.FeTK.Services
     /// Provides (simplified) access to different services a consuming mod can use. 
     /// 
     /// This class uses the Singleton pattern: Each consuming mod can have exactly one
-    /// service factory instance.
+    /// instance of the <see cref="ServiceFactory"/> class.
     /// </summary>
     public class ServiceFactory
     {
         private static readonly IModHelper ToolkitModHelper = ToolkitMod.ModHelper;
 
-        /// <summary>Contains the requested service factories. Maps a mod (via the mod ID) to its service factory instance. </summary>
+        /// <summary>Contains the created <see cref="ServiceFactory"/> instances. Maps a mod (via the mod ID) to its service factory instance. </summary>
         private static readonly Dictionary<string, ServiceFactory> ServiceFactories = new Dictionary<string, ServiceFactory>();
 
         /// <summary>The unique ID of the mod for which this service factory was created.</summary>
@@ -27,16 +27,16 @@ namespace FelixDev.StardewMods.FeTK.Services
         private readonly IModHelper modHelper;
 
         /// <summary>
-        /// Contains the created Mail Manager instance for a service factory. Each factory has at most one instance.
+        /// Contains the created <see cref="MailManager"/> instance for a service factory. Each factory has at most one instance.
         /// </summary>
         private MailManager mailManager;
 
         /// <summary>
-        /// Get a service factory for a mod.
+        /// Get an instance of the <see cref="ServiceFactory"/> class.
         /// </summary>
         /// <param name="modId">The unique ID of the relevant mod.</param>
-        /// <param name="modHelper">The IModHelper instance of the mod.</param>
-        /// <returns>A service factory instance for the specified mod.</returns>
+        /// <param name="modHelper">The <see cref="IModHelper"/> instance of the mod.</param>
+        /// <returns>A service factory for the specified mod.</returns>
         /// <exception cref="ArgumentException">The <paramref name="modId"/> is not a valid mod ID (the ID has to contain at least one number/letter character).</exception>
         /// <exception cref="ArgumentNullException">The <paramref name="modHelper"/> cannot be <c>null</c>.</exception>
         public static ServiceFactory GetFactory(string modId, IModHelper modHelper)
@@ -62,6 +62,11 @@ namespace FelixDev.StardewMods.FeTK.Services
             return serviceFactory;
         }
 
+        /// <summary>
+        /// Initialize an instance of the <see cref="ServiceFactory"/> class.
+        /// </summary>
+        /// <param name="modId">The unique ID of the relevant mod.</param>
+        /// <param name="modHelper">The <see cref="IModHelper"/> instance of the mod.</param>
         private ServiceFactory(string modId, IModHelper modHelper)
         {
             this.modId = modId;
@@ -69,9 +74,9 @@ namespace FelixDev.StardewMods.FeTK.Services
         }
 
         /// <summary>
-        /// Get a Mail Manager instance. Multiple calls return the same instance. 
+        /// Get an instance of the <see cref="MailManager"/> class.
         /// </summary>
-        /// <returns>A newly created instance (if no instance existed yet), otherwise the already existing one.</returns>
+        /// <returns>A newly created instance (if no instance existed yet) for a mod, otherwise the already existing one.</returns>
         public MailManager GetMailManager()
         {
             if (mailManager == null)
