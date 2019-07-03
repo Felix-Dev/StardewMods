@@ -118,9 +118,21 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
             Game1.player.addItemToInventoryBool(new SObject(Vector2.Zero, 334, 100));
             Game1.player.addItemToInventoryBool(new SObject(Vector2.Zero, 336, 100));
 
-            if (Game1.player.daysLeftForToolUpgrade.Value == 1)
+            int daysLeftForToolUpgrade = Game1.player.daysLeftForToolUpgrade.Value;
+            Tool upgradeTool = Game1.player.toolBeingUpgraded.Value;
+
+            if (daysLeftForToolUpgrade == 1)
             {
-                AddToolMailForTomorrow(Game1.player.toolBeingUpgraded.Value);
+                SetToolMailForDay(1, upgradeTool);
+                return;
+            }
+
+            if (daysLeftForToolUpgrade == 0 && upgradeTool != null)
+            {
+                if (!mailManager.HasRegisteredMailInMailbox(GetMailIdFromTool(upgradeTool)))
+                {
+                    SetToolMailForDay(0, upgradeTool);
+                }                
             }
         }
 
@@ -135,7 +147,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         private void OnPlacedRushOrder(object sender, Tool e)
         {
             // A rushed order as provided by the mod [Rush Orders] always finishes in one day or less.
-            AddToolMailForTomorrow(e);
+            SetToolMailForDay(1, e);
         }
 
         /// <summary>
@@ -194,12 +206,13 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
                 return;
             }
 
+            // The attached tool was selected in the tool-upgrade mail. We now proceed to add 
+            // that tool to the player's inventory.
+
             var selectedTool = (Tool)e.SelectedItems[0];
 
-            /*
-             * Check if tools of the same tool class (Axe, Hoe,...) should be removed from the player's inventory.
-             * For example, this adds compatibility for the mod [Rented Tools] (i.e. rented tools will be removed).
-             */
+            // Check if tools of the same tool class (Axe, Hoe,...) should be removed from the player's inventory.
+            // For example, this adds compatibility for the mod [Rented Tools] (i.e. rented tools will be removed).
             if (ModEntry.ModConfig.RemoveToolDuplicates)
             {
                 var removableItems = Game1.player.Items.Where(item => (item is Tool) && (item as Tool).BaseName.Equals(selectedTool.BaseName));
@@ -217,6 +230,16 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         }
 
         /// <summary>
+        /// Get the ID for a tool mail.
+        /// </summary>
+        /// <param name="tool">The tool upgrade to get the mail ID for.</param>
+        /// <returns>The mail ID for the specified <paramref name="tool"/> upgrade.</returns>
+        private string GetMailIdFromTool(Tool tool)
+        {
+            return TOOL_MAIL_ID_PREFIX + tool.BaseName + tool.UpgradeLevel;
+        }
+
+        /// <summary>
         /// Check if the mail with the specified ID is a tool-upgrade mail.
         /// </summary>
         /// <param name="mailId">The mail ID.</param>
@@ -229,15 +252,16 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         /// <summary>
         /// Add a mail with the specified tool included to the player's mailbox for the next day.
         /// </summary>
+        /// <param name="dayOffset">The day offset from the current in-game day.</param>
         /// <param name="tool">The tool to include in the mail.</param>
-        private void AddToolMailForTomorrow(Tool tool)
+        private void SetToolMailForDay(int dayOffset, Tool tool)
         {
-            string mailId = TOOL_MAIL_ID_PREFIX + tool.BaseName + tool.UpgradeLevel;
+            string mailId = GetMailIdFromTool(tool);
 
             string content = GetTranslatedMailContent(tool);
             content = content.Replace("@", Game1.player.Name);
 
-            mailManager.AddMail(1, mailId, content, tool);
+            mailManager.AddMail(dayOffset, mailId, content, tool);
         }
 
         /// <summary>

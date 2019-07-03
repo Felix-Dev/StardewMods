@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace FelixDev.StardewMods.FeTK.Services
 {
@@ -23,8 +24,8 @@ namespace FelixDev.StardewMods.FeTK.Services
     {
         private const string SAVE_DATA_KEY_MAIL_MANAGER_PREFIX = "SAVE_DATA_MAIL_MANAGER";
 
-        private const string MAIL_ID_USER_ID_PREFIX = "\\muid:";
-        private const string MAIL_ID_ARRIVAL_DAY_PREFIX = "\\ad:";
+        private const string MAIL_ID_USER_ID_PREFIX = @"\\muid:";
+        private const string MAIL_ID_ARRIVAL_DAY_PREFIX = @"\\ad:";
 
         private const string STARDEW_VALLEY_MAIL_DATA = "Data/mail";
 
@@ -58,6 +59,7 @@ namespace FelixDev.StardewMods.FeTK.Services
         private static readonly string[] MAIL_USER_ID_BLACKLIST =
         {
             MAIL_ID_USER_ID_PREFIX,
+            MAIL_ID_ARRIVAL_DAY_PREFIX,
         };
 
         internal MailManager(string modId, IModEvents events, IDataHelper dataHelper, IContentHelper contentHelper, IMonitor monitor, IReflectionHelper reflectionHelper)
@@ -108,7 +110,7 @@ namespace FelixDev.StardewMods.FeTK.Services
         /// <param name="id">The ID of the mail.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
-        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to greater than <c>0</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to greater than or equal to <c>0</c>.</exception>
         /// <exception cref="ArgumentException">
         /// The <paramref name="id"/> has to be a valid mod ID OR
         /// a mail with the <paramref name="id"/> has already been registered for the same day for the calling mod.
@@ -116,9 +118,9 @@ namespace FelixDev.StardewMods.FeTK.Services
         /// <exception cref="ArgumentNullException">The <paramref name="content"/> cannot be <c>null</c>.</exception>
         public void AddMail(int daysFromNow, string id, string content, List<Item> attachedItems)
         {
-            if (daysFromNow <= 0)
+            if (daysFromNow < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(daysFromNow), "The day offset has to be greater than 0!");
+                throw new ArgumentOutOfRangeException(nameof(daysFromNow), "The day offset cannot be a negative number!");
             }
 
             if (string.IsNullOrWhiteSpace(id))
@@ -126,7 +128,7 @@ namespace FelixDev.StardewMods.FeTK.Services
                 throw new ArgumentException(nameof(id), "The mail ID needs to contain at least one non-whitespace character!");
             }
 
-            string blacklistEntry = MAIL_USER_ID_BLACKLIST.Where(s => id.Contains(s)).First();
+            string blacklistEntry = MAIL_USER_ID_BLACKLIST.Where(s => id.Contains(s)).FirstOrDefault();
             if (blacklistEntry != null)
             {
                 throw new ArgumentException($"The mail ID cannot contain the string \"{blacklistEntry}\"!", nameof(id));
@@ -169,6 +171,56 @@ namespace FelixDev.StardewMods.FeTK.Services
             }
 
             mailList[arrivalDay].Add(id, mail);
+
+            // Directly add the mail to the mailbox if its arrival day is set for 'Today' (current in-game day).
+            if (daysFromNow == 0)
+            {
+                Game1.mailbox.Add(mail.Id);
+            }
+        }
+
+        /// <summary>
+        /// Check if a mail registered with the given <paramref name="mailId"/> is already in the mailbox.
+        /// </summary>
+        /// <param name="mailId">The ID of the mail to check for.</param>
+        /// <returns><c>True</c> if a mail with the specified <paramref name="mailId"/> has already been registered and 
+        /// is currently in the mailbox, <c>False</c> otherwise.</returns>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="mailId"/> is not a valid mail ID.</exception>
+        public bool HasRegisteredMailInMailbox(string mailId)
+        {
+            if (string.IsNullOrWhiteSpace(mailId))
+            {
+                throw new ArgumentException(nameof(mailId), "The mail ID needs to contain at least one non-whitespace character!");
+            }
+
+            return Game1.mailbox.Any(s => s.StartsWith(modId + MAIL_ID_USER_ID_PREFIX + mailId));
+        }
+
+        public bool CanEdit<T>(IAssetInfo asset)
+        {
+            return asset.AssetNameEquals(STARDEW_VALLEY_MAIL_DATA);
+        }
+
+        public void Edit<T>(IAssetData asset)
+        {
+            IDictionary<string, string> mails = asset.AsDictionary<string, string>().Data;
+
+            var currentDay = SDate.Now().DaysSinceStart;
+
+            foreach (var day in mailList.Keys)
+            {
+                if (day > currentDay)
+                {
+                    // the list of keys is not guaranteed to be sorted from [earlier] to [later], 
+                    // so we have to iterate through all entries. 
+                    continue;
+                }
+
+                foreach (var mail in mailList[day].Values)
+                {
+                    mails.Add(mail.Id, mail.Content);
+                }
+            }
         }
 
         /// <summary>
@@ -213,8 +265,55 @@ namespace FelixDev.StardewMods.FeTK.Services
             }
         }
 
+        /// <summary>
+        /// Retrieve a registered mail based on the given <paramref name="id"/>.
+        /// </summary>
+        /// <param name="id">The ID of the registered mail to retrieve.</param>
+        /// <returns>
+        /// The matching <see cref="MailCore"/> object for the specified <paramref name="id"/>, 
+        /// otherwise <c>null</c>.
+        /// </returns>
         private MailCore GetMailFromId(string id)
         {
+            Regex pattern = new Regex($@"(?<modId>.+)\\{MAIL_ID_USER_ID_PREFIX}(?<mailUserId>.+)\\{MAIL_ID_ARRIVAL_DAY_PREFIX}(?<arrivalDay>[0-9]+)");
+            Match match = pattern.Match(id);
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            // If there is a mod ID mismatch -> do nothing (no mail with such an ID was registered)
+            string consumingModId = match.Groups["modId"].Value;
+            if (!consumingModId.Equals(modId))
+            {
+                return null;
+            }
+
+            int day = int.Parse(match.Groups["arrivalDay"].Value);
+            if (!mailList.TryGetValue(day, out Dictionary<string, MailCore> mailsForDay))
+            {
+                return null;
+            }
+
+
+            string userId = match.Groups["mailUserId"].Value;
+            return mailsForDay.TryGetValue(userId, out MailCore mail)
+                ? mail
+                : null;
+        }
+
+        /// <summary>
+        /// Retrieve a registered mail based on the given <paramref name="id"/>.
+        /// </summary>
+        /// <param name="id">The ID of the registered mail to retrieve.</param>
+        /// <returns>
+        /// The matching <see cref="MailCore"/> object for the specified <paramref name="id"/>, 
+        /// otherwise <c>null</c>.
+        /// </returns>
+        private MailCore GetMailFromId2(string id)
+        {
+            // Try to retrieve the mod ID prefix of the given mail ID (if any) and check if it 
+            // matches with the mod ID this mail manager was registered with.
             int index = id.LastIndexOf(MAIL_ID_USER_ID_PREFIX);
             if (index < 1)
             {
@@ -222,21 +321,23 @@ namespace FelixDev.StardewMods.FeTK.Services
             }
 
             string consumingModId = id.Substring(0, index);
+
+            // If there is a mod ID mismatch -> do nothing (no mail with such an ID was registered)
             if (!consumingModId.Equals(modId))
             {
                 return null;
             }
 
-            index = id.LastIndexOf(MAIL_ID_ARRIVAL_DAY_PREFIX);
-            if (index == -1)
+            int dayOffsetIndex = id.LastIndexOf(MAIL_ID_ARRIVAL_DAY_PREFIX);
+            if (dayOffsetIndex == -1)
             {
                 return null;
             }
 
-            var userId = id.Substring(0, index);
+            var userId = id.Substring(index + MAIL_ID_USER_ID_PREFIX.Length, dayOffsetIndex);
 
-            index += MAIL_ID_ARRIVAL_DAY_PREFIX.Length;
-            if (!int.TryParse(id.Substring(index), out int day))
+            dayOffsetIndex += MAIL_ID_ARRIVAL_DAY_PREFIX.Length;
+            if (!int.TryParse(id.Substring(dayOffsetIndex), out int day))
             {
                 return null;
             }
@@ -257,34 +358,13 @@ namespace FelixDev.StardewMods.FeTK.Services
             mailsRead.Add(currentlyOpenedMail);
 
             // Raise the Mail Closed event.
-            MailClosed?.Invoke(this, new MailClosedEventArgs(currentlyOpenedMail.Id, e.SelectedItems));
+            MailClosed?.Invoke(this, new MailClosedEventArgs(currentlyOpenedMail.UserId, e.SelectedItems));
 
             currentlyOpenedMail = null;
         }
 
-        private void OnDayStarted(object sender, DayStartedEventArgs e)
-        {
-            contentHelper.InvalidateCache(STARDEW_VALLEY_MAIL_DATA);
-        }
-
-        private void OnDayEnding(object sender, DayEndingEventArgs e)
-        {
-            var nextDay = SDate.Now().AddDays(1).DaysSinceStart;
-
-            if (!mailList.TryGetValue(nextDay, out Dictionary<string, MailCore> mailsForDay))
-            {
-                return;
-            }
-
-            foreach (var mail in mailsForDay.Values)
-            {
-                Game1.addMailForTomorrow(mail.Id);
-                monitor.Log($"MailManager: Added the mail with id \"{mail.UserId}\" to tomorrow's inbox!");
-            }
-        }
-
         private void OnSaving(object sender, SavingEventArgs e)
-        {          
+        {
             foreach (var mail in mailsRead)
             {
                 // No dictionary checks below because all mails in the [mailsRead] list are in 
@@ -312,37 +392,46 @@ namespace FelixDev.StardewMods.FeTK.Services
             mailList = saveData != null
                 ? saveDataBuilder.Reconstruct(saveData)
                 : new Dictionary<int, Dictionary<string, MailCore>>();
+
+            // By returning to the title menu, the player can quit the current game without saving 
+            // and the load a new save. The used MailManager instance, however, won't be refreshed,
+            // so data from the previous game round is still there, for example the read mails.
+            // Since a read mail now can be read again by the player (because the save has been re-loaded)
+            // multiple entries for the *same* mail can now be added to the read mails, thus causing a missing
+            // entry exception when attempting to save the game (as only one entry is actually available
+            // in the mail list).
+            // To prevent this error, we reset the read mails after a save game has been loaded.
+            mailsRead.Clear();
         }
 
-        public bool CanEdit<T>(IAssetInfo asset)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
-            return asset.AssetNameEquals(STARDEW_VALLEY_MAIL_DATA);
+            contentHelper.InvalidateCache(STARDEW_VALLEY_MAIL_DATA);
         }
 
-        public void Edit<T>(IAssetData asset)
+        private void OnDayEnding(object sender, DayEndingEventArgs e)
         {
-            IDictionary<string, string> mails = asset.AsDictionary<string, string>().Data;
+            var nextDay = SDate.Now().AddDays(1).DaysSinceStart;
 
-            var currentDay = SDate.Now().DaysSinceStart;
-
-            foreach (var day in mailList.Keys)
+            if (!mailList.TryGetValue(nextDay, out Dictionary<string, MailCore> mailsForDay))
             {
-                if (day > currentDay)
-                {
-                    // the list of keys is not guaranteed to be sorted from [earlier] to [later], 
-                    // so we have to iterate through all entries. 
-                    continue;
-                }
+                return;
+            }
 
-                foreach (var mail in mailList[day].Values)
-                {
-                    mails.Add(mail.Id, mail.Content);
-                }
+            foreach (var mail in mailsForDay.Values)
+            {
+                Game1.addMailForTomorrow(mail.Id);
+                monitor.Log($"MailManager: Added the mail with ID \"{mail.UserId}\" to tomorrow's inbox!");
             }
         }
 
         /// <summary>
-        /// Represents an internal mail object containing word data for the mail manager.
+        /// Represents an internal mail object containing work data for the mail manager.
         /// </summary>
         private class MailCore
         {
