@@ -27,7 +27,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
+        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> is less than or equal to <c>0</c>.</exception>
@@ -42,7 +42,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="arrivalDay">The day when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
+        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
@@ -57,7 +57,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
+        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to be greater than or equal to <c>0</c>.</exception>
@@ -72,7 +72,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="arrivalDay">The day when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
+        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
@@ -84,10 +84,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         void AddMail(SDate arrivalDay, string id, string content, List<Item> attachedItems);
 
         /// <summary>
-        /// Check if a mail has already been added for a specified day.
+        /// Check if a mail has already been added for a specific day.
         /// </summary>
         /// <param name="day">The day to check for.</param>
-        /// <param name="mailId">The ID of the mail.</param>
+        /// <param name="mailId">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <returns>
         /// <c>True</c>, if a mail with the specified <paramref name="mailId"/> has already been added for the specified <paramref name="day"/>, 
         /// otherwise <c>false</c>.
@@ -99,7 +99,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// Check if a mail registered with the given <paramref name="mailId"/> is already in the mailbox.
         /// </summary>
-        /// <param name="mailId">The ID of the mail to check for.</param>
+        /// <param name="mailId">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <returns><c>True</c> if a mail with the specified <paramref name="mailId"/> has already been registered and 
         /// is currently in the mailbox, <c>False</c> otherwise.</returns>
         /// <exception cref="ArgumentException">The specified <paramref name="mailId"/> is invalid.</exception>

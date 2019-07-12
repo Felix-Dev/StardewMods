@@ -64,7 +64,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
+        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> is less than or equal to <c>0</c>.</exception>
@@ -82,7 +82,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="arrivalDay">The day when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
+        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
@@ -105,7 +105,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
+        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to be greater than or equal to <c>0</c>.</exception>
@@ -163,7 +163,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="arrivalDay">The day when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
+        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
@@ -183,10 +183,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         }
 
         /// <summary>
-        /// Check if a mail has already been added for a specified day.
+        /// Check if a mail has already been added for a specific day.
         /// </summary>
         /// <param name="day">The day to check for.</param>
-        /// <param name="mailId">The ID of the mail.</param>
+        /// <param name="mailId">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <returns>
         /// <c>True</c>, if a mail with the specified <paramref name="mailId"/> has already been added for the specified <paramref name="day"/>, 
         /// otherwise <c>false</c>.
@@ -212,7 +212,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// Check if a mail registered with the given <paramref name="mailId"/> is already in the mailbox.
         /// </summary>
-        /// <param name="mailId">The ID of the mail to check for.</param>
+        /// <param name="mailId">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
         /// <returns><c>True</c> if a mail with the specified <paramref name="mailId"/> has already been registered and 
         /// is currently in the mailbox, <c>False</c> otherwise.</returns>
         /// <exception cref="ArgumentException">The specified <paramref name="mailId"/> is invalid.</exception>
@@ -227,7 +227,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         }
 
         /// <summary>
-        /// Check if a mail has already been added for a specified day.
+        /// Check if a mail has already been added for a specific day.
         /// </summary>
         /// <param name="gameDay">The day to check for.</param>
         /// <param name="mailId">The ID of the mail.</param>
@@ -240,11 +240,52 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             return this.mailList.ContainsKey(gameDay) && this.mailList[gameDay].ContainsKey(mailId);
         }
 
+        /// <summary>
+        /// Notify an observer that a mail is being opened.
+        /// </summary>
+        /// <param name="e">Information about the mail being opened.</param>
+        void IMailObserver.OnMailOpening(MailOpeningEventArgs e)
+        {
+            // Raise the mail-opening event.
+            this.MailOpening?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Notify an observer that a mail has been closed.
+        /// </summary>
+        /// <param name="e">Information about the closed mail.</param>
+        void IMailObserver.OnMailClosed(MailClosedCoreEventArgs e)
+        {
+            // Remove the mail from the service. 
+            // We don't need to do key checks here because the service is only notified 
+            // for closed mails belonging to it.
+            this.mailList[e.ArrivalDay.DaysSinceStart].Remove(e.MailId);
+
+            // Raise the mail-closed event.
+            this.MailClosed?.Invoke(this, new MailClosedEventArgs(e.MailId, e.SelectedItems));
+        }
+
+        /// <summary>
+        /// Retrieve a mail by its ID and arrival day.
+        /// </summary>
+        /// <param name="mailId">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
+        /// <param name="arrivalDay">The mail's arrival day in the mailbox of the receiver.</param>
+        /// <returns>
+        /// A <see cref="Mail"/> instance with the specified <paramref name="mailId"/> and <paramref name="arrivalDay"/> on success,
+        /// othewise <c>null</c>.
+        /// </returns>
+        /// <exception cref="ArgumentException">The specified <paramref name="mailId"/> is an invalid mod ID.</exception>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="arrivalDay"/> is <c>null</c>.</exception>
         Mail IMailSender.GetMailFromId(string mailId, SDate arrivalDay)
         {
-            if (mailId == null || arrivalDay == null)
+            if (string.IsNullOrWhiteSpace(mailId))
             {
-                throw new ArgumentNullException($"{nameof(mailId)}/{nameof(arrivalDay)}");
+                throw new ArgumentException("The mail ID needs to contain at least one non-whitespace character!", nameof(mailId));
+            }
+
+            if (arrivalDay == null)
+            {
+                throw new ArgumentNullException(nameof(arrivalDay));
             }
 
             int arrivalGameDay = arrivalDay.DaysSinceStart;
@@ -267,22 +308,6 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             mailList = saveData != null
                 ? saveDataBuilder.Reconstruct(saveData)
                 : new Dictionary<int, IDictionary<string, Mail>>();
-        }
-
-        void IMailObserver.OnMailOpening(MailOpeningEventArgs e)
-        {
-            this.MailOpening?.Invoke(this, e);
-        }
-
-        void IMailObserver.OnMailClosed(MailClosedCoreEventArgs e)
-        {
-            // Remove the mail from the service. 
-            // We don't need to do key checks here because the service is only notified 
-            // for closed mails belonging to it.
-            this.mailList[e.ArrivalDay.DaysSinceStart].Remove(e.MailId);
-
-            // Raise the mail-closed event
-            this.MailClosed?.Invoke(this, new MailClosedEventArgs(e.MailId, e.SelectedItems));
         }
 
         private class MailSaveData
