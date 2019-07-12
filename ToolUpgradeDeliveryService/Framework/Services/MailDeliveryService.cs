@@ -1,5 +1,4 @@
-﻿using FelixDev.StardewMods.FeTK.Services;
-using StardewModdingAPI;
+﻿using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Tools;
@@ -13,8 +12,8 @@ using FelixDev.StardewMods.ToolUpgradeDeliveryService.Compatibility;
 using Microsoft.Xna.Framework;
 
 using SObject = StardewValley.Object;
-using Constants = FelixDev.StardewMods.ToolUpgradeDeliveryService.Common.Constants;
 using Translation = FelixDev.StardewMods.ToolUpgradeDeliveryService.Common.Translation;
+using FelixDev.StardewMods.FeTK.Framework.Services;
 
 namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
 {
@@ -24,7 +23,10 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
     /// </summary>
     internal class MailDeliveryService
     {
+        /// <summary>An ID prefix for the tool-upgrade mails sent by the mail-delivery service.</summary>
         private const string TOOL_MAIL_ID_PREFIX = "ToolUpgrade_";
+
+        /// <summary>The unique ID of the external mod [Rush Orders].</summary>
         private const string MOD_RUSH_ORDERS_MOD_ID = "spacechase0.RushOrders";
 
         private readonly IMonitor monitor;
@@ -32,13 +34,18 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         private readonly ITranslationHelper translationHelper;
         private readonly IModRegistry modRegistry;
 
-        private readonly MailManager mailManager;
+        private readonly IMailService mailService;
 
         private bool running;
 
         private bool isPlayerUsingRushedOrders;
+
+        /// <summary>An API to interact with the external mod [Rush Orders].</summary>
         private IRushOrdersApi rushOrdersApi;
 
+        /// <summary>
+        /// Create a new instance of the <see cref="MailDeliveryService"/> class.
+        /// </summary>
         public MailDeliveryService()
         {
             events = ModEntry.CommonServices.Events;
@@ -47,12 +54,17 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
 
             modRegistry = ModEntry.ModHelper.ModRegistry;
 
-            mailManager = ServiceFactory.GetFactory(Constants.MOD_ID, ModEntry.ModHelper).GetMailManager();
-            ModEntry.ModHelper.Content.AssetEditors.Add(mailManager);
+            mailService = ServiceFactory.GetFactory(ModEntry._ModManifest.UniqueID, ModEntry.ModHelper).GetMailService();
+
+            // TODO: Remove line
+            //ModEntry.ModHelper.Content.AssetEditors.Add(mailManager);
 
             running = false;
         }
 
+        /// <summary>
+        /// Start the mail-delivery service.
+        /// </summary>
         public void Start()
         {
             if (running)
@@ -66,8 +78,8 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
             events.GameLoop.GameLaunched += OnGameLaunched;
             events.GameLoop.DayStarted += OnDayStarted;
 
-            mailManager.MailOpening += OnMailOpening;
-            mailManager.MailClosed += OnMailClosed;
+            mailService.MailOpening += OnMailOpening;
+            mailService.MailClosed += OnMailClosed;
 
             if (isPlayerUsingRushedOrders)
             {
@@ -75,6 +87,9 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
             }
         }
 
+        /// <summary>
+        /// Stop the running mail-delivery service.
+        /// </summary>
         public void Stop()
         {
             if (!running)
@@ -88,8 +103,8 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
                 rushOrdersApi.ToolRushed -= OnPlacedRushOrder;
             }
 
-            mailManager.MailOpening -= OnMailOpening;
-            mailManager.MailClosed -= OnMailClosed;
+            mailService.MailOpening -= OnMailOpening;
+            mailService.MailClosed -= OnMailClosed;
 
             events.GameLoop.GameLaunched -= OnGameLaunched;
             events.GameLoop.DayStarted -= OnDayStarted;
@@ -98,7 +113,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         }
 
         /// <summary>
-        /// Setup compatibility with external mods by consuming their APIs.
+        /// Called when the game has been launched.
         /// </summary>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
@@ -116,6 +131,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
             // TODO: MailDeliveryService: Remove testing code
             Game1.player.Money = 100000;
             Game1.player.addItemToInventoryBool(new SObject(Vector2.Zero, 334, 100));
+            Game1.player.addItemToInventoryBool(new SObject(Vector2.Zero, 335, 100));
             Game1.player.addItemToInventoryBool(new SObject(Vector2.Zero, 336, 100));
 
             int daysLeftForToolUpgrade = Game1.player.daysLeftForToolUpgrade.Value;
@@ -129,7 +145,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
 
             if (daysLeftForToolUpgrade == 0 && upgradeTool != null)
             {
-                if (!mailManager.HasRegisteredMailInMailbox(GetMailIdFromTool(upgradeTool)))
+                if (!mailService.HasRegisteredMailInMailbox(GetMailIdFromTool(upgradeTool)))
                 {
                     SetToolMailForDay(0, upgradeTool);
                 }                
@@ -156,7 +172,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         /// and sets the mail content accordingly (adding a hint that the tool was already received, if applicable).
         /// </summary>
         /// <param name="sender">The event sender.</param>
-        /// <param name="e">ontent information about the opened mail.</param>
+        /// <param name="e">Provides information about the opened mail.</param>
         private void OnMailOpening(object sender, MailOpeningEventArgs e)
         {
             // If the mail is not a tool uprade mail by Clint -> do nothing
@@ -167,6 +183,9 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
 
             Tool attachedTool = (Tool)e.Mail.AttachedItems[0];
             Tool currentToolUpgrade = Game1.player.toolBeingUpgraded.Value;
+
+            // TODO: Test comment for letter UI, remove later
+            //e.Mail.AttachedItems.Add(new WateringCan());
 
             /*
              * Check if the current upgrade tool matches the tool which was assigned to this mail.
@@ -243,7 +262,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         /// Check if the mail with the specified ID is a tool-upgrade mail.
         /// </summary>
         /// <param name="mailId">The mail ID.</param>
-        /// <returns>True, if the mail is a tool-upgrade mail, otherwise false.</returns>
+        /// <returns><c>True</c>, if the mail is a tool-upgrade mail, otherwise <c>false</c>.</returns>
         private bool IsToolMail(string mailId)
         {
             return mailId.StartsWith(TOOL_MAIL_ID_PREFIX);
@@ -261,7 +280,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
             string content = GetTranslatedMailContent(tool);
             content = content.Replace("@", Game1.player.Name);
 
-            mailManager.AddMail(dayOffset, mailId, content, tool);
+            mailService.AddMail(dayOffset, mailId, content, tool);
         }
 
         /// <summary>

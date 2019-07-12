@@ -1,12 +1,11 @@
-﻿using StardewValley;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace FelixDev.StardewMods.FeTK.Services
+namespace FelixDev.StardewMods.FeTK.Framework.Services
 {
     /// <summary>
-    /// Provides data for the <see cref="MailManager.MailOpening"/> event.
+    /// Provides data for the <see cref="IMailService.MailOpening"/> event.
     /// </summary>
     public class MailOpeningEventArgs : EventArgs
     {

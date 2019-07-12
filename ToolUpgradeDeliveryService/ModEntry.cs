@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 
 namespace FelixDev.StardewMods.ToolUpgradeDeliveryService
 {
+    /// <summary>
+    /// Represents the entry point for the Tool-Upgrade Delivery Service mod. Initializes and starts all the needed
+    /// services (such as the mail delivery service).
+    /// </summary>
     internal class ModEntry : Mod
     {
         public static CommonServices CommonServices { get; private set; }
@@ -17,6 +21,8 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService
         public static ModConfig ModConfig { get; private set; }
 
         public static IModHelper ModHelper { get; private set; }
+
+        public static IManifest _ModManifest { get; private set; }
 
         private MailDeliveryService mailDeliveryService;
 
@@ -28,6 +34,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService
             CommonServices = new CommonServices(Monitor, helper.Events, helper.Translation, helper.Reflection, helper.Content, helper.Data);
 
             ModHelper = helper;
+            _ModManifest = this.ModManifest;
 
             // Setup services & mod configuration
             ModConfig = helper.ReadConfig<ModConfig>();

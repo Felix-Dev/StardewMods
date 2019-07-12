@@ -65,7 +65,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\Constants\Constants.cs" />
     <Compile Include="Common\Constants\Translation.cs" />
     <Compile Include="Compatibility\IRushOrdersApi.cs" />
     <Compile Include="Framework\ModConfig.cs" />

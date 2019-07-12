@@ -44,6 +44,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Framework\Helpers\SDateHelper.cs" />
+    <Compile Include="Framework\Serialization\JsonHelper.cs" />
+    <Compile Include="Framework\Services\MailService\Events\MailClosedCoreEventArgs.cs" />
+    <Compile Include="Framework\Services\MailService\Interfaces\IMailManager.cs" />
+    <Compile Include="Framework\Services\MailService\Interfaces\IMailObserver.cs" />
+    <Compile Include="Framework\Services\MailService\Interfaces\IMailSender.cs" />
+    <Compile Include="Framework\Services\MailService\Interfaces\IMailService.cs" />
+    <Compile Include="Framework\Services\MailService\MailManager.cs" />
+    <Compile Include="Framework\Services\MailService\Models\MailAssetData.cs" />
+    <Compile Include="Framework\Services\MailService\Events\MailDataLoadingEventArgs.cs" />
+    <Compile Include="Framework\Services\MailService\MailInjector.cs" />
     <Compile Include="Framework\UI\Menus\LetterViewerMenu\LetterViewerMenuClosedEventArgs.cs" />
     <Compile Include="Framework\UI\Menus\LetterViewerMenu\LetterViewerMenuWrapper.cs" />
     <Compile Include="Framework\ModHelpers\ModSaveDataHelper.cs" />
@@ -51,10 +62,10 @@
     <Compile Include="Framework\Serialization\ItemSerializer\IItemSerializeHelper.cs" />
     <Compile Include="Framework\Serialization\ItemSerializer\ItemSerializeHelper.cs" />
     <Compile Include="Framework\Serialization\ItemSerializer\SerializeHelpers\ToolSerializeHelper.cs" />
-    <Compile Include="Framework\Services\MailManager\MailClosedEventArgs.cs" />
-    <Compile Include="Framework\Services\MailManager\Mail.cs" />
-    <Compile Include="Framework\Services\MailManager\MailManager.cs" />
-    <Compile Include="Framework\Services\MailManager\MailOpeningEventArgs.cs" />
+    <Compile Include="Framework\Services\MailService\Events\MailClosedEventArgs.cs" />
+    <Compile Include="Framework\Services\MailService\Models\Mail.cs" />
+    <Compile Include="Framework\Services\MailService\MailService.cs" />
+    <Compile Include="Framework\Services\MailService\Events\MailOpeningEventArgs.cs" />
     <Compile Include="Framework\Services\ServiceFactory.cs" />
     <Compile Include="ToolkitMod.cs" />
   </ItemGroup>

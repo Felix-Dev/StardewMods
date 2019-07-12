@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FelixDev.StardewMods.FeTK.Services
+namespace FelixDev.StardewMods.FeTK.Framework.Services
 {
     /// <summary>
     /// Provides (simplified) access to different services a consuming mod can use. 
@@ -15,10 +15,10 @@ namespace FelixDev.StardewMods.FeTK.Services
     /// </summary>
     public class ServiceFactory
     {
-        private static readonly IModHelper ToolkitModHelper = ToolkitMod.ModHelper;
-
         /// <summary>Contains the created <see cref="ServiceFactory"/> instances. Maps a mod (via the mod ID) to its service factory instance. </summary>
-        private static readonly Dictionary<string, ServiceFactory> ServiceFactories = new Dictionary<string, ServiceFactory>();
+        private static readonly IDictionary<string, ServiceFactory> serviceFactories = new Dictionary<string, ServiceFactory>();
+
+        private static readonly IMailManager mailManager = new MailManager();
 
         /// <summary>The unique ID of the mod for which this service factory was created.</summary>
         private readonly string modId;
@@ -27,9 +27,9 @@ namespace FelixDev.StardewMods.FeTK.Services
         private readonly IModHelper modHelper;
 
         /// <summary>
-        /// Contains the created <see cref="MailManager"/> instance for a service factory. Each factory has at most one instance.
+        /// Contains the created <see cref="MailService"/> instance for a service factory. Each factory has at most one instance.
         /// </summary>
-        private MailManager mailManager;
+        private IMailSender mailService;
 
         /// <summary>
         /// Get an instance of the <see cref="ServiceFactory"/> class.
@@ -51,13 +51,13 @@ namespace FelixDev.StardewMods.FeTK.Services
                 throw new ArgumentNullException(nameof(modHelper));
             }
 
-            if (ServiceFactories.ContainsKey(modId))
+            if (serviceFactories.ContainsKey(modId))
             {
-                return ServiceFactories[modId];
+                return serviceFactories[modId];
             }
 
             var serviceFactory = new ServiceFactory(modId, modHelper);
-            ServiceFactories.Add(modId, serviceFactory);
+            serviceFactories[modId] = serviceFactory;
 
             return serviceFactory;
         }
@@ -74,17 +74,19 @@ namespace FelixDev.StardewMods.FeTK.Services
         }
 
         /// <summary>
-        /// Get an instance of the <see cref="MailManager"/> class.
+        /// Get a mail service for the mod to use which requested this service factory.
         /// </summary>
-        /// <returns>A newly created instance (if no instance existed yet) for a mod, otherwise the already existing one.</returns>
-        public MailManager GetMailManager()
+        /// <returns>A newly created instance for a mod (if no such instance existed yet), otherwise the already existing one.</returns>
+        public IMailService GetMailService()
         {
-            if (mailManager == null)
+            if (mailService == null)
             {
-                mailManager = new MailManager(modId, ToolkitModHelper.Events, modHelper.Data, ToolkitModHelper.Content, ToolkitMod._Monitor, ToolkitModHelper.Reflection);
+                mailService = new MailService(modId, mailManager, modHelper.Data);
+
+                mailManager.RegisterMailSender(modId, mailService);
             }
 
-            return mailManager;
+            return mailService;
         }
     }
 }

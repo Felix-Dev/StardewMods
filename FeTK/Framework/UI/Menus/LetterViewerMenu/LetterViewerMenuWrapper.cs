@@ -9,21 +9,17 @@ using System.Text;
 namespace FelixDev.StardewMods.FeTK.UI.Menus
 {
     /// <summary>
-    /// This class is a wrapper around the <see cref="LetterViewerMenu"/> class to provide additional functionality, 
+    /// This class is a wrapper around the <see cref="LetterViewerMenu"/> class to provide an extended API, 
     /// such as:
-    ///     - Provides a <see cref="MenuClosed"/> event
-    ///     - Can set attached items
+    ///     - A <see cref="MenuClosed"/> event
+    ///     - Programmatically settable attached items
     /// </summary>
     public class LetterViewerMenuWrapper
     {
-        /// <summary>
-        /// The private <see cref="LetterViewerMenuEx"/> instance used to display the mail.
-        /// </summary>
+        /// <summary>The <see cref="LetterViewerMenuEx"/> instance used to display the mail.</summary>
         private readonly LetterViewerMenuEx letterMenu;
 
-        /// <summary>
-        /// Raised when the letter viewer menu has been closed.
-        /// </summary>
+        /// <summary>Raised when the letter viewer menu has been closed.</summary>
         public event EventHandler<LetterViewerMenuClosedEventArgs> MenuClosed;
 
         /// <summary>
@@ -33,9 +29,19 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
         /// <param name="mailTitle">The title of mail to display.</param>
         /// <param name="mailContent">The content of the mail to display.</param>
         /// <param name="attachedItems">The attached items of the mail to display. May be <c>null</c>.</param>
+        /// <exception cref="ArgumentNullException">
+        /// The specified <paramref name="reflectionHelper"/> is <c>null</c> -or-
+        /// the specified <paramref name="mailTitle"/> is <c>null</c> -or-
+        /// the specified <paramref name="mailContent"/> is <c>null</c>.
+        /// </exception>
         public LetterViewerMenuWrapper(IReflectionHelper reflectionHelper, string mailTitle, string mailContent, List<Item> attachedItems = null)
         {
-            letterMenu = new LetterViewerMenuEx(reflectionHelper, mailTitle, mailContent, attachedItems)
+            if (reflectionHelper == null || mailTitle == null || mailContent == null)
+            {
+                throw new ArgumentNullException($"{nameof(reflectionHelper)}/{nameof(mailTitle)}/{nameof(mailContent)}");
+            }
+
+            letterMenu = new LetterViewerMenuEx(reflectionHelper, mailTitle, mailContent.Equals(string.Empty) ? " " : mailContent, attachedItems)
             {
                 exitFunction = new IClickableMenu.onExit(OnExit)
             };
@@ -63,18 +69,14 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
         /// </summary>
         private class LetterViewerMenuEx : LetterViewerMenu
         {
-            /// <summary>
-            /// The title of the mail.
-            /// </summary>
+            /// <summary>The title of the mail.</summary>
             public string MailTitle { get; private set; }
 
-            /// <summary>
-            /// A list containing the selected items.
-            /// </summary>
+            /// <summary>A list containing the selected items.</summary>
             public List<Item> SelectedItems { get; private set; }
 
             /// <summary>
-            /// Creates an instance of the <see cref="LetterViewerMenuEx"/> class. Visualizes a mail.
+            /// Create an instance of the <see cref="LetterViewerMenuEx"/> class.
             /// </summary>
             /// <param name="reflectionHelper"></param>
             /// <param name="title">The title of the mail.</param>
@@ -120,7 +122,7 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
             }
 
             /// <summary>
-            /// Adds functionality to add a clicked item to the <see cref="SelectedItems"/> list./>
+            /// Add functionality to add a clicked item to the <see cref="SelectedItems"/> list./>
             /// </summary>
             /// <param name="x">X-coordinate of the click.</param>
             /// <param name="y">Y-coordinate of the click.</param>

@@ -15,7 +15,7 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
         /// </summary>
         /// <param name="mailId">The ID of the mail to be closed.</param>
         /// <param name="selectedItems">Sets the items of the mail which were selected. Can be <c>null</c>.</param>
-        /// <exception cref="ArgumentNullException">If the <paramref name="mailId"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="mailId"/> is <c>null</c>.</exception>
         public LetterViewerMenuClosedEventArgs(string mailId, List<Item> selectedItems)
         {
             MailId = mailId ?? throw new ArgumentNullException(nameof(mailId));
