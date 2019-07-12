@@ -81,7 +81,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         {
             if (mailService == null)
             {
-                mailService = new MailService(modId, mailManager, modHelper.Data);
+                mailService = new MailService(modId, mailManager);
 
                 mailManager.RegisterMailSender(modId, mailService);
             }

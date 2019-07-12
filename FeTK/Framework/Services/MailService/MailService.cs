@@ -44,7 +44,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// </summary>
         public event EventHandler<MailClosedEventArgs> MailClosed;
 
-        internal MailService(string modId, IMailManager mailManager, IDataHelper dataHelper)
+        internal MailService(string modId, IMailManager mailManager)
         {
             this.modId = modId ?? throw new ArgumentNullException(nameof(modId));
             this.mailManager = mailManager ?? throw new ArgumentNullException(nameof(mailManager));
