@@ -184,9 +184,6 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
             Tool attachedTool = (Tool)e.Mail.AttachedItems[0];
             Tool currentToolUpgrade = Game1.player.toolBeingUpgraded.Value;
 
-            // TODO: Test comment for letter UI, remove later
-            //e.Mail.AttachedItems.Add(new WateringCan());
-
             /*
              * Check if the current upgrade tool matches the tool which was assigned to this mail.
              * 

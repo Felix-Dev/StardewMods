@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
@@ -9,10 +10,12 @@ using System.Text;
 namespace FelixDev.StardewMods.FeTK.UI.Menus
 {
     /// <summary>
-    /// This class is a wrapper around the <see cref="LetterViewerMenu"/> class to provide an extended API, 
+    /// This class is a wrapper around the <see cref="LetterViewerMenu"/> class to provide an extended API 
     /// such as:
     ///     - A <see cref="MenuClosed"/> event
     ///     - Programmatically settable attached items
+    /// It also fixes an in-game bug (up to 1.3.36 at least) which only displays the last attached item 
+    /// in a collection of attached items.
     /// </summary>
     public class LetterViewerMenuWrapper
     {
@@ -69,6 +72,10 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
         /// </summary>
         private class LetterViewerMenuEx : LetterViewerMenu
         {
+            private readonly IReflectedField<float> scaleRef;
+
+            private readonly IReflectedField<int> whichBGRef;
+
             /// <summary>The title of the mail.</summary>
             public string MailTitle { get; private set; }
 
@@ -91,27 +98,32 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
                     .GetField<string>(this, "mailTitle")
                     .SetValue(title);
 
+                scaleRef = reflectionHelper
+                    .GetField<float>(this, "scale");
+
+                whichBGRef = reflectionHelper
+                    .GetField<int>(this, "whichBG");
+
                 MailTitle = title;
 
                 if (attachedItems == null || attachedItems.Count == 0)
-                {
                     return;
-                }
 
                 SelectedItems = new List<Item>();
 
                 // Add item(s) to mail
                 foreach (var item in attachedItems)
                 {
-                    this.itemsToGrab.Add(
-                        new ClickableComponent(
-                            new Rectangle(this.xPositionOnScreen + this.width / 2 - 48, this.yPositionOnScreen + this.height - 32 - 96, 96, 96),
-                            item)
-                        {
-                            myID = region_itemGrabButton,
-                            leftNeighborID = region_backButton,
-                            rightNeighborID = region_forwardButton
-                        });
+                    var attachedItemComponent = new ClickableComponent(
+                        new Rectangle(this.xPositionOnScreen + this.width / 2 - 48, this.yPositionOnScreen + this.height - 32 - 96, 96, 96),
+                        item)
+                    {
+                        myID = region_itemGrabButton,
+                        leftNeighborID = region_backButton,
+                        rightNeighborID = region_forwardButton
+                    };
+
+                    this.itemsToGrab.Add(attachedItemComponent);
                 }
 
                 this.backButton.rightNeighborID = region_itemGrabButton;
@@ -144,6 +156,52 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
                 }
 
                 base.receiveLeftClick(x, y, playSound);
+            }
+
+            /// <summary>
+            /// Draw the letter menu. Our implementation fixes a bug in the game where only the last item
+            /// of the atatched mail items is always drawn.
+            /// </summary>
+            /// <param name="b"></param>
+            public override void draw(SpriteBatch b)
+            {
+                // Instead of copying over the complete original LetterViewerMenu.draw() function, we "overdraw" it 
+                // with our fix applied. The reduces our dependency on the game code ( we would have to change our code
+                // when the game code changes) and we also save a bunch of reflection calls (to access private class members).
+
+                base.draw(b);
+
+                var whichBG = this.whichBGRef.GetValue();
+                var scale = this.scaleRef.GetValue();
+                if (scale == 1.0)
+                {
+                    // The original game code (up to 1.3.36 at least) has a bug where, if there are multiple
+                    // attached items, only the last item is always displayed. While the other items are in fact
+                    // properly attached, they won't get drawn. We fix that bug here.
+                    foreach (ClickableComponent clickableComponent in this.itemsToGrab)
+                    {
+                        if (clickableComponent.item != null)
+                        {
+                            b.Draw(this.letterTexture, clickableComponent.bounds, new Rectangle?(new Rectangle(whichBG * 24, 180, 24, 24)), Color.White);
+                            clickableComponent.item.drawInMenu(b, new Vector2(clickableComponent.bounds.X + 16, clickableComponent.bounds.Y + 16), clickableComponent.scale);
+
+                            // The original game code misses this "break" statement and thus overdraws all previously drawn items.
+                            break;
+                        }
+                    }
+                }
+
+                // Since we "overdraw" the letter viewer menu, we also need to re-draw the game cursor as otherwise 
+                // it would be behind the attached item spot. That means two cursors are being drawn now for the letter viewer menu
+                // but visual testing still gave acceptable visual results (only really fast cursor movement shows a bit of a trailing
+                // second cursor.)
+
+                if (Game1.options.hardwareCursor)
+                    return;
+
+                b.Draw(Game1.mouseCursors, new Vector2(Game1.getMouseX(), Game1.getMouseY()), 
+                    new Rectangle?(Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 0, 16, 16)), 
+                    Color.White, 0.0f, Vector2.Zero, (float)(4.0 + Game1.dialogueButtonScale / 150.0), SpriteEffects.None, 1f);
             }
         }
     }
