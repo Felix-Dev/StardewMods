@@ -34,15 +34,12 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
         private IDictionary<string, MailMetaData> registeredMailsMetaData = new Dictionary<string, MailMetaData>();
 
-        //private readonly IList<IObserver<MailOpeningEventArgs>> mailOpeningSubscribers = new List<IObserver<MailOpeningEventArgs>>();
-        //private readonly IList<IObserver<MailClosedEventArgs>> mailClosedSubscribers = new List<IObserver<MailClosedEventArgs>>();
-
-        //private readonly IList<IMailObserver> mailStateObservers = new List<IMailObserver>();
-
+        /// <summary>
+        /// Create a new instance of the <see cref="MailManager"/> class.
+        /// </summary>
         public MailManager()
         {
             this.mailInjector = new MailInjector(toolkitModHelper.Content);
-            //this.saveDataHelper = new ModSaveDataHelper(toolkitModHelper.Data);
             this.saveDataHelper = ModSaveDataHelper.GetSaveDataHelper();
 
             mailInjector.MailDataLoading += OnMailDataLoading;
@@ -56,16 +53,35 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             toolkitModHelper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
         }
 
+        /// <summary>
+        /// Add a mail to the game.
+        /// </summary>
+        /// <param name="modId">The ID of the mod which wants to add the mail.</param>
+        /// <param name="mailId">The ID of the mail.</param>
+        /// <param name="arrivalDay">The day of arrival of the mail.</param>
+        /// <exception cref="ArgumentException">
+        /// The specified <paramref name="modId"/> is <c>null</c>, does not contain at least one 
+        /// non-whitespace character or contains an invalid character sequence -or-
+        /// the specified <paramref name="mailId"/> is <c>null</c>, does not contain at least one 
+        /// non-whitespace character or contains an invalid character sequence.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="arrivalDay"/> is <c>null</c>.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// A mail with the specified <paramref name="mailId"/> provided by the mod with the specified <paramref name="modId"/> 
+        /// for the specified <paramref name="arrivalDay"/> already exists.
+        /// </exception>
         public void Add(string modId, string mailId, SDate arrivalDay)
         {
-            if (string.IsNullOrWhiteSpace(modId) || string.IsNullOrWhiteSpace(mailId))
+            if (string.IsNullOrWhiteSpace(modId) || modId.Contains(MAIL_ID_SEPARATOR))
             {
-                throw new ArgumentException("TODO:", nameof(modId));
+                throw new ArgumentException($"The mod ID \"{modId}\" has to contain at least one non-whitespace character and cannot " +
+                    $"contain the string {MAIL_ID_SEPARATOR}", nameof(modId));
             }
 
-            if (modId.Contains(MAIL_ID_SEPARATOR) || mailId.Contains(MAIL_ID_SEPARATOR))
+            if (mailId.Contains(MAIL_ID_SEPARATOR) || mailId.Contains(MAIL_ID_SEPARATOR))
             {
-                throw new ArgumentException($"The sender ID {modId} and/or the mail ID {mailId} contains the not-allowed string {MAIL_ID_SEPARATOR}!");
+                throw new ArgumentException($"The mail ID \"{mailId}\" has to contain at least one non-whitespace character and cannot " +
+                    $"contain the string {MAIL_ID_SEPARATOR}", nameof(mailId));
             }
 
             if (arrivalDay == null)
@@ -77,18 +93,20 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
              * Components for the internal mail ID: MOD_ID + user ID + Arrival Day.
              * 
              * Multiple mods can add mails with the same IDs for the same day, so in order to have
-             * a straightforward relation between mail and the mod which added it, we need to add the mod id 
+             * a straightforward relation between mail and the mod which added it, we need to add the mod ID 
              * to the internal mail ID.
              * 
-             * We also add the arrival day to the internal ID so that you can use the same user IDs for different mails
-             * scheduled for different days. The user cannot have two mails with the same ID for any given day.
+             * We also add the arrival day to the internal mail ID because for each mod, mails with the 
+             * same ID for different arrival days can be added. The user cannot, however, have multiple mails 
+             * with the same ID for the same day for the same mod.
              */
             int absoluteArrivalDay = arrivalDay.DaysSinceStart;
             string internalMailId = modId + MAIL_ID_SEPARATOR + mailId + MAIL_ID_SEPARATOR + absoluteArrivalDay;
 
             if (registeredMailsMetaData.ContainsKey(internalMailId))
             {
-                throw new InvalidOperationException("TODO");
+                throw new InvalidOperationException($"A mail with the specified ID \"{mailId}\" for the given mod \"{modId}\" for the " +
+                    $"specified arrival day \"{arrivalDay}\" already exists!");
             }
 
             registeredMailsMetaData[internalMailId] = new MailMetaData(modId, mailId, absoluteArrivalDay);
@@ -108,40 +126,61 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             }
         }
 
+        /// <summary>
+        /// Register a mail sender with the mail manager.
+        /// </summary>
+        /// <param name="modId">The ID of the mod using the specified mail sender.</param>
+        /// <param name="mailSender">The <see cref="IMailSender"/> instance to register.</param>
+        /// <exception cref="ArgumentException">
+        /// The specified <paramref name="modId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="mailSender"/> is <c>null</c>.</exception>
+        /// <exception cref="InvalidOperationException">A mail sender with the same <paramref name="modId"/> has already been registered.</exception>
         public void RegisterMailSender(string modId, IMailSender mailSender)
         {
             if (string.IsNullOrWhiteSpace(modId))
             {
-                throw new ArgumentException("message", nameof(modId));
+                throw new ArgumentException("The mod ID needs to contain at least one non-whitespace character!", nameof(modId));
             }
 
             if (mailSenders.ContainsKey(modId))
             {
-                return;
+                throw new InvalidOperationException($"A mail sender for the mod with ID \"{modId}\" has already been registered.");
             }
 
             mailSenders[modId] = mailSender ?? throw new ArgumentNullException(nameof(mailSender));
         }
 
+        /// <summary>
+        /// Determine whether the player's mailbox contains the specified mail.
+        /// </summary>
+        /// <param name="modId">The ID of the mod which created this mail.</param>
+        /// <param name="mailId">The ID of the mail.</param>
+        /// <returns>
+        /// <c>true</c> if a mail with the specified <paramref name="mailId"/> created by the mod with the 
+        /// specified <paramref name="modId"/> is in the player's mailbox; otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// The specified <paramref name="modId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character -or-
+        /// the specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character.
+        /// </exception>
         public bool HasMailInMailbox(string modId, string mailId)
         {
-            if (modId == null || mailId == null)
+            if (string.IsNullOrWhiteSpace(modId))
             {
-                throw new ArgumentNullException($"{nameof(modId)}/{nameof(mailId)}");
+                throw new ArgumentException("The mod ID needs to contain at least one non-whitespace character!", nameof(modId));
+            }
+
+            if (string.IsNullOrWhiteSpace(mailId))
+            {
+                throw new ArgumentException("The mail ID needs to contain at least one non-whitespace character!", nameof(mailId));
             }
 
             return Game1.mailbox.Any(s => s.StartsWith(modId + MAIL_ID_SEPARATOR + mailId));
         }
-
-        //public IDisposable Subscribe(IMailObserver observer)
-        //{
-        //    if (!mailStateObservers.Contains(observer))
-        //    {
-        //        mailStateObservers.Add(observer);
-        //    }
-
-        //    return new MailObservationUnsubscriber(mailStateObservers, observer);
-        //}
 
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
@@ -214,9 +253,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             // When testing in Multiplayer, it was noticed that apparently for non-host players,
             // already seen mails won't be removed from their [mailForTomorrow] list. This resulted
             // in adding already seen mails to the mailbox again and again. This caused "zombie" mails 
-            // where the mailbox wouldn indicate a mail, but nothing was shown for that mail (because its 
+            // where the players's mailbox would indicate a mail, but nothing was shown for that mail (because its 
             // ID was no longer in the system).
-            // Clearing the [mailForTomorrow] list manually will prevent the abobe described "zombie" mails.
+            // Clearing the [mailForTomorrow] list manually will prevent the above described "zombie" mails.
             if (!Context.IsMainPlayer && Game1.player.mailForTomorrow.Contains(mailId))
             {
                 Game1.player.mailForTomorrow.Remove(mailId);
@@ -292,26 +331,6 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 this.registeredMailsMetaData = new Dictionary<string, MailMetaData>();
             }
         }
-
-        //private class MailObservationUnsubscriber : IDisposable
-        //{
-        //    private readonly IList<IMailObserver> observers;
-        //    private readonly IMailObserver observer;
-
-        //    public MailObservationUnsubscriber(IList<IMailObserver> observers, IMailObserver observer)
-        //    {
-        //        this.observers = observers;
-        //        this.observer = observer;
-        //    }
-
-        //    public void Dispose()
-        //    {
-        //        if (observer != null)
-        //        {
-        //            observers.Remove(observer);
-        //        }
-        //    }
-        //}
 
         private class MailMetaData
         {

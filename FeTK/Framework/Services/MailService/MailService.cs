@@ -19,19 +19,34 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
     /// </summary>
     public class MailService : IMailSender
     {
+        /// <summary>The prefix of the key used to identify the save data created by this mail service.</summary>
         private const string SAVE_DATA_KEY_PREFIX = "FelixDev.StardewMods.FeTK.Framework.Services.MailService";
 
+        /// <summary>Provides access to the <see cref="IModEvents"/> API provided by SMAPI.</summary>
         private static readonly IModEvents events = ToolkitMod.ModHelper.Events;
+
+        /// <summary>Provides access to the <see cref="IMonitor"/> API provided by SMAPI.</summary>
         private static readonly IMonitor monitor = ToolkitMod._Monitor;
 
+        /// <summary>The ID of the mod which uses this mail service.</summary>
         private readonly string modId;
+
+        /// <summary>The key used to identify the save data created by this mail service.</summary>
         private readonly string saveDataKey;
 
+        /// <summary>The mail manager used to add mails to the game and provide mail events.</summary>
         private readonly IMailManager mailManager;
 
+        /// <summary>The save data manager for this mail service.</summary>
         private readonly ModSaveDataHelper saveDataHelper;
+
+        /// <summary>A helper to write and retrieve the save data for this mail service.</summary>
         private readonly SaveDataBuilder saveDataBuilder;
 
+        /// <summary>
+        /// Contains all mails added with this mail service which have not been read by the player yet. 
+        /// For each day a collection of mails with that arrival day is stored (using a mapping [mail ID] -> [mail]).
+        /// </summary>
         private IDictionary<int, IDictionary<string, Mail>> mailList = new Dictionary<int, IDictionary<string, Mail>>();
 
         /// <summary>
@@ -44,16 +59,27 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// </summary>
         public event EventHandler<MailClosedEventArgs> MailClosed;
 
+        /// <summary>
+        /// Create a new instance of the <see cref="MailService"/> class.
+        /// </summary>
+        /// <param name="modId">The ID of the mod for which this mail service will be created for.</param>
+        /// <param name="mailManager">The <see cref="IMailManager"/> instance which will be used by this service to add mails to the game.</param>
+        /// <exception cref="ArgumentNullException">
+        /// The specified <paramref name="modId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character.</exception>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="mailManager"/> is <c>null</c>.</exception>
         internal MailService(string modId, IMailManager mailManager)
         {
-            this.modId = modId ?? throw new ArgumentNullException(nameof(modId));
+            if (string.IsNullOrWhiteSpace(modId))
+            {
+                throw new ArgumentException("The mod ID needs to contain at least one non-whitespace character!", nameof(modId));
+            }
+
             this.mailManager = mailManager ?? throw new ArgumentNullException(nameof(mailManager));
 
             this.saveDataKey = SAVE_DATA_KEY_PREFIX + "." + modId;
 
-            //this.saveDataHelper = new ModSaveDataHelper(dataHelper);
             this.saveDataHelper = ModSaveDataHelper.GetSaveDataHelper(modId);
-
             this.saveDataBuilder = new SaveDataBuilder();
 
             events.GameLoop.Saving += OnSaving;
@@ -64,11 +90,13 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
+        /// <param name="id">The ID of the mail.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> is less than or equal to <c>0</c>.</exception>
-        /// <exception cref="ArgumentException">The <paramref name="id"/> is an invalid mod ID.</exception>
+        /// <exception cref="ArgumentException">
+        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character.
+        /// </exception>
         /// <exception cref="ArgumentNullException">The <paramref name="content"/> cannot be <c>null</c>.</exception>
         /// <exception cref="InvalidOperationException">
         /// A mail with the specified <paramref name="id"/> has already been added for the day specified by <paramref name="daysFromNow"/>.
@@ -82,14 +110,16 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="arrivalDay">The day when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
+        /// <param name="id">The ID of the mail.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
-        /// <exception cref="ArgumentException">The <paramref name="id"/> is an invalid mod ID.</exception>
+        /// <exception cref="ArgumentException">
+        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character.
+        /// </exception>
         /// <exception cref="ArgumentNullException">The <paramref name="content"/> cannot be <c>null</c>.</exception>
         /// <exception cref="InvalidOperationException">
-        /// A mail with the specified <paramref name="id"/> has already been added for the day specified by <paramref name="arrivalDay"/>.
+        /// A mail with the specified <paramref name="id"/> already exists for the specified <paramref name="arrivalDay"/>.
         /// </exception>
         public void AddMail(SDate arrivalDay, string id, string content, Item attachedItem = null)
         {
@@ -105,14 +135,16 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
+        /// <param name="id">The ID of the mail.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to be greater than or equal to <c>0</c>.</exception>
-        /// <exception cref="ArgumentException">The <paramref name="id"/> is an invalid mod ID.</exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> cannot be <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is <c>null</c>.</exception>
         /// <exception cref="InvalidOperationException">
-        /// A mail with the specified <paramref name="id"/> has already been added for the day specified by <paramref name="daysFromNow"/>.
+        /// A mail with the specified <paramref name="id"/> already exists for the day specified by <paramref name="daysFromNow"/>.
         /// </exception>
         public void AddMail(int daysFromNow, string id, string content, List<Item> attachedItems)
         {
@@ -163,14 +195,14 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="arrivalDay">The day when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
+        /// <param name="id">The ID of the mail.</param>
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
         /// <exception cref="ArgumentException">The <paramref name="id"/> is an invalid mod ID.</exception>
         /// <exception cref="ArgumentNullException">The <paramref name="content"/> cannot be <c>null</c>.</exception>
         /// <exception cref="InvalidOperationException">
-        /// A mail with the specified <paramref name="id"/> has already been added for the day specified by <paramref name="arrivalDay"/>.
+        /// A mail with the specified <paramref name="id"/> already exists for the specified <paramref name="arrivalDay"/>.
         /// </exception>
         public void AddMail(SDate arrivalDay, string id, string content, List<Item> attachedItems)
         {
@@ -183,16 +215,19 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         }
 
         /// <summary>
-        /// Check if a mail has already been added for a specific day.
+        /// Determine if a mail added by this mail service already exists for a day.
         /// </summary>
         /// <param name="day">The day to check for.</param>
-        /// <param name="mailId">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
+        /// <param name="mailId">The ID of the mail.</param>
         /// <returns>
-        /// <c>True</c>, if a mail with the specified <paramref name="mailId"/> has already been added for the specified <paramref name="day"/>, 
-        /// otherwise <c>false</c>.
+        /// <c>true</c> if a mail with the specified <paramref name="mailId"/> has already been added for the specified <paramref name="day"/>;
+        /// otherwise, <c>false</c>.
         /// </returns>
         /// <exception cref="ArgumentNullException">The specified <paramref name="day"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">The specified <paramref name="mailId"/> is invalid.</exception>
+        /// <exception cref="ArgumentException">
+        /// The specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character.
+        /// </exception>
         public bool HasMailForDay(SDate day, string mailId)
         {
             if (day == null)
@@ -210,12 +245,15 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         }
 
         /// <summary>
-        /// Check if a mail registered with the given <paramref name="mailId"/> is already in the mailbox.
+        /// Determine if a mail with the given <paramref name="mailId"/> added by this mail service is currently in the mailbox.
         /// </summary>
-        /// <param name="mailId">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
-        /// <returns><c>True</c> if a mail with the specified <paramref name="mailId"/> has already been registered and 
-        /// is currently in the mailbox, <c>False</c> otherwise.</returns>
-        /// <exception cref="ArgumentException">The specified <paramref name="mailId"/> is invalid.</exception>
+        /// <param name="mailId">The ID of the mail.</param>
+        /// <returns><c>true</c> if a mail with the specified <paramref name="mailId"/> has already been registered and 
+        /// is currently in the mailbox; otherwise, <c>false</c>.</returns>
+        /// <exception cref="ArgumentException">
+        /// The specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character.
+        /// </exception>
         public bool HasRegisteredMailInMailbox(string mailId)
         {
             if (string.IsNullOrWhiteSpace(mailId))
@@ -227,7 +265,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         }
 
         /// <summary>
-        /// Check if a mail has already been added for a specific day.
+        /// Determine if a mail has already been added by this mail service for a specific day.
         /// </summary>
         /// <param name="gameDay">The day to check for.</param>
         /// <param name="mailId">The ID of the mail.</param>

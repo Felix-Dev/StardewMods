@@ -11,13 +11,15 @@ using System.Threading.Tasks;
 
 namespace FelixDev.StardewMods.FeTK.ModHelpers
 {
+    // TODO: - Remove ReadData/WriteData functions
+    //       - Create a GetFilePath() function
+
     /// <summary>
-    /// This class is a helper to read/write save-file specific mod data. SMAPI already provides an implementation 
-    /// of the <see cref="IDataHelper"/> interface which can handle mod specific save data. It (currently) 
-    /// has a limitation though: In Stardew Valley Multiplayer, its implementation only works for the 
-    /// host player.
-    /// This class provides mod-specific save-file data reading/writing in Multiplayer even for non-host players by storing  
-    /// the data inside the relevant mod.
+    /// This class provides an API to read/write save data for a mod. It is based on the <see cref="IDataHelper"/>
+    /// API provided by SMAPI, which can handle mod-specific save data in single-player or for the host ONLY in
+    /// multiplayer.
+    /// The <see cref="ModSaveDataHelper"/> class extends the <see cref="IDataHelper"/> API to handle mod-specific
+    /// save data even for non-host players in multiplayer. The save data is stored in Stardew Valley's app  data folder.
     /// </summary>
     internal class ModSaveDataHelper
     {
