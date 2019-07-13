@@ -1,5 +1,4 @@
 ﻿using FelixDev.StardewMods.FeTK.Framework.Serialization;
-using Newtonsoft.Json;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using System;

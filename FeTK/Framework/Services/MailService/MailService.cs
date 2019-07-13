@@ -95,12 +95,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> is less than or equal to <c>0</c>.</exception>
         /// <exception cref="ArgumentException">
-        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character.
+        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
+        /// a mail with the specified <paramref name="id"/> already exists for the day specified by <paramref name="daysFromNow"/>.
         /// </exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> cannot be <c>null</c>.</exception>
-        /// <exception cref="InvalidOperationException">
-        /// A mail with the specified <paramref name="id"/> has already been added for the day specified by <paramref name="daysFromNow"/>.
-        /// </exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is be <c>null</c>.</exception>
         public void AddMail(int daysFromNow, string id, string content, Item attachedItem = null)
         {
             AddMail(daysFromNow, id, content, attachedItem != null ? new List<Item>() { attachedItem } : null);
@@ -115,12 +113,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
         /// <exception cref="ArgumentException">
-        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character.
+        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
+        /// a mail with the specified <paramref name="id"/> already exists for the specified <paramref name="arrivalDay"/>.
         /// </exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> cannot be <c>null</c>.</exception>
-        /// <exception cref="InvalidOperationException">
-        /// A mail with the specified <paramref name="id"/> already exists for the specified <paramref name="arrivalDay"/>.
-        /// </exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is be <c>null</c>.</exception>
         public void AddMail(SDate arrivalDay, string id, string content, Item attachedItem = null)
         {
             if (arrivalDay == null)
@@ -140,12 +136,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to be greater than or equal to <c>0</c>.</exception>
         /// <exception cref="ArgumentException">
-        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character.
+        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
+        /// a mail with the specified <paramref name="id"/> already exists for the day specified by <paramref name="daysFromNow"/>.
         /// </exception>
         /// <exception cref="ArgumentNullException">The <paramref name="content"/> is <c>null</c>.</exception>
-        /// <exception cref="InvalidOperationException">
-        /// A mail with the specified <paramref name="id"/> already exists for the day specified by <paramref name="daysFromNow"/>.
-        /// </exception>
         public void AddMail(int daysFromNow, string id, string content, List<Item> attachedItems)
         {
             if (daysFromNow < 0)
@@ -171,7 +165,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 string message = $"A mail with the ID \"{id}\" already exists for the date {arrivalDate}!";
 
                 monitor.Log(message + " Please use a different mail ID!");
-                throw new InvalidOperationException(message);
+                throw new ArgumentException(message);
             }
 
             // Add the mail to the mail manager. Surface exceptions, if any, as they will indicate
@@ -199,11 +193,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="content">The mail content.</param>
         /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
-        /// <exception cref="ArgumentException">The <paramref name="id"/> is an invalid mod ID.</exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> cannot be <c>null</c>.</exception>
-        /// <exception cref="InvalidOperationException">
-        /// A mail with the specified <paramref name="id"/> already exists for the specified <paramref name="arrivalDay"/>.
+        /// <exception cref="ArgumentException">
+        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
+        /// a mail with the specified <paramref name="id"/> already exists for the specified <paramref name="arrivalDay"/>.
         /// </exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is be <c>null</c>.</exception>
         public void AddMail(SDate arrivalDay, string id, string content, List<Item> attachedItems)
         {
             if (arrivalDay == null)

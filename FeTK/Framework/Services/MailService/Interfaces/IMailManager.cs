@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace FelixDev.StardewMods.FeTK.Framework.Services
 {
     /// <summary>
-    /// Provides an API to add a mail to the game
+    /// Provides an API to add a mail to the game.
     /// </summary>
     interface IMailManager
     {
@@ -22,13 +22,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// The specified <paramref name="modId"/> is <c>null</c>, does not contain at least one 
         /// non-whitespace character or contains an invalid character sequence -or-
         /// the specified <paramref name="mailId"/> is <c>null</c>, does not contain at least one 
-        /// non-whitespace character or contains an invalid character sequence.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">The specified <paramref name="arrivalDay"/> is <c>null</c>.</exception>
-        /// <exception cref="InvalidOperationException">
-        /// A mail with the specified <paramref name="mailId"/> provided by the mod with the specified <paramref name="modId"/> 
+        /// non-whitespace character or contains an invalid character sequence -or-
+        /// a mail with the specified <paramref name="mailId"/> provided by the mod with the specified <paramref name="modId"/> 
         /// for the specified <paramref name="arrivalDay"/> already exists.
         /// </exception>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="arrivalDay"/> is <c>null</c>.</exception>
         void Add(string modId, string mailId, SDate arrivalDay);
 
         /// <summary>
@@ -38,10 +36,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="mailSender">The <see cref="IMailSender"/> instance to register.</param>
         /// <exception cref="ArgumentException">
         /// The specified <paramref name="modId"/> is <c>null</c> or does not contain at least one 
-        /// non-whitespace character.
+        /// non-whitespace character -or-
+        /// a mail sender with the specified <paramref name="modId"/> has already been registered.
         /// </exception>
         /// <exception cref="ArgumentNullException">The specified <paramref name="mailSender"/> is <c>null</c>.</exception>
-        /// <exception cref="InvalidOperationException">A mail sender with the same <paramref name="modId"/> has already been registered.</exception>
         void RegisterMailSender(string modId, IMailSender mailSender);
 
         /// <summary>

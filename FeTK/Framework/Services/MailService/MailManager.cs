@@ -63,13 +63,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// The specified <paramref name="modId"/> is <c>null</c>, does not contain at least one 
         /// non-whitespace character or contains an invalid character sequence -or-
         /// the specified <paramref name="mailId"/> is <c>null</c>, does not contain at least one 
-        /// non-whitespace character or contains an invalid character sequence.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">The specified <paramref name="arrivalDay"/> is <c>null</c>.</exception>
-        /// <exception cref="InvalidOperationException">
-        /// A mail with the specified <paramref name="mailId"/> provided by the mod with the specified <paramref name="modId"/> 
+        /// non-whitespace character or contains an invalid character sequence -or-
+        /// a mail with the specified <paramref name="mailId"/> provided by the mod with the specified <paramref name="modId"/> 
         /// for the specified <paramref name="arrivalDay"/> already exists.
         /// </exception>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="arrivalDay"/> is <c>null</c>.</exception>
         public void Add(string modId, string mailId, SDate arrivalDay)
         {
             if (string.IsNullOrWhiteSpace(modId) || modId.Contains(MAIL_ID_SEPARATOR))
@@ -105,7 +103,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
             if (registeredMailsMetaData.ContainsKey(internalMailId))
             {
-                throw new InvalidOperationException($"A mail with the specified ID \"{mailId}\" for the given mod \"{modId}\" for the " +
+                throw new ArgumentException($"A mail with the specified ID \"{mailId}\" for the given mod \"{modId}\" for the " +
                     $"specified arrival day \"{arrivalDay}\" already exists!");
             }
 
@@ -133,10 +131,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="mailSender">The <see cref="IMailSender"/> instance to register.</param>
         /// <exception cref="ArgumentException">
         /// The specified <paramref name="modId"/> is <c>null</c> or does not contain at least one 
-        /// non-whitespace character.
+        /// non-whitespace character -or-
+        /// a mail sender with the specified <paramref name="modId"/> has already been registered.
         /// </exception>
         /// <exception cref="ArgumentNullException">The specified <paramref name="mailSender"/> is <c>null</c>.</exception>
-        /// <exception cref="InvalidOperationException">A mail sender with the same <paramref name="modId"/> has already been registered.</exception>
         public void RegisterMailSender(string modId, IMailSender mailSender)
         {
             if (string.IsNullOrWhiteSpace(modId))
@@ -146,7 +144,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
             if (mailSenders.ContainsKey(modId))
             {
-                throw new InvalidOperationException($"A mail sender for the mod with ID \"{modId}\" has already been registered.");
+                throw new ArgumentException($"A mail sender for the mod with ID \"{modId}\" has already been registered.", nameof(modId));
             }
 
             mailSenders[modId] = mailSender ?? throw new ArgumentNullException(nameof(mailSender));
@@ -265,8 +263,8 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// Inject the registered mails into the game's cached mail asset list.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
         private void OnMailDataLoading(object sender, MailDataLoadingEventArgs e)
         {
             var currentDay = SDate.Now().DaysSinceStart;
@@ -276,7 +274,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             {
                 if (day > currentDay)
                 {
-                    // the list of keys is not guaranteed to be sorted from [earlier] to [later], 
+                    // The list of keys is not guaranteed to be sorted from [earlier] to [later], 
                     // so we have to iterate through all entries. 
                     continue;
                 }
