@@ -336,12 +336,12 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         private void OnSaving(object sender, SavingEventArgs e)
         {
             var saveData = saveDataBuilder.Construct(this.mailList);
-            saveDataHelper.WriteData2(this.saveDataKey, saveData);
+            saveDataHelper.WriteData(this.saveDataKey, saveData);
         }
 
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
-            var saveData = saveDataHelper.ReadData2<List<MailSaveData>>(this.saveDataKey);
+            var saveData = saveDataHelper.ReadData<List<MailSaveData>>(this.saveDataKey);
 
             mailList = saveData != null
                 ? saveDataBuilder.Reconstruct(saveData)

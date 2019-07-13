@@ -11,30 +11,29 @@ using System.Threading.Tasks;
 
 namespace FelixDev.StardewMods.FeTK.ModHelpers
 {
-    // TODO: - Remove ReadData/WriteData functions
-    //       - Create a GetFilePath() function
+    // TODO: Make class a public API (instead of internal)? That would require making the root folder of
+    // (the first folder after AppData/Roaming/Stardew Valley in the absolute path) settable.
 
     /// <summary>
-    /// This class provides an API to read/write save data for a mod. It is based on the <see cref="IDataHelper"/>
+    /// Provides an API to read/write save data for a mod. It is based on the <see cref="IDataHelper"/>
     /// API provided by SMAPI, which can handle mod-specific save data in single-player or for the host ONLY in
     /// multiplayer.
     /// The <see cref="ModSaveDataHelper"/> class extends the <see cref="IDataHelper"/> API to handle mod-specific
-    /// save data even for non-host players in multiplayer. The save data is stored in Stardew Valley's app  data folder.
+    /// save data even for non-host players in multiplayer. The save data is stored in Stardew Valley's app data folder.
     /// </summary>
     internal class ModSaveDataHelper
     {
-        //private readonly IDataHelper dataHelper;
-
         private static readonly IDataHelper dataHelper = ToolkitMod.ModHelper.Data;
+
+        private static IDictionary<string, ModSaveDataHelper> saveDataHelpers = new Dictionary<string, ModSaveDataHelper>();
 
         private static ModSaveDataHelper globalSaveDataHelper;
 
         /// <summary>Encapsulates SMAPI's JSON file parsing.</summary>
         private readonly JsonHelper jsonHelper;
 
+        /// <summary>The save data buffer to read from/write to. Written to the specified save data file.</summary>
         private IDictionary<string, string> serializedSaveData;
-
-        private static IDictionary<string, ModSaveDataHelper> saveDataHelpers = new Dictionary<string, ModSaveDataHelper>();
 
         private readonly string basePath;
         private readonly string dataOwner;
@@ -45,7 +44,7 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
             {
                 if (globalSaveDataHelper == null)
                 {
-                    globalSaveDataHelper = new ModSaveDataHelper();
+                    globalSaveDataHelper = new ModSaveDataHelper(null);
                 }
 
                 return globalSaveDataHelper;
@@ -59,25 +58,6 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
             return saveDataHelpers[dataOwner];
         }
 
-        /// <summary>
-        /// Initialize a new instance of the <see cref="ModSaveDataHelper"/> class.
-        /// </summary>
-        /// <param name="dataHelper">The <see cref="IDataHelper"/> instance of the mod to save data for.</param>
-        public ModSaveDataHelper(IDataHelper dataHelper)
-        {
-            //this.dataHelper = dataHelper ?? throw new ArgumentNullException(nameof(dataHelper));
-        }
-
-        private ModSaveDataHelper()
-        {
-            this.basePath = Path.Combine(Constants.DataPath, "FeTK", "Saves");
-
-            this.jsonHelper = new JsonHelper();
-
-            ToolkitMod.ModHelper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitleScreen;
-            ToolkitMod.ModHelper.Events.GameLoop.Saved += OnSaved;
-        }
-
         private ModSaveDataHelper(string dataOwner)
         {
             this.basePath = Path.Combine(Constants.DataPath, "FeTK", "Saves");
@@ -89,38 +69,79 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
             ToolkitMod.ModHelper.Events.GameLoop.Saved += OnSaved;
         }
 
+        /// <summary>
+        /// Clear the save data buffer.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// When the player returns to the title screen, the player exists the current save game. We have to 
+        /// clear the save data buffer so that it doesn't carry over specific data of a previous save when 
+        /// a new save is loaded.
+        /// </remarks>
         private void OnReturnedToTitleScreen(object sender, ReturnedToTitleEventArgs e)
         {
             this.serializedSaveData = null;
         }
 
+        /// <summary>
+        /// Write the save data buffer containing save data of a non-host multiplayer player to the save file.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
+        /// <remarks>
+        /// Typically, SMAPI mods use the <see cref="IGameLoopEvents.Saving"/> event to write the data
+        /// they want to save. Hence, we wait for that event with all its handlers to pass and write our
+        /// save data buffer in the <see cref="IGameLoopEvents.Saved"/> event, containing all of the mod data
+        /// requested of being saved. 
+        /// </remarks>
         private void OnSaved(object sender, SavedEventArgs e)
         {
-            if (!Context.IsMainPlayer)
+            if (!Context.IsMainPlayer && serializedSaveData != null)
             {
-                string filePath = dataOwner == null
-                    ? Path.Combine(this.basePath, Constants.SaveFolderName)
-                    : Path.Combine(this.basePath, Constants.SaveFolderName + " - Mods", dataOwner, Constants.SaveFolderName);
-
-                if (serializedSaveData != null)
-                {
-                    jsonHelper.WriteJsonFile(filePath, serializedSaveData);
-                }
+                jsonHelper.WriteJsonFile(GetSaveDataFilePath(), serializedSaveData);
             }
         }
 
-        public TData ReadData2<TData>(string dataId)
+        /// <summary>
+        /// Get the path to the file containing the saved data.
+        /// </summary>
+        /// <returns>The file path on success; otherwise <c>null</c> if no save was loaded.</returns>
+        private string GetSaveDataFilePath()
+        {
+            if (Constants.SaveFolderName == null || Constants.SaveFolderName.Equals(string.Empty))
+            {
+                return null;
+            }
+
+            return dataOwner == null
+                ? Path.Combine(this.basePath, Constants.SaveFolderName)
+                : Path.Combine(this.basePath, Constants.SaveFolderName + " - Mods", dataOwner, Constants.SaveFolderName);
+        }
+
+        /// <summary>
+        /// Read arbitrary data for the current save. This is only possible if a save has been loaded.
+        /// </summary>
+        /// <typeparam name="TData">
+        /// The data type. This should be a plain class that has public properties for the data you want. 
+        /// The properties can be complex types.
+        /// </typeparam>
+        /// <param name="dataId">The unique ID for the data.</param>
+        /// <returns>The parsed data, or <c>null</c> if the entry does not exist or is empty.</returns>
+        public TData ReadData<TData>(string dataId)
             where TData : class
         {
+            if (dataId == null)
+            {
+                throw new ArgumentNullException(nameof(dataId));
+            }
+
             if (!Context.IsMainPlayer)
             {
-                string filePath = dataOwner == null
-                    ? Path.Combine(this.basePath, Constants.SaveFolderName)
-                    : Path.Combine(this.basePath, Constants.SaveFolderName + " - Mods", dataOwner, Constants.SaveFolderName);
-
                 if (serializedSaveData == null)
                 {
-                    bool result = jsonHelper.ReadJsonFileIfExists(filePath, out serializedSaveData);
+                    string saveDataPath = GetSaveDataFilePath() ?? throw new InvalidOperationException("The player hasn't loaded a save yet.");
+                    bool result = jsonHelper.ReadJsonFileIfExists(saveDataPath, out serializedSaveData);
                     if (!result)
                     {
                         serializedSaveData = new Dictionary<string, string>();
@@ -129,7 +150,7 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
 
                 return serializedSaveData.TryGetValue(dataId, out string serialisedData)
                         ? jsonHelper.Deserialise<TData>(serialisedData)
-                        : default(TData);
+                        : null;
             }
             else
             {
@@ -137,12 +158,28 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
             }
         }
 
-        public void WriteData2<TData>(string dataId, TData data)
+        /// <summary>
+        /// Save arbitrary data for the current save. This is only possible if a save has been loaded 
+        /// and the data will be lost if the player exits without saving.
+        /// the current day.
+        /// </summary>
+        /// <typeparam name="TData">
+        /// The data type. This should be a plain class that has public properties for the data you want. 
+        /// The properties can be complex types.
+        /// </typeparam>
+        /// <param name="dataId">The unique ID for the data.</param>
+        /// <param name="data">The arbitrary data to save.</param>
+        /// <exception cref="ArgumentNullException">
+        /// The specified <paramref name="dataId"/> is <c>null</c> -or-
+        /// the specified <paramref name="data"/> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">The player hasn't loaded a save file yet.</exception>
+        public void WriteData<TData>(string dataId, TData data)
             where TData : class
         {
-            if (string.IsNullOrWhiteSpace(dataId))
+            if (dataId == null)
             {
-                throw new ArgumentException($"The specified data ID needs to be a valid filename or relative path (without dictionary climbing).", nameof(dataId));
+                throw new ArgumentNullException(nameof(dataId));
             }
 
             if (data == null)
@@ -152,100 +189,17 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
 
             if (!Context.IsMainPlayer)
             {
-                string filePath = dataOwner == null
-                    ? Path.Combine(this.basePath, Constants.SaveFolderName)
-                    : Path.Combine(this.basePath, Constants.SaveFolderName + " - Mods", dataOwner, Constants.SaveFolderName);
-
                 if (serializedSaveData == null)
                 {
-                    bool result = jsonHelper.ReadJsonFileIfExists(filePath, out serializedSaveData);
+                    string saveDataPath = GetSaveDataFilePath() ?? throw new InvalidOperationException("The player hasn't loaded a save yet.");
+                    bool result = jsonHelper.ReadJsonFileIfExists(saveDataPath, out serializedSaveData);
                     if (!result)
                     {
                         serializedSaveData = new Dictionary<string, string>();
                     }
                 }
+
                 serializedSaveData[dataId] = jsonHelper.Serialise(data);
-            }
-            else
-            {
-                dataHelper.WriteSaveData(dataId, data);
-            }
-        }
-
-        /// <summary>
-        /// Read arbitrary save-file specific data saved by a mod.
-        /// </summary>
-        /// <typeparam name="TData">The data model type. This should be a plain class that has public properties 
-        /// for the data you want. The properties can be complex types.
-        /// </typeparam>
-        /// <param name="dataId">The unique key identifying the data.</param>
-        /// <returns>Returns the parsed data, or <c>null</c> if the entry doesn't exist or is empty.</returns>
-        /// <exception cref="ArgumentException">
-        /// If the specified key <paramref name="dataId"/> is invalid. It has to be a valid file name or relative file path 
-        /// and cannot contain dictionary climbing (../).
-        /// </exception>
-        /// <exception cref="InvalidOperationException">The player is the main player and hasn't loaded a save file yet.</exception>
-        public TData ReadData<TData>(string dataId)
-            where TData : class
-        {
-            if (string.IsNullOrWhiteSpace(dataId))
-            {
-                throw new ArgumentException($"The data ID ({dataId}) needs to contain at least one non-whitespace character!", nameof(dataId));
-            }
-
-            if (!Context.IsMainPlayer)
-            {
-                string filePath = Path.Combine(this.basePath, Constants.SaveFolderName);
-                if (jsonHelper.ReadJsonFileIfExists(filePath, out Dictionary<string, string> data))
-                {
-                    return data.TryGetValue(dataId, out string serialisedData)
-                        ? jsonHelper.Deserialise<TData>(serialisedData)
-                        : default(TData);
-
-                }
-
-                return default(TData);
-            }
-            else
-            {
-                return dataHelper.ReadSaveData<TData>(dataId);
-            }
-        }
-
-        /// <summary>
-        /// Write arbitrary save-file specific data for a mod.
-        /// </summary>
-        /// <typeparam name="TData">The data model type. This should be a plain class that has public properties 
-        /// for the data you want. The properties can be complex types.
-        /// </typeparam>
-        /// <param name="dataId">The unique key identifying the data.</param>
-        /// <param name="data">The arbitrary data to save.</param>
-        /// <exception cref="ArgumentException">The specified key <paramref name="dataId"/> is invalid.</exception>
-        /// <exception cref="ArgumentNullException">The specified <paramref name="dataId"/> can not be <c>null</c>.</exception>
-        /// <exception cref="InvalidOperationException">The player is the main player and hasn't loaded a save file yet</exception>
-        public void WriteData<TData>(string dataId, TData data)
-            where TData : class
-        {
-            if (string.IsNullOrWhiteSpace(dataId))
-            {
-                throw new ArgumentException($"The specified data ID needs to be a valid filename or relative path (without dictionary climbing).", nameof(dataId));
-            }
-
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-
-            if (!Context.IsMainPlayer)
-            {
-                try
-                {
-                    dataHelper.WriteJsonFile($"{Constants.SaveFolderName}/{dataId}", data);
-                }
-                catch (InvalidOperationException)
-                {
-                    throw new ArgumentException("The specified data ID needs to be a valid filename or relative path (without dictionary climbing).", nameof(dataId));
-                }
             }
             else
             {

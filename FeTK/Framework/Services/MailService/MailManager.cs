@@ -314,12 +314,12 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
         private void OnSaving(object sender, SavingEventArgs e)
         {
-            saveDataHelper.WriteData2(SAVE_DATA_KEY, new SaveData(registeredMailsForDay, registeredMailsMetaData));
+            saveDataHelper.WriteData(SAVE_DATA_KEY, new SaveData(registeredMailsForDay, registeredMailsMetaData));
         }
 
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
-            var saveData = saveDataHelper.ReadData2<SaveData>(SAVE_DATA_KEY);
+            var saveData = saveDataHelper.ReadData<SaveData>(SAVE_DATA_KEY);
             if (saveData != null)
             {
                 this.registeredMailsForDay = saveData.MailPerDay;
