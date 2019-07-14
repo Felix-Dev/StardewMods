@@ -18,14 +18,21 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
     {
         private const string MAIL_ID_SEPARATOR = "@@@";
 
+        /// <summary>The prefix of the key used to identify the save data created by this mail manager.</summary>
         private const string SAVE_DATA_KEY = "FelixDev.StardewMods.FeTK.Framework.Services.MailManagerCore";
 
-        private static readonly IModHelper toolkitModHelper = ToolkitMod.ModHelper;
+        /// <summary>Provides access to the <see cref="IModEvents"/> API provided by SMAPI.</summary>
+        private static readonly IModEvents events = ToolkitMod.ModHelper.Events;
+
+        /// <summary>Provides access to the <see cref="IMonitor"/> API provided by SMAPI.</summary>
         private static readonly IMonitor monitor = ToolkitMod._Monitor;
 
-        private readonly IReflectionHelper reflectionHelper = ToolkitMod.ModHelper.Reflection;
-        private readonly MailInjector mailInjector;
+        /// <summary>Provides access to the <see cref="IReflectionHelper"/> API provided by SMAPI.</summary>
+        private static readonly IReflectionHelper reflectionHelper = ToolkitMod.ModHelper.Reflection;
 
+        private readonly MailAssetEditor mailAssetEditor;
+
+        /// <summary>The save data manager for this mail manager.</summary>
         private readonly ModSaveDataHelper saveDataHelper;
 
         private readonly IDictionary<string, IMailSender> mailSenders = new Dictionary<string, IMailSender>();
@@ -39,18 +46,18 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// </summary>
         public MailManager()
         {
-            this.mailInjector = new MailInjector(toolkitModHelper.Content);
+            this.mailAssetEditor = new MailAssetEditor();
             this.saveDataHelper = ModSaveDataHelper.GetSaveDataHelper();
 
-            mailInjector.MailDataLoading += OnMailDataLoading;
+            mailAssetEditor.MailAssetLoading += OnMailDataLoading;
 
-            toolkitModHelper.Events.GameLoop.DayStarted += OnDayStarted;
-            toolkitModHelper.Events.GameLoop.DayEnding += OnDayEnding;
+            events.GameLoop.DayStarted += OnDayStarted;
+            events.GameLoop.DayEnding += OnDayEnding;
 
-            toolkitModHelper.Events.Display.MenuChanged += OnMenuChanged;
+            events.Display.MenuChanged += OnMenuChanged;
 
-            toolkitModHelper.Events.GameLoop.Saving += OnSaving;
-            toolkitModHelper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+            events.GameLoop.Saving += OnSaving;
+            events.GameLoop.SaveLoaded += OnSaveLoaded;
         }
 
         /// <summary>
@@ -119,7 +126,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             {
                 Game1.mailbox.Add(internalMailId);
 
-                mailInjector.RequestMailCacheRefresh();
+                mailAssetEditor.RequestAssetCacheRefresh();
                 monitor.Log($"Added the mail with ID \"{mailId}\" to the player's mailbox.");
             }
         }
@@ -226,7 +233,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                     mailSender.OnMailClosed(new MailClosedCoreEventArgs(mailMetaData.UserId, arrivalDate, e2.SelectedItems));
                 };
 
-                monitor.Log($"Opening custom mail with the ID \"{mailMetaData.UserId}\"");
+                monitor.Log($"Opening custom mail with the ID \"{mailMetaData.UserId}\".");
 
                 // Show the letter viewer menu for this mail.
                 nLetterMenu.Show();
@@ -265,10 +272,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
-        private void OnMailDataLoading(object sender, MailDataLoadingEventArgs e)
+        private void OnMailDataLoading(object sender, MailAssetLoadingEventArgs e)
         {
             var currentDay = SDate.Now().DaysSinceStart;
-            List<MailAssetData> customMailData = new List<MailAssetData>();
+            List<MailAssetDataEntry> customMailData = new List<MailAssetDataEntry>();
 
             foreach (var day in registeredMailsForDay.Keys)
             {
@@ -279,16 +286,17 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                     continue;
                 }
 
-                customMailData.AddRange(registeredMailsForDay[day].Select(mailId => new MailAssetData(mailId, "PlaceholderContent")));
+                customMailData.AddRange(registeredMailsForDay[day].Select(mailId => new MailAssetDataEntry(mailId, "PlaceholderContent")));
             }
 
-            mailInjector.AddMailAssetData(customMailData);
+            mailAssetEditor.AddMailAssetData(customMailData);
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
-            // Add all registered mail IDS to the mail injector
-            mailInjector.RequestMailCacheRefresh();
+            // Update the loaded mail game asset to include the IDs of our custom mails
+            // which are in the player's mailbox for today.
+            mailAssetEditor.RequestAssetCacheRefresh();
         }
 
         private void OnDayEnding(object sender, DayEndingEventArgs e)

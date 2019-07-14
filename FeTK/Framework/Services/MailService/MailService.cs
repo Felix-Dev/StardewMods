@@ -75,6 +75,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 throw new ArgumentException("The mod ID needs to contain at least one non-whitespace character!", nameof(modId));
             }
 
+            this.modId = modId;
             this.mailManager = mailManager ?? throw new ArgumentNullException(nameof(mailManager));
 
             this.saveDataKey = SAVE_DATA_KEY_PREFIX + "." + modId;
