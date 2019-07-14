@@ -44,7 +44,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             IDictionary<string, string> mails = asset.AsDictionary<string, string>().Data;
             foreach (var mailData in mailAssetData)
             {
-                mails[mailData.ID] = mailData.Content;
+                mails[mailData.Id] = mailData.Content;
             }
 
             mailAssetData.Clear();

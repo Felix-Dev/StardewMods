@@ -31,12 +31,12 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 throw new ArgumentException(nameof(content));
             }
 
-            ID = id;
+            Id = id;
             Content = content;
         }
 
         /// <summary>The ID of the mail.</summary>
-        public string ID { get; }
+        public string Id { get; }
 
         /// <summary>The content of the mail.</summary>
         public string Content { get; }
