@@ -1,7 +1,7 @@
 {
   "Name": "Tool-Upgrade Delivery Service",
   "Author": "Felix-Dev",
-  "Version": "1.4.0",
+  "Version": "1.4.0-beta",
   "Description": "Clint sends you a mail when he finished upgrading your tool. Tool included.",
   "UniqueID": "Felix-Dev.ToolUpgradeDeliveryService",
   "EntryDll": "ToolUpgradeDeliveryService.dll",
@@ -10,7 +10,7 @@
   "Dependencies": [
     {
       "UniqueID": "Felix-Dev.FeTK",
-      "MinimumVersion": "1.0.0"
+      "MinimumVersion": "1.0.0-alpha"
     }
   ]
 }

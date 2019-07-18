@@ -1,7 +1,7 @@
 {
   "Name": "FeTK",
   "Author": "Felix-Dev",
-  "Version": "1.0.0",
+  "Version": "1.0.0-alpha",
   "Description": "Provides a set of helper classes/services for common mod tasks.",
   "UniqueID": "Felix-Dev.FeTK",
   "EntryDll": "FeTK.dll",
