@@ -221,7 +221,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 mailSender.OnMailOpening(new MailOpeningEventArgs(mail));
 
                 // Create the UI for this mail.
-                var nLetterMenu = new LetterViewerMenuWrapper(reflectionHelper, mailId, mail.Content, mail.AttachedItems);
+                var nLetterMenu = new LetterViewerMenuWrapper(mailId, mail.Content, mail.AttachedItems);
 
                 // Setup the mail-closed event for this mail.
                 nLetterMenu.MenuClosed += (s, e2) =>

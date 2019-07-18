@@ -71,7 +71,7 @@ namespace FelixDev.StardewMods.FeTK
         /// </summary>
         /// <param name="assetName">
         /// The name of the game asset whose game cache you want to invalidate. If you want to invalidate
-        /// the game chaches for all game assets this asset editor can edit, use <see cref="string.Empty"/>.
+        /// the game caches for all game assets this asset editor can edit, use <see cref="string.Empty"/>.
         /// </param>
         /// <exception cref="ArgumentNullException">The specified <paramref name="assetName"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">The specified <paramref name="assetName"/>is not the name of an asset this asset editor can edit.</exception>
