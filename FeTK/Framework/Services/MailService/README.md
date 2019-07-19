@@ -48,25 +48,25 @@ Example 1:
 ```
 "Tomorrow we will all meet at the <color=#0000FF">Town Center</color> to celebrate the end of harvest season!"
 ```
-![](../../docs/images/mail-service-text-coloring-api-example-1.png)
+![](../../../docs/images/mail-service-text-coloring-api-example-1.png)
 
 Example 2:
 ```
 "Some <color=#FF0000>red</color>, some <color=#00FF00>green</color> and some <color=#0000FF>blue</color>."
 ```
-![](../../docs/images/mail-service-text-coloring-api-example-2.png)
+![](../../../docs/images/mail-service-text-coloring-api-example-2.png)
 
 Example 3:
 ```
 "<color=#000000>Some small <color=#C47902>light source</color> surrounded by darkness.</color>"
 ```
-![](../../docs/images/mail-service-text-coloring-api-example-3.png)
+![](../../../docs/images/mail-service-text-coloring-api-example-3.png)
 
 And below is a personal favorite of mine:
 ```
 "A colorful <color=#FF0000>R</color><color=#FF7F00>A</color><color=#FFFF00>I</color><color=#00FF00>N</color>"<color=#0000FF>B</color><color=#3F00FF>O</color><color=#7F00FF>W</color> in a letter."
 ```
-![](../../docs/images/mail-service-text-coloring-api-example-rainbow.png)
+![](../../../docs/images/mail-service-text-coloring-api-example-rainbow.png)
 
 ### How to use the API in other mod frameworks?
 
@@ -90,6 +90,6 @@ Create the following content.json file (based on CP 1.9 which was the most recen
 ```
 This will result in the following mail content where a player named "Player" will open the mail with the ID "fall_15":
 
-![](../../docs/images/mail-service-cp-edit-example.png)
+![](../../../docs/images/mail-service-cp-edit-example.png)
 
 As simple as that!
