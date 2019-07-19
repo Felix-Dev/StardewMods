@@ -59,7 +59,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                 throw new ArgumentNullException(nameof(mailContent));
             }
 
-            return new LetterViewerMenuWrapper(false, mailTitle, mailContent);
+            return new LetterViewerMenuWrapper(true, mailTitle, mailContent);
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                 throw new ArgumentNullException(nameof(mailContent));
             }
 
-            return new LetterViewerMenuWrapper(true, mailTitle, mailContent, attachedItems);
+            return new LetterViewerMenuWrapper(false, mailTitle, mailContent, attachedItems);
         }
 
         /// <summary>
@@ -102,15 +102,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
         /// <param name="mailTitle">The title of mail to display.</param>
         /// <param name="mailContent">The content of the mail to display.</param>
         /// <param name="attachedItems">The attached items of the mail to display. May be <c>null</c>.</param>
-        /// <exception cref="ArgumentNullException">
-        /// the specified <paramref name="mailTitle"/> is <c>null</c> -or-
-        /// the specified <paramref name="mailContent"/> is <c>null</c>.
-        /// </exception>
         private LetterViewerMenuWrapper(bool usesGameFormat, string mailTitle, string mailContent, List<Item> attachedItems = null)
         {
             letterMenu = usesGameFormat
-                ? new LetterViewerMenuEx(mailTitle, mailContent.Equals(string.Empty) ? " " : mailContent, attachedItems)
-                : new LetterViewerMenuEx(mailTitle, mailContent);
+                ? new LetterViewerMenuEx(mailTitle, mailContent)
+                : new LetterViewerMenuEx(mailTitle, mailContent.Equals(string.Empty) ? " " : mailContent, attachedItems);
 
             letterMenu.exitFunction = new IClickableMenu.onExit(OnExit);
         }
@@ -174,7 +170,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
             public LetterViewerMenuEx(string title, string content)
             : base(content, title)
             {
-                SetupReflectionAndContent(content);
+                SetupReflectionAndContent(null);
             }
 
             /// <summary>
@@ -369,7 +365,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                     SpriteEffects.None, 1f);
             }
 
-            private void SetupReflectionAndContent(string content)
+            private void SetupReflectionAndContent(string content = null)
             {
                 void SetupReflection()
                 {
@@ -408,6 +404,25 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                         .GetMethod(this, "getTextColor");
                 }
                 SetupReflection();
+
+                // Retrieve the game-parsed mail content if content is not set. Since the mail content has already
+                // been potentially sliced up into multiple pages, we need to combine those pages again to get the
+                // complete mail content so we can successfully parse the content for the text coloring API.
+                if (content == null)
+                {
+                    List<string> mailMessage = mailMessageRef.GetValue();
+                    if (mailMessage.Count > 1)
+                    {
+                        StringBuilder contentBuilder = new StringBuilder();
+                        mailMessage.ForEach(page => contentBuilder.Append(page));
+
+                        content = contentBuilder.ToString();
+                    }
+                    else
+                    {
+                        content = mailMessage[0];
+                    }
+                }
 
                 // Check if the mail content uses the text coloring API and parse it accordingly.
                 bool couldParse = StringColorParser.TryParse(content, SpriteTextHelper.GetColorFromIndex(getTextColorRef.Invoke<int>()), out List<TextColorInfo> textColorData);
