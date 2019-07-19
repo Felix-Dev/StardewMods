@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace FelixDev.StardewMods.FeTK.Framework.UI.Parsers
+namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
 {
     /// <summary>
     /// Provides an API to parse a colored string.

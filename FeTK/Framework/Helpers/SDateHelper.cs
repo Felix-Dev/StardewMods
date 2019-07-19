@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace FelixDev.StardewMods.FeTK.Framework.Helpers
 {
     /// <summary>
-    /// Provides a helper API for common tasks involving instances of the <see cref="SDate"/> class.
+    /// Provides an API for common tasks involving instances of the <see cref="SDate"/> class.
     /// </summary>
     public static class SDateHelper
     {

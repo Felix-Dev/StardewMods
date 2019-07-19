@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace FelixDev.StardewMods.FeTK.UI.Menus
+namespace FelixDev.StardewMods.FeTK.Framework.UI
 {
     /// <summary>
     /// Provides data for the <see cref="LetterViewerMenuWrapper.MenuClosed"/> event.

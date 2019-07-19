@@ -7,12 +7,19 @@ using System.Threading.Tasks;
 
 namespace FelixDev.StardewMods.FeTK
 {
+    /// <summary>The mod entry point.</summary>
     internal class ToolkitMod : Mod
     {
+        /// <summary>Provides access to the simplified APIs for writing mods provided by SMAPI.</summary>
         public static IModHelper ModHelper { get; private set; }
 
+        /// <summary>Provides access to the <see cref="IMonitor"/> API provided by SMAPI.</summary>
         public static IMonitor _Monitor { get; private set; }
 
+        /// <summary>
+        /// The mod entry point, called after the mod is first loaded.
+        /// </summary>
+        /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
             ModHelper = helper;

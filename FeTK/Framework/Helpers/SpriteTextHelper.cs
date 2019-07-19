@@ -1,5 +1,5 @@
 ﻿using BmFont;
-using FelixDev.StardewMods.FeTK.Framework.UI.Parsers;
+using FelixDev.StardewMods.FeTK.Framework.Data.Parsers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
@@ -8,11 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FelixDev.StardewMods.FeTK.Framework.Helpers
 {
+    /// <summary>
+    /// Provides an extended API for the <see cref="SpriteText"/> class to support string coloring.
+    /// </summary>
     internal static class SpriteTextHelper
     {
         private static FontFile FontFile = null;

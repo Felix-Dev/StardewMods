@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FelixDev.StardewMods.FeTK.Framework.Helpers;
+using FelixDev.StardewMods.FeTK.Framework.UI;
 using FelixDev.StardewMods.FeTK.ModHelpers;
-using FelixDev.StardewMods.FeTK.UI.Menus;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -192,39 +192,59 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             if (!(e.OldMenu is LetterViewerMenu) && e.NewMenu is LetterViewerMenu letterMenu)
             {
                 var mailId = reflectionHelper.GetField<string>(letterMenu, "mailTitle").GetValue();
-                if (mailId == null || !this.registeredMailsMetaData.TryGetValue(mailId, out MailMetaData mailMetaData))
+
+                // If the opened LetterViewerMenu instance does not represent a mail -> do nothing
+                if (mailId == null)
                 {
                     return;
                 }
 
+                // If the opened mail is not a mail registered via the framework, we still parse the mail content
+                // for the framework's text coloring API and provide the item selection fix (only showing the last 
+                // item.
+                if (!this.registeredMailsMetaData.TryGetValue(mailId, out MailMetaData mailMetaData))
+                {
+                    string mailContent = GetContentForGameMail(mailId);
+
+                    // Create and show the menu for this mail.
+                    var gLetterMenu = LetterViewerMenuWrapper.CreateMenuForGameMail(mailId, mailContent);
+                    gLetterMenu.Show();
+
+                    return;
+                }
+
+                // If a mail with the given ID has been registered in the framework, but no mail sender has been found,
+                // we remove the mail ID from the framework and don't proceed further.
                 if (!this.mailSenders.TryGetValue(mailMetaData.ModId, out IMailSender mailSender))
                 {
-                    // A mail with this mailId was added to the mailManager at some point, but there is no sender
+                    // A mail with this mailId was added to the framework at some point, but there is no sender
                     // owning this mail any longer. This can be due to the removal of a mod consuming the mail API of FeTK
-                    // by the user. We can thus savely remove this mail from the MailManager on saving, as even if the consuming
+                    // by the user. We can thus savely remove this mail from the framework on saving, as even if the consuming
                     // mod will be added back, for this save, the mail won't be displayed any longer (because it was already shown).
                     this.registeredMailsMetaData.Remove(mailId);
                     this.registeredMailsForDay[mailMetaData.ArrivalDay].Remove(mailId);
 
-                    monitor.Log($"The mail \"{mailId}\" was added by the mod {mailMetaData.ModId} which seems to be no longer present.");
+                    monitor.Log($"The mail \"{mailMetaData.UserId}\" was added by the mod {mailMetaData.ModId} which seems to be no longer present.");
                     return;
                 }
 
+                // Request the actual mail data from the mail service which was used to add this mail to the game.
                 var arrivalDate = SDateHelper.GetDateFromDay(mailMetaData.ArrivalDay);
                 var mail = mailSender.GetMailFromId(mailMetaData.UserId, arrivalDate);
                 if (mail == null)
                 {
+                    monitor.Log($"An unexpected error occured. The mail \"{mailId}\" could not be retrieved from the mail service it was registered with.");
                     return;
                 }
 
                 // Raise the mail-opening event for this mail.
                 mailSender.OnMailOpening(new MailOpeningEventArgs(mail));
 
-                // Create the UI for this mail.
-                var nLetterMenu = new LetterViewerMenuWrapper(mailId, mail.Content, mail.AttachedItems);
+                // Create the menu for this mail.
+                var fLetterMenu = LetterViewerMenuWrapper.CreateMenuForFrameworkMail(mailId, mail.Content, mail.AttachedItems);
 
                 // Setup the mail-closed event for this mail.
-                nLetterMenu.MenuClosed += (s, e2) =>
+                fLetterMenu.MenuClosed += (s, e2) =>
                 {
                     // Remove the closed mail from the mail manager.
                     RemoveMail(mailId, mailMetaData.ArrivalDay);
@@ -235,8 +255,8 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
                 monitor.Log($"Opening custom mail with the ID \"{mailMetaData.UserId}\".");
 
-                // Show the letter viewer menu for this mail.
-                nLetterMenu.Show();
+                // Show the menu for this mail.
+                fLetterMenu.Show();
             }
         }
 
@@ -336,6 +356,44 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 this.registeredMailsForDay = new Dictionary<int, IList<string>>();
                 this.registeredMailsMetaData = new Dictionary<string, MailMetaData>();
             }
+        }
+
+        /// <summary>
+        /// Get the content for a game mail.
+        /// </summary>
+        /// <param name="mailId">The mail ID.</param>
+        /// <returns>The content of the mail.</returns>
+        /// <remarks>Code copied over from <see cref="GameLocation.mailbox"/>.</remarks>
+        private string GetContentForGameMail(string mailId)
+        {
+            Dictionary<string, string> dictionary = Game1.content.Load<Dictionary<string, string>>("Data\\mail");
+            string str = dictionary.ContainsKey(mailId) ? dictionary[mailId] : "";
+
+            if (mailId.Contains("passedOut"))
+            {
+                int int32 = Convert.ToInt32(mailId.Split(' ')[1]);
+                switch (new Random(int32).Next(Game1.player.getSpouse() == null || !Game1.player.getSpouse().Name.Equals("Harvey") ? 3 : 2))
+                {
+                    case 0:
+                        str = string.Format(dictionary["passedOut1_" + (int32 > 0 ? "Billed" : "NotBilled") + "_" + (Game1.player.IsMale ? "Male" : "Female")], (object)int32);
+                        break;
+                    case 1:
+                        str = string.Format(dictionary["passedOut2"], (object)int32);
+                        break;
+                    case 2:
+                        str = string.Format(dictionary["passedOut3_" + (int32 > 0 ? "Billed" : "NotBilled")], (object)int32);
+                        break;
+                }
+            }
+
+            string mail = str.Replace("@", Game1.player.Name);
+
+            if (mail.Contains("%update"))
+            {
+                mail = mail.Replace("%update", Utility.getStardewHeroStandingsString());
+            }
+
+            return mail;
         }
 
         private class MailMetaData

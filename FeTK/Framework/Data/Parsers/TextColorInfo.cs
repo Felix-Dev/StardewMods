@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 
-namespace FelixDev.StardewMods.FeTK.Framework.UI.Parsers
+namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
 {
     /// <summary>
     /// Bundles text and color data together.

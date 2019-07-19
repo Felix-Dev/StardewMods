@@ -1,5 +1,5 @@
-﻿using FelixDev.StardewMods.FeTK.Framework.Helpers;
-using FelixDev.StardewMods.FeTK.Framework.UI.Parsers;
+﻿using FelixDev.StardewMods.FeTK.Framework.Data.Parsers;
+using FelixDev.StardewMods.FeTK.Framework.Helpers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace FelixDev.StardewMods.FeTK.UI.Menus
+namespace FelixDev.StardewMods.FeTK.Framework.UI
 {
     /// <summary>
     /// This class is a wrapper around the <see cref="LetterViewerMenu"/> class to provide an extended API 
@@ -34,16 +34,20 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
         public event EventHandler<LetterViewerMenuClosedEventArgs> MenuClosed;
 
         /// <summary>
-        /// Create a new instance of the <see cref="LetterViewerMenuWrapper"/> class./>
+        /// Create a new instance of the <see cref="LetterViewerMenuWrapper"/> class.
         /// </summary>
-        /// <param name="mailTitle">The title of mail to display.</param>
-        /// <param name="mailContent">The content of the mail to display.</param>
-        /// <param name="attachedItems">The attached items of the mail to display. May be <c>null</c>.</param>
+        /// <param name="mailTitle">The title of the mail.</param>
+        /// <param name="mailContent">The content of the mail.</param>
+        /// <returns>The created <see cref="LetterViewerMenuWrapper"/> instance.</returns>
         /// <exception cref="ArgumentNullException">
-        /// the specified <paramref name="mailTitle"/> is <c>null</c> -or-
+        /// The specified <paramref name="mailTitle"/> is <c>null</c> -or-
         /// the specified <paramref name="mailContent"/> is <c>null</c>.
         /// </exception>
-        public LetterViewerMenuWrapper(string mailTitle, string mailContent, List<Item> attachedItems = null)
+        /// <remarks>
+        /// Use this function if the content of the mail is defined by the game's mail content format.
+        /// Example: "mail content %item object 388 50 %%"
+        /// </remarks>
+        public static LetterViewerMenuWrapper CreateMenuForGameMail(string mailTitle, string mailContent)
         {
             if (mailTitle == null)
             {
@@ -55,10 +59,60 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
                 throw new ArgumentNullException(nameof(mailContent));
             }
 
-            letterMenu = new LetterViewerMenuEx(mailTitle, mailContent.Equals(string.Empty) ? " " : mailContent, attachedItems)
+            return new LetterViewerMenuWrapper(false, mailTitle, mailContent);
+        }
+
+        /// <summary>
+        /// Create a new instance of the <see cref="LetterViewerMenuWrapper"/> class.
+        /// </summary>
+        /// <param name="mailTitle">The title of the mail.</param>
+        /// <param name="mailContent">The content of the mail.</param>
+        /// <param name="attachedItems">The attached items of the mail, if any. Can be <c>null</c>.</param>
+        /// <returns>The created <see cref="LetterViewerMenuWrapper"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// The specified <paramref name="mailTitle"/> is <c>null</c> -or-
+        /// the specified <paramref name="mailContent"/> is <c>null</c>.
+        /// </exception>
+        /// <remarks>
+        /// Use this function if the content of the mail is to be specified independently from the
+        /// game's mail content format.
+        /// </remarks>
+        public static LetterViewerMenuWrapper CreateMenuForFrameworkMail(string mailTitle, string mailContent, List<Item> attachedItems = null)
+        {
+            if (mailTitle == null)
             {
-                exitFunction = new IClickableMenu.onExit(OnExit)
-            };
+                throw new ArgumentNullException(nameof(mailTitle));
+            }
+
+            if (mailContent == null)
+            {
+                throw new ArgumentNullException(nameof(mailContent));
+            }
+
+            return new LetterViewerMenuWrapper(true, mailTitle, mailContent, attachedItems);
+        }
+
+        /// <summary>
+        /// Create a new instance of the <see cref="LetterViewerMenuWrapper"/> class./>
+        /// </summary>
+        /// <param name="usesGameFormat">
+        /// Specifies whether the mail's content is specified by following the game's mail format or
+        /// specified independently from it.
+        /// </param>
+        /// <param name="mailTitle">The title of mail to display.</param>
+        /// <param name="mailContent">The content of the mail to display.</param>
+        /// <param name="attachedItems">The attached items of the mail to display. May be <c>null</c>.</param>
+        /// <exception cref="ArgumentNullException">
+        /// the specified <paramref name="mailTitle"/> is <c>null</c> -or-
+        /// the specified <paramref name="mailContent"/> is <c>null</c>.
+        /// </exception>
+        private LetterViewerMenuWrapper(bool usesGameFormat, string mailTitle, string mailContent, List<Item> attachedItems = null)
+        {
+            letterMenu = usesGameFormat
+                ? new LetterViewerMenuEx(mailTitle, mailContent.Equals(string.Empty) ? " " : mailContent, attachedItems)
+                : new LetterViewerMenuEx(mailTitle, mailContent);
+
+            letterMenu.exitFunction = new IClickableMenu.onExit(OnExit);
         }
 
         /// <summary>
@@ -98,16 +152,30 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
             private IReflectedField<int> questIdRef;
             private IReflectedField<int> secretNoteImageRef;
 
+            private IReflectedMethod getTextColorRef;
+
             #endregion // LetterViewerMenu Reflection Fields
 
             /// <summary>Contains a collection of <see cref="TextColorInfo"/> objects, if any, for the specified mail content.</summary>
-            private readonly List<TextColorInfo> textColorData;
+            private List<List<TextColorInfo>> textColorDataPerPage;
 
-            /// <summary>The title of the mail.</summary>
-            public string MailTitle { get; private set; }
+            /// <summary>The default text color to use for the mail's text content.</summary>
+            private Color textColor;
 
-            /// <summary>A list containing the selected items.</summary>
-            public List<Item> SelectedItems { get; private set; }
+            /// <summary>
+            /// Create an instance of the <see cref="LetterViewerMenuEx"/> class.
+            /// </summary>
+            /// <param name="title">The title of the mail.</param>
+            /// <param name="content">the content of the mail.</param>
+            /// <remarks>
+            /// Use this constructor if the content of the mail is defined by the game's mail content format.
+            /// Example: "mail content %item object 388 50 %%"
+            /// </remarks>
+            public LetterViewerMenuEx(string title, string content)
+            : base(content, title)
+            {
+                SetupReflectionAndContent(content);
+            }
 
             /// <summary>
             /// Create an instance of the <see cref="LetterViewerMenuEx"/> class.
@@ -115,38 +183,14 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
             /// <param name="title">The title of the mail.</param>
             /// <param name="content">The content of the mail.</param>
             /// <param name="attachedItems">The items attached to the mail. Can be <c>null</c>.</param>
-            public LetterViewerMenuEx(string title, string content, List<Item> attachedItems = null) : base(content)
+            /// <remarks>
+            /// Use this constructor if the content of the mail is to be specified independently from the
+            /// game's mail content format.
+            /// </remarks>
+            public LetterViewerMenuEx(string title, string content, List<Item> attachedItems) 
+                : base(content)
             {
-                void SetupReflection()
-                {
-                    scaleRef = reflectionHelper
-                    .GetField<float>(this, "scale");
-
-                    whichBGRef = reflectionHelper
-                        .GetField<int>(this, "whichBG");
-
-                    mailMessageRef = reflectionHelper
-                        .GetField<List<string>>(this, "mailMessage");
-
-                    pageRef = reflectionHelper
-                        .GetField<int>(this, "page");
-
-                    moneyIncludedRef = reflectionHelper
-                        .GetField<int>(this, "moneyIncluded");
-
-                    learnedRecipeRef = reflectionHelper
-                            .GetField<string>(this, "learnedRecipe");
-
-                    cookingOrCraftingRef = reflectionHelper
-                            .GetField<string>(this, "cookingOrCrafting");
-
-                    questIdRef = reflectionHelper
-                            .GetField<int>(this, "questID");
-
-                    secretNoteImageRef = reflectionHelper
-                            .GetField<int>(this, "secretNoteImage");
-                }
-                SetupReflection();
+                SetupReflectionAndContent(content);
 
                 reflectionHelper
                     .GetField<bool>(this, "isMail")
@@ -156,26 +200,6 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
                     .SetValue(title);
 
                 MailTitle = title;
-
-                // Check if the mail content uses the text coloring API and parse it accordingly.
-                bool couldParse = StringColorParser.TryParse(content, SpriteTextHelper.GetColorFromIndex(GetTextColor(whichBGRef.GetValue())), out textColorData);
-                if (couldParse)
-                {
-                    StringBuilder parsedStringBuilder = new StringBuilder();
-                    textColorData.ForEach(mapping => parsedStringBuilder.Append(mapping.Text));
-
-                    var parsedString = parsedStringBuilder.ToString();
-
-                    // The mail content was parsed successfully. The original mail content might have contained pairs of <color></color> tags 
-                    // which then were removed in the resulting parsed string output. Hence the length of the resulting parsed string and the
-                    // length of the original mail content string might differ (the former being shorter) which requires a new run to break up
-                    // the resulting mail content into different mail pages. The previous run worked on the original mail message whch might have
-                    // contained now removed <color> tags.
-                    if (parsedString.Length < content.Length)
-                    {
-                        mailMessageRef.SetValue(SpriteText.getStringBrokenIntoSectionsOfHeight(parsedString, this.width - 64, this.height - 128));
-                    }
-                }
 
                 // If the mail has attached items, add them to the LetterViewerMenu so they will be shown when the
                 // mail is drawn to the screen.
@@ -206,17 +230,13 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
 
                 this.populateClickableComponentList();
                 this.snapToDefaultClickableComponent();
-
-                // We potentially changed the number of pages the mail content has been split up
-                // after the content was parsed by the text coloring parser. Hence we might need to
-                // update the [Back Button] and [Forward Button] settings. 
-                var mailMessage = mailMessageRef.GetValue();
-                if (mailMessage == null || mailMessage.Count > 1)
-                    return;
-
-                this.backButton.myID = -100;
-                this.forwardButton.myID = -100;
             }
+
+            /// <summary>The title of the mail.</summary>
+            public string MailTitle { get; private set; }
+
+            /// <summary>A list containing the selected items.</summary>
+            public List<Item> SelectedItems { get; private set; }
 
             /// <summary>
             /// Add functionality to add a clicked item to the <see cref="SelectedItems"/> list./>
@@ -231,7 +251,7 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
                     if (clickableComponent.containsPoint(x, y) && clickableComponent.item != null)
                     {
                         // Add the clicked item to the list of user-selected items.
-                        SelectedItems.Add(clickableComponent.item);
+                        SelectedItems?.Add(clickableComponent.item);
 
                         Game1.playSound("coin");
                         clickableComponent.item = null;
@@ -286,9 +306,9 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
                     {
                         // Draw the mail content for the current mail page.
                         SpriteTextHelper.DrawString(b: b, s: mailMessage[page], x: this.xPositionOnScreen + 32, y: this.yPositionOnScreen + 32,
-                            color: SpriteTextHelper.GetColorFromIndex(GetTextColor(whichBG)), characterPosition: 999999, 
+                            color: textColor, characterPosition: 999999, 
                             width: this.width - 64, height: 999999, alpha: 0.75f, layerDepth: 0.865f,
-                            drawBGScroll: -1, placeHolderScrollWidthText: "", textColorData);
+                            drawBGScroll: -1, placeHolderScrollWidthText: "", textColorDataPerPage?[page]);
                     }
 
                     // Draw the attached items, if any.
@@ -300,17 +320,21 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
                             Vector2 itemMailLocation = new Vector2(clickableComponent.bounds.X + 16, clickableComponent.bounds.Y + 16);
                             clickableComponent.item.drawInMenu(b, itemMailLocation, clickableComponent.scale);
 
-                            // Missing "break" in original game code (at least up to version 1.3.36). Without it, attached items overdraw each other from left to right, 
-                            // resulting in only the last attached item to be visible in the mail.
+                            // Missing "break" in original game code (at least up to version 1.3.36). Without it, attached items will overdraw each other 
+                            // from first to last, resulting in only the last attached item to be visible in the mail as long as there are any remaining
+                            // attached items.
                             break;
                         }
                     }
 
+                    // Draw the amount of attached money, if any.
                     if (moneyIncluded > 0)
                     {
                         string s = Game1.content.LoadString("Strings\\UI:LetterViewer_MoneyIncluded", moneyIncluded);
                         SpriteText.drawString(b, s, this.xPositionOnScreen + this.width / 2 - SpriteText.getWidthOfString(s, 999999) / 2, this.yPositionOnScreen + this.height - 96, 999999, -1, 9999, 0.75f, 0.865f, false, -1, "", -1);
                     }
+
+                    // Draw the attached recipe, if any. 
                     else if (learnedRecipe != null && learnedRecipe.Length > 0)
                     {
                         string s = Game1.content.LoadString("Strings\\UI:LetterViewer_LearnedRecipe", cookingOrCrafting);
@@ -327,6 +351,7 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
                     if (page > 0)
                         this.backButton.draw(b);
 
+                    // Draw the [Accept Quest] button if this is a quest mail.
                     if (questID != -1)
                     {
                         IClickableMenu.drawTextureBox(b, Game1.mouseCursors, new Rectangle(403, 373, 9, 9), this.acceptQuestButton.bounds.X, this.acceptQuestButton.bounds.Y, this.acceptQuestButton.bounds.Width, this.acceptQuestButton.bounds.Height, (double)this.acceptQuestButton.scale > 1.0 ? Color.LightPink : Color.White, 4f * this.acceptQuestButton.scale, true);
@@ -337,10 +362,168 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
                 if (Game1.options.hardwareCursor)
                     return;
 
-                b.Draw(Game1.mouseCursors, new Vector2(Game1.getMouseX(), Game1.getMouseY()), 
-                    new Rectangle?(Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 0, 16, 16)), 
-                    Color.White, 0.0f, Vector2.Zero, (float)(4.0 + Game1.dialogueButtonScale / 150.0), 
+                // Draw the mouse cursor.
+                b.Draw(Game1.mouseCursors, new Vector2(Game1.getMouseX(), Game1.getMouseY()),
+                    new Rectangle?(Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 0, 16, 16)),
+                    Color.White, 0.0f, Vector2.Zero, (float)(4.0 + Game1.dialogueButtonScale / 150.0),
                     SpriteEffects.None, 1f);
+            }
+
+            private void SetupReflectionAndContent(string content)
+            {
+                void SetupReflection()
+                {
+                    // private fields
+
+                    scaleRef = reflectionHelper
+                    .GetField<float>(this, "scale");
+
+                    whichBGRef = reflectionHelper
+                        .GetField<int>(this, "whichBG");
+
+                    mailMessageRef = reflectionHelper
+                        .GetField<List<string>>(this, "mailMessage");
+
+                    pageRef = reflectionHelper
+                        .GetField<int>(this, "page");
+
+                    moneyIncludedRef = reflectionHelper
+                        .GetField<int>(this, "moneyIncluded");
+
+                    learnedRecipeRef = reflectionHelper
+                            .GetField<string>(this, "learnedRecipe");
+
+                    cookingOrCraftingRef = reflectionHelper
+                            .GetField<string>(this, "cookingOrCrafting");
+
+                    questIdRef = reflectionHelper
+                            .GetField<int>(this, "questID");
+
+                    secretNoteImageRef = reflectionHelper
+                            .GetField<int>(this, "secretNoteImage");
+
+                    // private methods
+
+                    getTextColorRef = reflectionHelper
+                        .GetMethod(this, "getTextColor");
+                }
+                SetupReflection();
+
+                // Check if the mail content uses the text coloring API and parse it accordingly.
+                bool couldParse = StringColorParser.TryParse(content, SpriteTextHelper.GetColorFromIndex(getTextColorRef.Invoke<int>()), out List<TextColorInfo> textColorData);
+                if (couldParse)
+                {
+                    // Construct the new mail content with all <color> tags removed.
+                    StringBuilder parsedStringBuilder = new StringBuilder();
+                    textColorData.ForEach(mapping => parsedStringBuilder.Append(mapping.Text));
+
+                    var parsedString = parsedStringBuilder.ToString();
+
+                    // The mail content was parsed successfully. The original mail content might have contained pairs of <color></color> tags 
+                    // which then were removed in the resulting parsed string output. Hence the length of the resulting parsed string and the
+                    // length of the original mail content string might differ (the former being shorter) which requires a new run to break up
+                    // the resulting mail content into different mail pages. The previous run worked on the original mail message whch might have
+                    // contained now removed <color> tags.
+                    if (parsedString.Length < content.Length)
+                    {
+                        mailMessageRef.SetValue(SpriteText.getStringBrokenIntoSectionsOfHeight(parsedString, this.width - 64, this.height - 128));
+                    }
+
+                    List<string> mailMessage = mailMessageRef.GetValue();
+
+                    // If the mail content did not contain any <color> tags, we set the default mail-content text color 
+                    // based on the mail's background.
+                    if (parsedString.Length == content.Length)
+                    {
+                        textColor = SpriteTextHelper.GetColorFromIndex(getTextColorRef.Invoke<int>());
+                        return;
+                    }
+
+                    // If the mail content contained a single pair of <color> tags which enclosed the entire actual 
+                    // mail content, the entire mail content will be drawn in the same color, that is the color specified
+                    // by the color tag.
+                    // Example: <color=#0000FF>mail content</color>
+                    else if (textColorData.Count == 1)
+                    {
+                        textColor = textColorData[0].Color;
+                    }
+
+                    // If the mail content is to be drawn in at least two different colors and the mail content has been sliced up
+                    // into multiple pages, we also need to "slice up" our TextColorInfo data so that each content page will only 
+                    // contain the TextColorInfo data relevant to it.
+                    else
+                    {
+                        textColorDataPerPage = new List<List<TextColorInfo>>(mailMessage.Count);
+                        for (int i = 0; i < mailMessage.Count; i++)
+                        {
+                            textColorDataPerPage.Add(new List<TextColorInfo>());
+                        }
+
+                        int currentBlockIndex = 0; // The current TextColorInfo block we are assigning to a content page.
+                        int currentIndexInBlock = 0; // The current index into the current TextColorInfo block.
+
+                        for (int i = 0; i < mailMessage.Count; i++)
+                        {
+                            // As long as there are still page characters left which have not yet been assigned a TextColorInfo (sub)block to,
+                            // we continue to assign TextColorInfo blocks to the page content.
+                            int remainingCharsPerPage = mailMessage[i].Length;
+                            while (remainingCharsPerPage > 0)
+                            {
+                                // A TextColorInfo block can contain a string which is shorter, of same length or longer than the remaining 
+                                // unassigned content of the current mail page. In the first two cases (shorter or of same length) we assign 
+                                // all the unassigned content of the current TextColorInfo block (some of its text data could have already  
+                                // been assigned to a page -- see second case below) to the current page.
+                                //
+                                // In the second case, the current TextColorInfo block spans multiple content pages and we thus have to split it 
+                                // up into multiple sub TextColorInfo blocks (one block per page the TextColorInfo block is spanning). 
+                                // Splitting up means that one part of the TextColorInfo block will be assigned to a different page than the rest of 
+                                // the TextColorInfo block. We keep track of the TextColorInfo parts which are unassgined yet using "currentIndexInBlock".
+
+                                // First case, the unassigned part of the current TextColorInfo block fits into the remaining content
+                                // of the current page.
+                                // Note: Since a TextColorInfo block can potentially span more than two pages, we also have to make 
+                                // sure to ignore any already assigned parts of the current TextColorInfo block.
+                                if (textColorData[currentBlockIndex].Text.Length - currentIndexInBlock <= remainingCharsPerPage)
+                                {
+                                    string blockText = (currentIndexInBlock > 0)
+                                        ? textColorData[currentBlockIndex].Text.Substring(currentIndexInBlock)
+                                        : textColorData[currentBlockIndex].Text;
+
+                                    textColorDataPerPage[i].Add(new TextColorInfo(blockText, textColorData[currentBlockIndex].Color));
+
+                                    remainingCharsPerPage -= textColorData[currentBlockIndex].Text.Length - currentIndexInBlock;
+
+                                    currentBlockIndex++;
+                                    currentIndexInBlock = 0;
+                                }
+
+                                // Second case, the unassigned part of the current TextColorInfo block spans at least two pages:
+                                // Split it up into an unassigned part for the current page and a remaining unassigned part for
+                                // the next page(s). Then assign the first part to the current page.
+                                // Note: Since a TextColorInfo block can potentially span more than two pages, we also have to make 
+                                // sure to ignore any already assigned parts of the current TextColorInfo block.
+                                else
+                                {
+                                    string splitBlockText = textColorData[currentBlockIndex].Text.Substring(currentIndexInBlock, remainingCharsPerPage);
+
+                                    textColorDataPerPage[i].Add(new TextColorInfo(splitBlockText, textColorData[currentBlockIndex].Color));
+
+                                    currentIndexInBlock += remainingCharsPerPage;
+                                    remainingCharsPerPage = 0;                                
+                                }
+                            }
+                        }
+                    }
+
+                    // We potentially changed the number of pages the mail content has been split up
+                    // after the content was parsed by the text coloring parser. Hence we might need to
+                    // update the [Back Button] and [Forward Button] settings. 
+                    if (Game1.options.SnappyMenus && mailMessage?.Count <= 1)
+                    {
+                        this.backButton.myID = -100;
+                        this.forwardButton.myID = -100;
+                    }
+                }
             }
 
             /// <summary>
@@ -350,65 +533,6 @@ namespace FelixDev.StardewMods.FeTK.UI.Menus
             private void BaseDraw(SpriteBatch b)
             {
                 this.upperRightCloseButton?.draw(b);
-            }
-
-            /// <summary>
-            /// Draw the letter menu. Our implementation fixes a bug in the game where only the last item
-            /// of the attached mail items is always drawn.
-            /// </summary>
-            /// <param name="b"></param>
-            public /*override*/ void draw2(SpriteBatch b)
-            {
-                // Instead of copying over the complete original LetterViewerMenu.draw() function, we "overdraw" it 
-                // with our fix applied. The reduces our dependency on the game code ( we would have to change our code
-                // when the game code changes) and we also save a bunch of reflection calls (to access private class members).
-
-                base.draw(b);
-
-                var whichBG = this.whichBGRef.GetValue();
-                var scale = this.scaleRef.GetValue();
-                if (scale == 1.0)
-                {
-                    // The original game code (up to 1.3.36 at least) has a bug where, if there are multiple
-                    // attached items, only the last item is always displayed. While the other items are in fact
-                    // properly attached, they won't get drawn. We fix that bug here.
-                    foreach (ClickableComponent clickableComponent in this.itemsToGrab)
-                    {
-                        if (clickableComponent.item != null)
-                        {
-                            b.Draw(this.letterTexture, clickableComponent.bounds, new Rectangle?(new Rectangle(whichBG * 24, 180, 24, 24)), Color.White);
-                            clickableComponent.item.drawInMenu(b, new Vector2(clickableComponent.bounds.X + 16, clickableComponent.bounds.Y + 16), clickableComponent.scale);
-
-                            // The original game code misses this "break" statement and thus overdraws all previously drawn items.
-                            break;
-                        }
-                    }
-                }
-
-                // Since we "overdraw" the letter viewer menu, we also need to re-draw the game cursor as otherwise 
-                // it would be behind the attached item spot. That means two cursors are being drawn now for the letter viewer menu
-                // but visual testing still gave acceptable visual results (only really fast cursor movement shows a bit of a trailing
-                // second cursor.)
-
-                if (Game1.options.hardwareCursor)
-                    return;
-
-                b.Draw(Game1.mouseCursors, new Vector2(Game1.getMouseX(), Game1.getMouseY()), 
-                    new Rectangle?(Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 0, 16, 16)), 
-                    Color.White, 0.0f, Vector2.Zero, (float)(4.0 + Game1.dialogueButtonScale / 150.0), SpriteEffects.None, 1f);
-            }
-
-            private int GetTextColor(int whichBG)
-            {
-                switch (whichBG)
-                {
-                    case 1:
-                        return 8;
-                    case 2:
-                        return 7;
-                    default:
-                        return -1;
-                }
             }
         }
     }
