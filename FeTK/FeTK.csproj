@@ -90,6 +90,12 @@
     <None Include="manifest.json" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Content Include="docs\images\mail-service-text-coloring-api-example-1.png" />
+    <Content Include="docs\images\mail-service-text-coloring-api-example-2.png" />
+    <Content Include="docs\images\mail-service-text-coloring-api-example-3.png" />
+    <Content Include="docs\images\mail-service-text-coloring-api-example-rainbow.png" />
+  </ItemGroup>
   <Import Project="..\Common\Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
