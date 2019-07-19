@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="docs\images\mail-service-cp-edit-example.png" />
     <Content Include="docs\images\mail-service-text-coloring-api-example-1.png" />
     <Content Include="docs\images\mail-service-text-coloring-api-example-2.png" />
     <Content Include="docs\images\mail-service-text-coloring-api-example-3.png" />
