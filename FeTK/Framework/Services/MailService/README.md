@@ -88,7 +88,7 @@ Create the following content.json file (based on CP 1.9 which was the most recen
    ]
 }
 ```
-This will result in the following mail content where a player named "Player" will open the mail with the ID "fall_15":
+As you can see, we enclosed the words "Stardew Valley Fair" with `<color=#0000FF></color>`. This will result in the following mail content when a player named "Player" will open the mail with the ID "fall_15":
 
 ![](../../../docs/images/mail-service-cp-edit-example.png)
 
