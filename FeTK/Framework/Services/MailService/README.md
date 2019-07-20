@@ -14,7 +14,7 @@ The Text Coloring API provides a Markup-language based syntax to be used togethe
 
 ### Syntax
 
-Enclose the text xou want to color with the `<color></color>` tags. See the following example:
+Enclose the text you want to color with the `<color></color>` tags. See the following example:
 ```
 <color=COLOR_VALUE>some text</color>
 ```
