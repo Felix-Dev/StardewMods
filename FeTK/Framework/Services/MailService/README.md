@@ -34,11 +34,11 @@ Every mail content can contain zero or more `<color></color>` pairs. If a mail c
 text color for the given mail context (mail background,...) will be used for this content. You can have multiple `<color></color>` 
 tags side-by-side and you can even use nested `<color>` start tags (`<color>` tags enclosed by other `<color>` tags).
 
-A valid text-coloring syntax thus is defined as following:
+A valid text-coloring syntax thus is defined as the following:
 ```
 ...<color=#[A-Za-z0-9]{6}>...</color>...
 ```
-where the three dots `...` can stand for otional text and `<color></color>` tags.
+where the three dots `...` can stand for optional text and `<color></color>` tags.
 
 ### Examples
 
