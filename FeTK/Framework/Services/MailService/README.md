@@ -2,7 +2,7 @@
 
 The Mail API of the framework exposes a couple of features modders can use for 
 * easier interaction with the game's mail system
-* updating the mail content and get feedback how the player interacted with mail content
+* updating the mail content and get feedback on how the player interacted with the mail content
 * improving the visual representation of the mail content
 
 Note: Not every feature requires mails to be added to the game via the framework!
@@ -70,8 +70,8 @@ And below is a personal favorite of mine:
 
 ### How to use the API in other mod frameworks?
 
-Below is an example how to use the Text Coloring API in Content Patcher by editing a the content of an already existing mail (applying the 
-API to a new custom mail of yours will work in the same way):
+Below is an example how to use the Text Coloring API in Content Patcher by editing the content of an already existing mail (applying the 
+API to a new custom mail will work in the same way):
 
 Create the following content.json file (based on CP 1.9 which was the most recent CP version available at the time of this writing):
 ```js
