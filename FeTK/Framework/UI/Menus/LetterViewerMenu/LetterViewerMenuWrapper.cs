@@ -1,14 +1,13 @@
 ﻿using FelixDev.StardewMods.FeTK.Framework.Data.Parsers;
-using FelixDev.StardewMods.FeTK.Framework.Helpers;
+using FelixDev.StardewMods.FeTK.Framework.Services;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
-using StardewValley.BellsAndWhistles;
 using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace FelixDev.StardewMods.FeTK.Framework.UI
 {
@@ -27,8 +26,8 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
         /// <summary>Provides access to the <see cref="IReflectionHelper"/> API provided by SMAPI.</summary>
         private static readonly IReflectionHelper reflectionHelper = ToolkitMod.ModHelper.Reflection;
 
-        /// <summary>The <see cref="LetterViewerMenuEx"/> instance used to display the mail.</summary>
-        private readonly LetterViewerMenuEx letterMenu;
+        /// <summary>The <see cref="LetterViewerMenuEx2"/> instance used to display the mail.</summary>
+        private readonly LetterViewerMenuEx2 letterMenu;
 
         /// <summary>Raised when the letter viewer menu has been closed.</summary>
         public event EventHandler<LetterViewerMenuClosedEventArgs> MenuClosed;
@@ -36,79 +35,37 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
         /// <summary>
         /// Create a new instance of the <see cref="LetterViewerMenuWrapper"/> class.
         /// </summary>
-        /// <param name="mailTitle">The title of the mail.</param>
-        /// <param name="mailContent">The content of the mail.</param>
-        /// <returns>The created <see cref="LetterViewerMenuWrapper"/> instance.</returns>
-        /// <exception cref="ArgumentNullException">
-        /// The specified <paramref name="mailTitle"/> is <c>null</c> -or-
-        /// the specified <paramref name="mailContent"/> is <c>null</c>.
-        /// </exception>
-        /// <remarks>
-        /// Use this function if the content of the mail is defined by the game's mail content format.
-        /// Example: "mail content %item object 388 50 %%"
-        /// </remarks>
-        public static LetterViewerMenuWrapper CreateMenuForGameMail(string mailTitle, string mailContent)
+        /// <param name="mail">The mail to create the menu for.</param>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="mail"/> is <c>null</c>.</exception>
+        public LetterViewerMenuWrapper(Mail mail)
         {
-            if (mailTitle == null)
+            if (mail == null)
             {
-                throw new ArgumentNullException(nameof(mailTitle));
+                throw new ArgumentNullException(nameof(mail));
             }
 
-            if (mailContent == null)
+            string textContent = mail.Text.Equals(string.Empty) ? " " : mail.Text;
+
+            switch (mail)
             {
-                throw new ArgumentNullException(nameof(mailContent));
+                case ItemMail itemMail:
+                    this.letterMenu =  LetterViewerMenuEx2.CreateItemMailMenu(itemMail.Id, textContent, itemMail.AttachedItems);
+                    break;
+                case MoneyMail moneyMail:
+                    this.letterMenu = LetterViewerMenuEx2.CreateMoneyMailMenu(moneyMail.Id, textContent, moneyMail.AttachedMoney);
+                    break;
+                case RecipeMail recipeMail:
+                    this.letterMenu = LetterViewerMenuEx2.CreateRecipeMailMenu(recipeMail.Id, textContent, recipeMail.RecipeName, recipeMail.RecipeType);
+                    break;
+                case QuestMail questMail:
+                    this.letterMenu = LetterViewerMenuEx2.CreateQuestMailMenu(questMail.Id, textContent, questMail.QuestId, questMail.IsAutomaticallyAccepted);
+                    break;
+                default:
+                    this.letterMenu = new LetterViewerMenuEx2(mail.Id, textContent);
+                    break;
             }
 
-            return new LetterViewerMenuWrapper(true, mailTitle, mailContent);
-        }
-
-        /// <summary>
-        /// Create a new instance of the <see cref="LetterViewerMenuWrapper"/> class.
-        /// </summary>
-        /// <param name="mailTitle">The title of the mail.</param>
-        /// <param name="mailContent">The content of the mail.</param>
-        /// <param name="attachedItems">The attached items of the mail, if any. Can be <c>null</c>.</param>
-        /// <returns>The created <see cref="LetterViewerMenuWrapper"/> instance.</returns>
-        /// <exception cref="ArgumentNullException">
-        /// The specified <paramref name="mailTitle"/> is <c>null</c> -or-
-        /// the specified <paramref name="mailContent"/> is <c>null</c>.
-        /// </exception>
-        /// <remarks>
-        /// Use this function if the content of the mail is to be specified independently from the
-        /// game's mail content format.
-        /// </remarks>
-        public static LetterViewerMenuWrapper CreateMenuForFrameworkMail(string mailTitle, string mailContent, List<Item> attachedItems = null)
-        {
-            if (mailTitle == null)
-            {
-                throw new ArgumentNullException(nameof(mailTitle));
-            }
-
-            if (mailContent == null)
-            {
-                throw new ArgumentNullException(nameof(mailContent));
-            }
-
-            return new LetterViewerMenuWrapper(false, mailTitle, mailContent, attachedItems);
-        }
-
-        /// <summary>
-        /// Create a new instance of the <see cref="LetterViewerMenuWrapper"/> class./>
-        /// </summary>
-        /// <param name="usesGameFormat">
-        /// Specifies whether the mail's content is specified by following the game's mail format or
-        /// specified independently from it.
-        /// </param>
-        /// <param name="mailTitle">The title of mail to display.</param>
-        /// <param name="mailContent">The content of the mail to display.</param>
-        /// <param name="attachedItems">The attached items of the mail to display. May be <c>null</c>.</param>
-        private LetterViewerMenuWrapper(bool usesGameFormat, string mailTitle, string mailContent, List<Item> attachedItems = null)
-        {
-            letterMenu = usesGameFormat
-                ? new LetterViewerMenuEx(mailTitle, mailContent)
-                : new LetterViewerMenuEx(mailTitle, mailContent.Equals(string.Empty) ? " " : mailContent, attachedItems);
-
-            letterMenu.exitFunction = new IClickableMenu.onExit(OnExit);
+            this.letterMenu.exitFunction = new IClickableMenu.onExit(OnExit);
         }
 
         /// <summary>
@@ -124,89 +81,77 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
         /// </summary>
         private void OnExit()
         {
-            MenuClosed?.Invoke(this, new LetterViewerMenuClosedEventArgs(letterMenu.MailTitle, letterMenu.SelectedItems));
+            MenuClosed?.Invoke(this, new LetterViewerMenuClosedEventArgs(letterMenu.MailId, letterMenu.InteractionRecord));
         }
 
         /// <summary>
-        /// This class extends the <see cref="LetterViewerMenu"/> class with additional functionality such as 
-        /// managing the selected items.
+        /// This class extends the <see cref="LetterViewerMenuEx"/> class with additional functionality such as 
+        ///         - keeping track of user interaction with the mail's content
         /// </summary>
-        internal class LetterViewerMenuEx : LetterViewerMenu
+        private class LetterViewerMenuEx2 : LetterViewerMenuEx
         {
-            #region LetterViewerMenu Reflection Fields
+            /// <summary>Provides access to the <see cref="IMonitor"/> API provided by SMAPI.</summary>
+            private static readonly IMonitor monitor = ToolkitMod._Monitor;
 
-            private IReflectedField<float> scaleRef;
-            private IReflectedField<int> whichBGRef;
+            /// <summary>The type of the mail visualized by this menu.</summary>
+            private MailType mailType;
 
-            private IReflectedField<int> moneyIncludedRef;
+            /// <summary>The ID of the quest included in the mail.</summary>
+            /// <remarks>
+            /// This differs from <see cref="LetterViewerMenuEx.QuestId"/> in that it will always hold the ID of the quest
+            /// this menu was created with.
+            /// </remarks>
+            private int attachedQuestId = QUEST_ID_NO_QUEST;
 
-            private IReflectedField<List<string>> mailMessageRef;
-            private IReflectedField<int> pageRef;
+            /// <summary>Indicates whether the quest included in the mail was accepted or not.</summary>
+            private bool questAccepted = false;
 
-            private IReflectedField<string> learnedRecipeRef;
-            private IReflectedField<string> cookingOrCraftingRef;
-            private IReflectedField<int> questIdRef;
-            private IReflectedField<int> secretNoteImageRef;
-
-            private IReflectedMethod getTextColorRef;
-
-            #endregion // LetterViewerMenu Reflection Fields
-
-            /// <summary>Contains a collection of <see cref="TextColorInfo"/> objects, if any, for the specified mail content.</summary>
-            private List<List<TextColorInfo>> textColorDataPerPage;
-
-            /// <summary>The default text color to use for the mail's text content.</summary>
-            private Color textColor;
+            /// <summary>Contains the attached items which were selected by the player.</summary>
+            private List<Item> selectedItems;
 
             /// <summary>
-            /// Create an instance of the <see cref="LetterViewerMenuEx"/> class.
+            /// Create a new instance of the <see cref="LetterViewerMenuEx2"/> class.
             /// </summary>
-            /// <param name="title">The title of the mail.</param>
-            /// <param name="content">the content of the mail.</param>
-            /// <remarks>
-            /// Use this constructor if the content of the mail is defined by the game's mail content format.
-            /// Example: "mail content %item object 388 50 %%"
-            /// </remarks>
-            public LetterViewerMenuEx(string title, string content)
-            : base(content, title)
+            /// <param name="id">The ID of the mail.</param>
+            /// <param name="text">The text content of the mail.</param>
+            public LetterViewerMenuEx2(string id, string text)
+                : base(text)
             {
-                SetupReflectionAndContent(null);
-            }
-
-            /// <summary>
-            /// Create an instance of the <see cref="LetterViewerMenuEx"/> class.
-            /// </summary>
-            /// <param name="title">The title of the mail.</param>
-            /// <param name="content">The content of the mail.</param>
-            /// <param name="attachedItems">The items attached to the mail. Can be <c>null</c>.</param>
-            /// <remarks>
-            /// Use this constructor if the content of the mail is to be specified independently from the
-            /// game's mail content format.
-            /// </remarks>
-            public LetterViewerMenuEx(string title, string content, List<Item> attachedItems) 
-                : base(content)
-            {
-                SetupReflectionAndContent(content);
-
                 reflectionHelper
                     .GetField<bool>(this, "isMail")
                     .SetValue(true);
                 reflectionHelper
                     .GetField<string>(this, "mailTitle")
-                    .SetValue(title);
+                    .SetValue(id);
 
-                MailTitle = title;
+                MailId = id;
+
+                this.mailType = MailType.PlainMail;
+            }
+
+            /// <summary>
+            /// Create a new instance of the <see cref="LetterViewerMenuEx2"/> class.
+            /// </summary>
+            /// <param name="id">The ID of the mail.</param>
+            /// <param name="text">The text content of the mail.</param>
+            /// <param name="attachedItems">The items attached to the mail. Can be <c>null</c>.</param>
+            /// <returns>The created <see cref="LetterViewerMenuEx2"/> instance.</returns>
+            public static LetterViewerMenuEx2 CreateItemMailMenu(string id, string text, List<Item> attachedItems)
+            {
+                var menu = new LetterViewerMenuEx2(id, text)
+                {
+                    selectedItems = new List<Item>(),
+                    mailType = MailType.ItemMail
+                };
 
                 // If the mail has attached items, add them to the LetterViewerMenu so they will be shown when the
                 // mail is drawn to the screen.
                 if (attachedItems?.Count > 0)
                 {
-                    SelectedItems = new List<Item>();
-
                     foreach (var item in attachedItems)
                     {
                         var attachedItemComponent = new ClickableComponent(
-                            new Rectangle(this.xPositionOnScreen + this.width / 2 - 48, this.yPositionOnScreen + this.height - 32 - 96, 96, 96),
+                            new Rectangle(menu.xPositionOnScreen + menu.width / 2 - 48, menu.yPositionOnScreen + menu.height - 32 - 96, 96, 96),
                             item)
                         {
                             myID = region_itemGrabButton,
@@ -214,40 +159,231 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                             rightNeighborID = region_forwardButton
                         };
 
-                        this.itemsToGrab.Add(attachedItemComponent);
+                        menu.itemsToGrab.Add(attachedItemComponent);
                     }
 
-                    this.backButton.rightNeighborID = region_itemGrabButton;
-                    this.forwardButton.leftNeighborID = region_itemGrabButton;
+                    menu.backButton.rightNeighborID = region_itemGrabButton;
+                    menu.forwardButton.leftNeighborID = region_itemGrabButton;
+
+                    if (!Game1.options.SnappyMenus)
+                        return menu;
+
+                    menu.populateClickableComponentList();
+                    menu.snapToDefaultClickableComponent();
                 }
 
-                if (!Game1.options.SnappyMenus)
-                    return;
-
-                this.populateClickableComponentList();
-                this.snapToDefaultClickableComponent();
+                return menu;
             }
 
-            /// <summary>The title of the mail.</summary>
-            public string MailTitle { get; private set; }
+            /// <summary>
+            /// Create a new instance of the <see cref="LetterViewerMenuEx2"/> class.
+            /// </summary>
+            /// <param name="id">The ID of the mail.</param>
+            /// <param name="text">The text content of the mail.</param>
+            /// <param name="money">The money attached to the mail.</param>
+            /// <returns>The created <see cref="LetterViewerMenuEx2"/> instance.</returns>
+            public static LetterViewerMenuEx2 CreateMoneyMailMenu(string id, string text, int money)
+            {
+                var menu = new LetterViewerMenuEx2(id, text)
+                {
+                    mailType = MailType.MoneyMail
+                };
 
-            /// <summary>A list containing the selected items.</summary>
-            public List<Item> SelectedItems { get; private set; }
+                // Attach money to the mail and add it to the player's account.
+                menu.MoneyIncluded = money;
+                Game1.player.Money += money;
+
+                return menu;
+            }
 
             /// <summary>
-            /// Add functionality to add a clicked item to the <see cref="SelectedItems"/> list./>
+            /// Create a new instance of the <see cref="LetterViewerMenuEx2"/> class.
+            /// </summary>
+            /// <param name="id">The ID of the mail.</param>
+            /// <param name="text">The text content of the mail.</param>
+            /// <param name="questId">The ID of the quest included in the mail.</param>
+            /// <param name="isAutomaticallyAccepted">
+            /// Indicates whether the included quest is automatically accepted when the mail is opened or if the 
+            /// player needs to manually accept it.
+            /// </param>
+            /// <returns>The created <see cref="LetterViewerMenuEx2"/> instance.</returns>
+            public static LetterViewerMenuEx2 CreateQuestMailMenu(string id, string text, int questId, bool isAutomaticallyAccepted)
+            {
+                var menu = new LetterViewerMenuEx2(id, text)
+                {
+                    mailType = MailType.QuestMail,
+                    attachedQuestId = questId < 1 ? QUEST_ID_NO_QUEST : questId,
+                };
+
+                // If the ID does not represent an existing quest, we don't include it in the mail.
+                if (menu.attachedQuestId == QUEST_ID_NO_QUEST)
+                {
+                    menu.QuestId = QUEST_ID_NO_QUEST;
+                    return menu;
+                }
+
+                // Add the quest to the player's quest log if it is an automatically accepted quest.
+                if (isAutomaticallyAccepted)
+                {
+                    Game1.player.addQuest(questId);
+
+                    menu.questAccepted = true;
+                    menu.QuestId = QUEST_ID_NO_QUEST;
+
+                    return menu;
+                }
+
+                // Specified quest has to be manually accepted by the player -> setup [quest accept] button in the menu.
+
+                menu.QuestId = questId;
+
+                string label = Game1.content.LoadString("Strings\\UI:AcceptQuest");
+                menu.acceptQuestButton = new ClickableComponent(
+                    new Rectangle(menu.xPositionOnScreen + menu.width / 2 - 128, menu.yPositionOnScreen + menu.height - 128, 
+                                 (int)Game1.dialogueFont.MeasureString(label).X + 24, 
+                                 (int)Game1.dialogueFont.MeasureString(label).Y + 24),
+                                 "")
+                {
+                    myID = region_acceptQuestButton,
+                    rightNeighborID = region_forwardButton,
+                    leftNeighborID = region_backButton
+                };
+
+                menu.backButton.rightNeighborID = region_acceptQuestButton;
+                menu.forwardButton.leftNeighborID = region_acceptQuestButton;
+
+                if (!Game1.options.SnappyMenus)
+                    return menu;
+
+                menu.populateClickableComponentList();
+                menu.snapToDefaultClickableComponent();
+
+                return menu;
+            }
+
+            /// <summary>
+            /// Create a new instance of the <see cref="LetterViewerMenuEx2"/> class.
+            /// </summary>
+            /// <param name="id">The ID of the mail.</param>
+            /// <param name="text">The text content of the mail.</param>
+            /// <param name="recipeName">The name of the recipe attached to the mail.</param>
+            /// <param name="recipeType">The type of the recipe attached to the mail.</param>
+            /// <returns>The created <see cref="LetterViewerMenuEx2"/> instance.</returns>
+            public static LetterViewerMenuEx2 CreateRecipeMailMenu(string id, string text, string recipeName, RecipeType recipeType)
+            {
+                var menu = new LetterViewerMenuEx2(id, text)
+                {
+                    mailType = MailType.RecipeMail,
+                };
+
+                // If there is no recipe attached to the mail we are done.
+                if (recipeName == null)
+                {
+                    return menu;
+                }
+
+                // Load the relevant recipe game asset to obtain the recipe's data.
+                Dictionary<string, string> recipes;
+                switch (recipeType)
+                {
+                    case RecipeType.Cooking:
+                        // If the player already received the recipe -> don't attach the recipe to the mail.
+                        if (Game1.player.cookingRecipes.ContainsKey(recipeName))
+                        {
+                            monitor.Log($"The player already learned the recipe \"{recipeType}\"!");
+                            return menu;
+                        }
+
+                        recipes = Game1.content.Load<Dictionary<string, string>>("Data\\CookingRecipes");
+                        break;
+                    case RecipeType.Crafting:
+                        // If the player already received the recipe -> don't attach the recipe to the mail.
+                        if (Game1.player.craftingRecipes.ContainsKey(recipeName))
+                        {
+                            monitor.Log($"The player already learned the recipe \"{recipeType}\"!");
+                            return menu;
+                        }
+
+                        recipes = Game1.content.Load<Dictionary<string, string>>("Data\\CraftingRecipes");
+                        break;
+                    default:
+                        throw new ArgumentException($"Invalid value \"{recipeType}\" for the recipe type!", nameof(recipeType));
+                }
+
+                // If the specified recipe is not available in the loaded recipe game asset, we throw an error
+                if (!recipes.TryGetValue(recipeName, out string recipeData))
+                {
+                    monitor.Log($"A recipe with the name \"{recipeName}\" was not found!", LogLevel.Warn);
+                    throw new ArgumentException($"Could not find a recipe with the specified recipeName \"{recipeName}\"!");
+                }
+
+                // Add the recipe to the recipes the player already obtained.
+           
+                int translatedNameIndex;
+                if (recipeType == RecipeType.Cooking)
+                {
+                    translatedNameIndex = 4; // See Data/CookingRecipes{.lg-LG}.xnb files
+                    menu.CookingOrCrafting = Game1.content.LoadString("Strings\\UI:LearnedRecipe_cooking");
+                    Game1.player.cookingRecipes.Add(recipeName, 0);
+                }
+                else 
+                {
+                    translatedNameIndex = 5; // See Data/CraftingRecipes{.lg-LG}.xnb files
+                    menu.CookingOrCrafting = Game1.content.LoadString("Strings\\UI:LearnedRecipe_crafting");
+                    Game1.player.craftingRecipes.Add(recipeName, 0);
+                }
+                
+                // Set the name of the recipe depending on the currently selected display language.
+                string[] recipeParams = recipeData.Split('/');
+                if (LocalizedContentManager.CurrentLanguageCode != LocalizedContentManager.LanguageCode.en)
+                {
+                    if (recipeParams.Length < translatedNameIndex + 1)
+                    {
+                        menu.LearnedRecipe = recipeName;
+                        monitor.Log($"There is no translated name for the recipe \"{recipeName}\" available! Using the recipe name as a fallback name.", 
+                            LogLevel.Warn);
+                    }
+                    else
+                    {
+                        // Read the translated name field from the recipe asset.
+                        menu.LearnedRecipe = recipeParams[translatedNameIndex];
+                    }               
+                }
+                else
+                {
+                    // Language is English -> use the supplied recipe name.
+                    menu.LearnedRecipe = recipeName;
+                }
+
+                return menu;
+            }
+
+            /// <summary>
+            /// The ID of the mail.
+            /// </summary>
+            public string MailId { get; private set; }
+
+            /// <summary>
+            /// Contains information about how the player interacted with the content of the mail.
+            /// </summary>
+            public MailInteractionRecord InteractionRecord { get; private set; }
+
+            /// <summary>
+            /// Add functionality to add a clicked item to the <see cref="selectedItems"/> list or 
+            /// to accept a quest./>
             /// </summary>
             /// <param name="x">X-coordinate of the click.</param>
             /// <param name="y">Y-coordinate of the click.</param>
             /// <param name="playSound">Not used.</param>
             public override void receiveLeftClick(int x, int y, bool playSound = true)
             {
+                // Handle [attached item] click
                 foreach (ClickableComponent clickableComponent in this.itemsToGrab)
                 {
                     if (clickableComponent.containsPoint(x, y) && clickableComponent.item != null)
                     {
                         // Add the clicked item to the list of user-selected items.
-                        SelectedItems?.Add(clickableComponent.item);
+                        selectedItems.Add(clickableComponent.item);
 
                         Game1.playSound("coin");
                         clickableComponent.item = null;
@@ -256,298 +392,50 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                     }
                 }
 
+                // Handle [quest accept button] click
+                if (this.QuestId != QUEST_ID_NO_QUEST && this.acceptQuestButton.containsPoint(x, y))
+                {
+                    Game1.player.addQuest(this.QuestId);
+
+                    this.questAccepted = true;
+                    this.QuestId = QUEST_ID_NO_QUEST;
+
+                    Game1.playSound("newArtifact");
+                    return;
+                }
+
                 base.receiveLeftClick(x, y, playSound);
             }
 
             /// <summary>
-            /// Draw the letter menu. Our implementation fixes a bug in the game where only the last item
-            /// of the attached mail items is always drawn.
+            /// Called before the menu is exited. We use this function to setup any <see cref="MailInteractionRecord"/> 
+            /// data we might need later.
             /// </summary>
-            /// <param name="b"></param>
-            public override void draw(SpriteBatch b)
+            protected override void cleanupBeforeExit()
             {
-                #region Setup local variables with reflection
+                switch (mailType)
+                {                      
+                    case MailType.ItemMail:
+                        // Grab all attached items which weren't selected by the player.
+                        var unselectedItems = this.itemsToGrab.Where(component => component.item != null).Select(component => component.item).ToList();
 
-                int whichBG = whichBGRef.GetValue();
-                float scale = scaleRef.GetValue();
-
-                int page = pageRef.GetValue();
-                List<string> mailMessage = mailMessageRef.GetValue();
-
-                int moneyIncluded = moneyIncludedRef.GetValue();
-
-                string learnedRecipe = learnedRecipeRef.GetValue();
-                string cookingOrCrafting = cookingOrCraftingRef.GetValue();
-
-                int secretNoteImage = secretNoteImageRef.GetValue();
-
-                int questID = questIdRef.GetValue();
-
-                #endregion // Setup local variables with reflection
-
-                b.Draw(Game1.fadeToBlackRect, Game1.graphics.GraphicsDevice.Viewport.Bounds, Color.Black * 0.4f);
-
-                // Draw the letter background.
-                b.Draw(letterTexture, new Vector2((float)(xPositionOnScreen + this.width / 2), (float)(this.yPositionOnScreen + this.height / 2)), new Rectangle?(new Rectangle(whichBG * 320, 0, 320, 180)), Color.White, 0.0f, new Vector2(160f, 90f), 4f * scale, SpriteEffects.None, 0.86f);
-
-                if (scale == 1.0)
-                {
-                    if (secretNoteImage != -1)
-                    {
-                        b.Draw(this.secretNoteImageTexture, new Vector2((float)(this.xPositionOnScreen + this.width / 2 - 128 - 4), (float)(this.yPositionOnScreen + this.height / 2 - 128 + 8)), new Rectangle?(new Rectangle(secretNoteImage * 64 % this.secretNoteImageTexture.Width, secretNoteImage * 64 / this.secretNoteImageTexture.Width * 64, 64, 64)), Color.Black * 0.4f, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.865f);
-                        b.Draw(this.secretNoteImageTexture, new Vector2((float)(this.xPositionOnScreen + this.width / 2 - 128), (float)(this.yPositionOnScreen + this.height / 2 - 128)), new Rectangle?(new Rectangle(secretNoteImage * 64 % this.secretNoteImageTexture.Width, secretNoteImage * 64 / this.secretNoteImageTexture.Width * 64, 64, 64)), Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.865f);
-                        b.Draw(this.secretNoteImageTexture, new Vector2((float)(this.xPositionOnScreen + this.width / 2 - 40), (float)(this.yPositionOnScreen + this.height / 2 - 192)), new Rectangle?(new Rectangle(193, 65, 14, 21)), Color.White, 0.0f, Vector2.Zero, 4f, SpriteEffects.None, 0.867f);
-                    }
-                    else
-                    {
-                        // Draw the mail content for the current mail page.
-                        SpriteTextHelper.DrawString(b: b, s: mailMessage[page], x: this.xPositionOnScreen + 32, y: this.yPositionOnScreen + 32,
-                            color: textColor, characterPosition: 999999, 
-                            width: this.width - 64, height: 999999, alpha: 0.75f, layerDepth: 0.865f,
-                            drawBGScroll: -1, placeHolderScrollWidthText: "", textColorDataPerPage?[page]);
-                    }
-
-                    // Draw the attached items, if any.
-                    foreach (ClickableComponent clickableComponent in this.itemsToGrab)
-                    {
-                        b.Draw(this.letterTexture, clickableComponent.bounds, new Rectangle?(new Rectangle(whichBG * 24, 180, 24, 24)), Color.White);
-                        if (clickableComponent.item != null)
-                        {
-                            Vector2 itemMailLocation = new Vector2(clickableComponent.bounds.X + 16, clickableComponent.bounds.Y + 16);
-                            clickableComponent.item.drawInMenu(b, itemMailLocation, clickableComponent.scale);
-
-                            // Missing "break" in original game code (at least up to version 1.3.36). Without it, attached items will overdraw each other 
-                            // from first to last, resulting in only the last attached item to be visible in the mail as long as there are any remaining
-                            // attached items.
-                            break;
-                        }
-                    }
-
-                    // Draw the amount of attached money, if any.
-                    if (moneyIncluded > 0)
-                    {
-                        string s = Game1.content.LoadString("Strings\\UI:LetterViewer_MoneyIncluded", moneyIncluded);
-                        SpriteText.drawString(b, s, this.xPositionOnScreen + this.width / 2 - SpriteText.getWidthOfString(s, 999999) / 2, this.yPositionOnScreen + this.height - 96, 999999, -1, 9999, 0.75f, 0.865f, false, -1, "", -1);
-                    }
-
-                    // Draw the attached recipe, if any. 
-                    else if (learnedRecipe != null && learnedRecipe.Length > 0)
-                    {
-                        string s = Game1.content.LoadString("Strings\\UI:LetterViewer_LearnedRecipe", cookingOrCrafting);
-                        SpriteText.drawStringHorizontallyCenteredAt(b, s, this.xPositionOnScreen + this.width / 2, this.yPositionOnScreen + this.height - 32 - SpriteText.getHeightOfString(s, 999999) * 2, 999999, this.width - 64, 9999, 0.65f, 0.865f, false, -1, 99999);
-                        SpriteText.drawStringHorizontallyCenteredAt(b, Game1.content.LoadString("Strings\\UI:LetterViewer_LearnedRecipeName", learnedRecipe), this.xPositionOnScreen + this.width / 2, this.yPositionOnScreen + this.height - 32 - SpriteText.getHeightOfString("t", 999999), 999999, this.width - 64, 9999, 0.9f, 0.865f, false, -1, 99999);
-                    }
-
-                    //base.draw(b);
-                    BaseDraw(b);
-
-                    if (page < mailMessage.Count - 1)
-                        this.forwardButton.draw(b);
-
-                    if (page > 0)
-                        this.backButton.draw(b);
-
-                    // Draw the [Accept Quest] button if this is a quest mail.
-                    if (questID != -1)
-                    {
-                        IClickableMenu.drawTextureBox(b, Game1.mouseCursors, new Rectangle(403, 373, 9, 9), this.acceptQuestButton.bounds.X, this.acceptQuestButton.bounds.Y, this.acceptQuestButton.bounds.Width, this.acceptQuestButton.bounds.Height, (double)this.acceptQuestButton.scale > 1.0 ? Color.LightPink : Color.White, 4f * this.acceptQuestButton.scale, true);
-                        Utility.drawTextWithShadow(b, Game1.content.LoadString("Strings\\UI:AcceptQuest"), Game1.dialogueFont, new Vector2((float)(this.acceptQuestButton.bounds.X + 12), (float)(this.acceptQuestButton.bounds.Y + (LocalizedContentManager.CurrentLanguageLatin ? 16 : 12))), Game1.textColor, 1f, -1f, -1, -1, 1f, 3);
-                    }
+                        InteractionRecord = new ItemMailInteractionRecord(this.selectedItems, unselectedItems);
+                        break;
+                    case MailType.MoneyMail:
+                        InteractionRecord = new MoneyMailInteractionRecord(this.MoneyIncluded);
+                        break;
+                    case MailType.RecipeMail:
+                        InteractionRecord = new RecipeMailInteractionRecord(this.LearnedRecipe);
+                        break;
+                    case MailType.QuestMail:
+                        InteractionRecord = new QuestMailInteractionRecord(this.attachedQuestId, this.questAccepted);
+                        break;
+                    default:
+                        InteractionRecord = new MailInteractionRecord();
+                        break;
                 }
 
-                if (Game1.options.hardwareCursor)
-                    return;
-
-                // Draw the mouse cursor.
-                b.Draw(Game1.mouseCursors, new Vector2(Game1.getMouseX(), Game1.getMouseY()),
-                    new Rectangle?(Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 0, 16, 16)),
-                    Color.White, 0.0f, Vector2.Zero, (float)(4.0 + Game1.dialogueButtonScale / 150.0),
-                    SpriteEffects.None, 1f);
-            }
-
-            private void SetupReflectionAndContent(string content = null)
-            {
-                void SetupReflection()
-                {
-                    // private fields
-
-                    scaleRef = reflectionHelper
-                    .GetField<float>(this, "scale");
-
-                    whichBGRef = reflectionHelper
-                        .GetField<int>(this, "whichBG");
-
-                    mailMessageRef = reflectionHelper
-                        .GetField<List<string>>(this, "mailMessage");
-
-                    pageRef = reflectionHelper
-                        .GetField<int>(this, "page");
-
-                    moneyIncludedRef = reflectionHelper
-                        .GetField<int>(this, "moneyIncluded");
-
-                    learnedRecipeRef = reflectionHelper
-                            .GetField<string>(this, "learnedRecipe");
-
-                    cookingOrCraftingRef = reflectionHelper
-                            .GetField<string>(this, "cookingOrCrafting");
-
-                    questIdRef = reflectionHelper
-                            .GetField<int>(this, "questID");
-
-                    secretNoteImageRef = reflectionHelper
-                            .GetField<int>(this, "secretNoteImage");
-
-                    // private methods
-
-                    getTextColorRef = reflectionHelper
-                        .GetMethod(this, "getTextColor");
-                }
-                SetupReflection();
-
-                // Retrieve the game-parsed mail content if content is not set. Since the mail content has already
-                // been potentially sliced up into multiple pages, we need to combine those pages again to get the
-                // complete mail content so we can successfully parse the content for the text coloring API.
-                if (content == null)
-                {
-                    List<string> mailMessage = mailMessageRef.GetValue();
-                    if (mailMessage.Count > 1)
-                    {
-                        StringBuilder contentBuilder = new StringBuilder();
-                        mailMessage.ForEach(page => contentBuilder.Append(page));
-
-                        content = contentBuilder.ToString();
-                    }
-                    else
-                    {
-                        content = mailMessage[0];
-                    }
-                }
-
-                // Check if the mail content uses the text coloring API and parse it accordingly.
-                bool couldParse = StringColorParser.TryParse(content, SpriteTextHelper.GetColorFromIndex(getTextColorRef.Invoke<int>()), out List<TextColorInfo> textColorData);
-                if (couldParse)
-                {
-                    // Construct the new mail content with all <color> tags removed.
-                    StringBuilder parsedStringBuilder = new StringBuilder();
-                    textColorData.ForEach(mapping => parsedStringBuilder.Append(mapping.Text));
-
-                    var parsedString = parsedStringBuilder.ToString();
-
-                    // The mail content was parsed successfully. The original mail content might have contained pairs of <color></color> tags 
-                    // which then were removed in the resulting parsed string output. Hence the length of the resulting parsed string and the
-                    // length of the original mail content string might differ (the former being shorter) which requires a new run to break up
-                    // the resulting mail content into different mail pages. The previous run worked on the original mail message whch might have
-                    // contained now removed <color> tags.
-                    if (parsedString.Length < content.Length)
-                    {
-                        mailMessageRef.SetValue(SpriteText.getStringBrokenIntoSectionsOfHeight(parsedString, this.width - 64, this.height - 128));
-                    }
-
-                    List<string> mailMessage = mailMessageRef.GetValue();
-
-                    // If the mail content did not contain any <color> tags, we set the default mail-content text color 
-                    // based on the mail's background.
-                    if (parsedString.Length == content.Length)
-                    {
-                        textColor = SpriteTextHelper.GetColorFromIndex(getTextColorRef.Invoke<int>());
-                        return;
-                    }
-
-                    // If the mail content contained a single pair of <color> tags which enclosed the entire actual 
-                    // mail content, the entire mail content will be drawn in the same color, that is the color specified
-                    // by the color tag.
-                    // Example: <color=#0000FF>mail content</color>
-                    else if (textColorData.Count == 1)
-                    {
-                        textColor = textColorData[0].Color;
-                    }
-
-                    // If the mail content is to be drawn in at least two different colors and the mail content has been sliced up
-                    // into multiple pages, we also need to "slice up" our TextColorInfo data so that each content page will only 
-                    // contain the TextColorInfo data relevant to it.
-                    else
-                    {
-                        textColorDataPerPage = new List<List<TextColorInfo>>(mailMessage.Count);
-                        for (int i = 0; i < mailMessage.Count; i++)
-                        {
-                            textColorDataPerPage.Add(new List<TextColorInfo>());
-                        }
-
-                        int currentBlockIndex = 0; // The current TextColorInfo block we are assigning to a content page.
-                        int currentIndexInBlock = 0; // The current index into the current TextColorInfo block.
-
-                        for (int i = 0; i < mailMessage.Count; i++)
-                        {
-                            // As long as there are still page characters left which have not yet been assigned a TextColorInfo (sub)block to,
-                            // we continue to assign TextColorInfo blocks to the page content.
-                            int remainingCharsPerPage = mailMessage[i].Length;
-                            while (remainingCharsPerPage > 0)
-                            {
-                                // A TextColorInfo block can contain a string which is shorter, of same length or longer than the remaining 
-                                // unassigned content of the current mail page. In the first two cases (shorter or of same length) we assign 
-                                // all the unassigned content of the current TextColorInfo block (some of its text data could have already  
-                                // been assigned to a page -- see second case below) to the current page.
-                                //
-                                // In the second case, the current TextColorInfo block spans multiple content pages and we thus have to split it 
-                                // up into multiple sub TextColorInfo blocks (one block per page the TextColorInfo block is spanning). 
-                                // Splitting up means that one part of the TextColorInfo block will be assigned to a different page than the rest of 
-                                // the TextColorInfo block. We keep track of the TextColorInfo parts which are unassgined yet using "currentIndexInBlock".
-
-                                // First case, the unassigned part of the current TextColorInfo block fits into the remaining content
-                                // of the current page.
-                                // Note: Since a TextColorInfo block can potentially span more than two pages, we also have to make 
-                                // sure to ignore any already assigned parts of the current TextColorInfo block.
-                                if (textColorData[currentBlockIndex].Text.Length - currentIndexInBlock <= remainingCharsPerPage)
-                                {
-                                    string blockText = (currentIndexInBlock > 0)
-                                        ? textColorData[currentBlockIndex].Text.Substring(currentIndexInBlock)
-                                        : textColorData[currentBlockIndex].Text;
-
-                                    textColorDataPerPage[i].Add(new TextColorInfo(blockText, textColorData[currentBlockIndex].Color));
-
-                                    remainingCharsPerPage -= textColorData[currentBlockIndex].Text.Length - currentIndexInBlock;
-
-                                    currentBlockIndex++;
-                                    currentIndexInBlock = 0;
-                                }
-
-                                // Second case, the unassigned part of the current TextColorInfo block spans at least two pages:
-                                // Split it up into an unassigned part for the current page and a remaining unassigned part for
-                                // the next page(s). Then assign the first part to the current page.
-                                // Note: Since a TextColorInfo block can potentially span more than two pages, we also have to make 
-                                // sure to ignore any already assigned parts of the current TextColorInfo block.
-                                else
-                                {
-                                    string splitBlockText = textColorData[currentBlockIndex].Text.Substring(currentIndexInBlock, remainingCharsPerPage);
-
-                                    textColorDataPerPage[i].Add(new TextColorInfo(splitBlockText, textColorData[currentBlockIndex].Color));
-
-                                    currentIndexInBlock += remainingCharsPerPage;
-                                    remainingCharsPerPage = 0;                                
-                                }
-                            }
-                        }
-                    }
-
-                    // We potentially changed the number of pages the mail content has been split up
-                    // after the content was parsed by the text coloring parser. Hence we might need to
-                    // update the [Back Button] and [Forward Button] settings. 
-                    if (Game1.options.SnappyMenus && mailMessage?.Count <= 1)
-                    {
-                        this.backButton.myID = -100;
-                        this.forwardButton.myID = -100;
-                    }
-                }
-            }
-
-            /// <summary>
-            /// The <see cref="IClickableMenu.draw(SpriteBatch)"/> function.
-            /// </summary>
-            /// <param name="b">The sprite batch used to draw the content.</param>
-            private void BaseDraw(SpriteBatch b)
-            {
-                this.upperRightCloseButton?.draw(b);
+                base.cleanupBeforeExit();
             }
         }
     }

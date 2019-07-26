@@ -173,12 +173,13 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         private void OnMailOpening(object sender, MailOpeningEventArgs e)
         {
             // If the mail is not a tool uprade mail by Clint -> do nothing
-            if (!IsToolMail(e.Mail.Id))
+            if (!IsToolMail(e.Id) || !(e.Content is ItemMailContent mailContent) 
+                || !(mailContent.AttachedItems?.Count > 0))
             {
                 return;
             }
 
-            Tool attachedTool = (Tool)e.Mail.AttachedItems[0];
+            Tool attachedTool = (Tool)mailContent.AttachedItems[0];
             Tool currentToolUpgrade = Game1.player.toolBeingUpgraded.Value;
 
             /*
@@ -192,8 +193,8 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
                 && currentToolUpgrade.UpgradeLevel == attachedTool.UpgradeLevel;
             if (!toolMatches)
             {
-                e.Mail.AttachedItems = null;
-                e.Mail.Content += translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_TOOL_ALREADY_RECEIVED);
+                mailContent.AttachedItems = null;
+                mailContent.Text += translationHelper.Get(Translation.MAIL_TOOL_UPGRADE_TOOL_ALREADY_RECEIVED);
 
                 return;
             }
@@ -214,7 +215,8 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         private void OnMailClosed(object sender, MailClosedEventArgs e)
         {
             // If the mail is not a tool uprade mail by Clint or no tool was selected -> do nothing
-            if (!IsToolMail(e.MailId) || e.SelectedItems.Count == 0)
+            if (!IsToolMail(e.MailId) || !(e.InteractionRecord is ItemMailInteractionRecord interactionRecord) 
+                || interactionRecord.SelectedItems.Count == 0)
             {
                 return;
             }
@@ -222,7 +224,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
             // The attached tool was selected in the tool-upgrade mail. We now proceed to add 
             // that tool to the player's inventory.
 
-            var selectedTool = (Tool)e.SelectedItems[0];
+            var selectedTool = (Tool)interactionRecord.SelectedItems[0];
 
             // Check if tools of the same tool class (Axe, Hoe,...) should be removed from the player's inventory.
             // For example, this adds compatibility for the mod [Rented Tools] (i.e. rented tools will be removed).
@@ -256,7 +258,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         /// Check if the mail with the specified ID is a tool-upgrade mail.
         /// </summary>
         /// <param name="mailId">The mail ID.</param>
-        /// <returns><c>True</c>, if the mail is a tool-upgrade mail, otherwise <c>false</c>.</returns>
+        /// <returns><c>true</c> if the mail is a tool-upgrade mail; otherwise, <c>false</c>.</returns>
         private bool IsToolMail(string mailId)
         {
             return mailId.StartsWith(TOOL_MAIL_ID_PREFIX);
@@ -271,18 +273,19 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         {
             string mailId = GetMailIdFromTool(tool);
 
-            string content = GetTranslatedMailContent(tool);
-            content = content.Replace("@", Game1.player.Name);
+            string text = GetTranslatedMailTextContent(tool);
+            text = text.Replace("@", Game1.player.Name);
 
-            mailService.AddMail(dayOffset, mailId, content, tool);
+            var toolMail = new ItemMail(mailId, text, tool);
+            mailService.AddMail(dayOffset, toolMail);
         }
 
         /// <summary>
-        /// Get the translated mail content for a tool.
+        /// Get the mail's translated text content for a tool.
         /// </summary>
-        /// <param name="tool">The tool to get the translated mail content for.</param>
-        /// <returns>The translated mail content.</returns>
-        private string GetTranslatedMailContent(Tool tool)
+        /// <param name="tool">The tool to get the text content for.</param>
+        /// <returns>The mail's translated text content.</returns>
+        private string GetTranslatedMailTextContent(Tool tool)
         {
             string translationKey;
             switch (tool)

@@ -21,10 +21,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="selectedItems">Sets the items of the mail which were selected. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentNullException">
         /// The specified <paramref name="mailId"/> is <c>null</c> -or-
-        /// the specified <paramref name="arrivalDay"/> is <c>null</c>. 
+        /// the specified <paramref name="arrivalDay"/> is <c>null</c> -or-
+        /// the specified <paramref name="interactionRecord"/> is <c>null</c>.
         /// </exception>
-        public MailClosedCoreEventArgs(string mailId, SDate arrivalDay, List<Item> selectedItems) 
-            : base(mailId, selectedItems)
+        public MailClosedCoreEventArgs(string mailId, SDate arrivalDay, MailInteractionRecord interactionRecord) 
+            : base(mailId, interactionRecord)
         {
             ArrivalDay = arrivalDay ?? throw new ArgumentNullException(nameof(arrivalDay));
         }

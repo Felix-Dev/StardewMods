@@ -49,7 +49,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             this.mailAssetEditor = new MailAssetEditor();
             this.saveDataHelper = ModSaveDataHelper.GetSaveDataHelper();
 
-            mailAssetEditor.MailAssetLoading += OnMailDataLoading;
+            this.mailAssetEditor.MailAssetLoading += OnMailDataLoading;
 
             events.GameLoop.DayStarted += OnDayStarted;
             events.GameLoop.DayEnding += OnDayEnding;
@@ -127,7 +127,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 Game1.mailbox.Add(internalMailId);
 
                 mailAssetEditor.RequestAssetCacheRefresh();
-                monitor.Log($"Added the mail with ID \"{mailId}\" to the player's mailbox.");
+                monitor.Log($"Added mail \"{mailId}\" to the player's mailbox.");
             }
         }
 
@@ -204,12 +204,13 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 // item.
                 if (!this.registeredMailsMetaData.TryGetValue(mailId, out MailMetaData mailMetaData))
                 {
-                    string mailContent = GetContentForGameMail(mailId);
+                    string mailContent = GetMailContentForGameMail(mailId);
 
                     // Create and show the menu for this mail.
-                    var gLetterMenu = LetterViewerMenuWrapper.CreateMenuForGameMail(mailId, mailContent);
-                    gLetterMenu.Show();
+                    var gLetterMenu = new LetterViewerMenuEx(mailId, mailContent);
+                    Game1.activeClickableMenu = gLetterMenu;
 
+                    // Since this is a mail which wasn't added to the game using this framework we are done.
                     return;
                 }
 
@@ -237,26 +238,31 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                     return;
                 }
 
+                MailContent content = mail.GetMailContent();
+                
                 // Raise the mail-opening event for this mail.
-                mailSender.OnMailOpening(new MailOpeningEventArgs(mail));
+                mailSender.OnMailOpening(new MailOpeningEventArgs(mail.Id, arrivalDate, content));
+
+                // Update the mail's content based on consumer-requested changes.
+                mail.UpdateMailContent(content);
 
                 // Create the menu for this mail.
-                var fLetterMenu = LetterViewerMenuWrapper.CreateMenuForFrameworkMail(mailId, mail.Content, mail.AttachedItems);
+                var nLetterMenu = new LetterViewerMenuWrapper(mail);
 
                 // Setup the mail-closed event for this mail.
-                fLetterMenu.MenuClosed += (s, e2) =>
+                nLetterMenu.MenuClosed += (s, e2) =>
                 {
                     // Remove the closed mail from the mail manager.
                     RemoveMail(mailId, mailMetaData.ArrivalDay);
 
                     // Notify its sender that the mail has been read.
-                    mailSender.OnMailClosed(new MailClosedCoreEventArgs(mailMetaData.UserId, arrivalDate, e2.SelectedItems));
+                    mailSender.OnMailClosed(new MailClosedCoreEventArgs(mailMetaData.UserId, arrivalDate, e2.InteractionRecord));
                 };
 
-                monitor.Log($"Opening custom mail with the ID \"{mailMetaData.UserId}\".");
+                monitor.Log($"Opening custom mail \"{mailMetaData.UserId}\".");
 
                 // Show the menu for this mail.
-                fLetterMenu.Show();
+                nLetterMenu.Show();
             }
         }
 
@@ -359,12 +365,12 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         }
 
         /// <summary>
-        /// Get the content for a game mail.
+        /// Get the content (text, attched items, included quest,...) for a game mail.
         /// </summary>
         /// <param name="mailId">The mail ID.</param>
         /// <returns>The content of the mail.</returns>
         /// <remarks>Code copied over from <see cref="GameLocation.mailbox"/>.</remarks>
-        private string GetContentForGameMail(string mailId)
+        private string GetMailContentForGameMail(string mailId)
         {
             Dictionary<string, string> dictionary = Game1.content.Load<Dictionary<string, string>>("Data\\mail");
             string str = dictionary.ContainsKey(mailId) ? dictionary[mailId] : "";

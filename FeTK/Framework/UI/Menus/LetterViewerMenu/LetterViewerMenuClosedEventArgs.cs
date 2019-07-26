@@ -1,4 +1,5 @@
-﻿using StardewValley;
+﻿using FelixDev.StardewMods.FeTK.Framework.Services;
+using StardewValley;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,11 +16,14 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
         /// </summary>
         /// <param name="mailId">The ID of the mail to be closed.</param>
         /// <param name="selectedItems">Sets the items of the mail which were selected. Can be <c>null</c>.</param>
-        /// <exception cref="ArgumentNullException">The specified <paramref name="mailId"/> is <c>null</c>.</exception>
-        public LetterViewerMenuClosedEventArgs(string mailId, List<Item> selectedItems)
+        /// <exception cref="ArgumentNullException">
+        /// The specified <paramref name="mailId"/> is <c>null</c> -or-
+        /// the specified <paramref name="interactionRecord"/> is <c>null</c>.
+        /// </exception>
+        public LetterViewerMenuClosedEventArgs(string mailId, MailInteractionRecord interactionRecord)
         {
             MailId = mailId ?? throw new ArgumentNullException(nameof(mailId));
-            SelectedItems = selectedItems ?? new List<Item>();
+            InteractionRecord = interactionRecord ?? throw new ArgumentNullException(nameof(interactionRecord));
         }
 
         /// <summary>
@@ -28,8 +32,8 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
         public string MailId { get; }
 
         /// <summary>
-        /// Gets a list that contains the items that were selected.
+        /// Get information about how the player interacted with the mail.
         /// </summary>
-        public List<Item> SelectedItems { get; }
+        public MailInteractionRecord InteractionRecord { get; }
     }
 }

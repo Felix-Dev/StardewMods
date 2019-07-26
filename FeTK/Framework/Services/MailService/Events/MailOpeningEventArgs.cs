@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StardewModdingAPI.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,16 +13,34 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// Create a new instance of the <see cref="MailOpeningEventArgs"/> class.
         /// </summary>
-        /// <param name="mail">The mail which is being opened.</param>
-        /// <exception cref="ArgumentNullException">The <paramref name="mail"/> is <c>null</c>.</exception>
-        public MailOpeningEventArgs(Mail mail)
+        /// <param name="id">The ID of the mail being opened.</param>
+        /// <param name="arrivalDay">The mailbox arrival day of the mail being opened.</param>
+        /// <param name="content">The content of the mail being opened.</param>
+        /// <exception cref="ArgumentNullException">
+        /// The specified <paramref name="id"/> is <c>null</c> -or-
+        /// the specified <paramref name="arrivalDay"/> is <c>null</c> -or-
+        /// the specified <paramref name="content"/> is <c>null</c>.
+        /// </exception>
+        public MailOpeningEventArgs(string id, SDate arrivalDay, MailContent content)
         {
-            Mail = mail ?? throw new ArgumentNullException(nameof(mail));
+            Id = id ?? throw new ArgumentNullException(nameof(id));
+            ArrivalDay = arrivalDay ?? throw new ArgumentNullException(nameof(arrivalDay));
+            Content = content ?? throw new ArgumentNullException(nameof(content));
         }
 
         /// <summary>
-        /// The instance of the mail which is being opened.
+        /// The ID of the mail being opened.
         /// </summary>
-        public Mail Mail { get; }
+        public string Id { get; }
+
+        /// <summary>
+        /// The mailbox arrival day of the mail being opened.
+        /// </summary>
+        public SDate ArrivalDay { get; }
+
+        /// <summary>
+        /// The content of the mail being opened.
+        /// </summary>
+        public MailContent Content { get; }
     }
 }

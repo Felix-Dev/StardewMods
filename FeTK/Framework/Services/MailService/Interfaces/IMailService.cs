@@ -27,62 +27,19 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
-        /// <param name="content">The mail content.</param>
-        /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
-        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> is less than or equal to <c>0</c>.</exception>
-        /// <exception cref="ArgumentException">
-        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
-        /// a mail with the specified <paramref name="id"/> already exists for the day specified by <paramref name="daysFromNow"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is be <c>null</c>.</exception>
-        void AddMail(int daysFromNow, string id, string content, Item attachedItem = null);
-
-        /// <summary>
-        /// Add a mail to the player's mailbox.
-        /// </summary>
-        /// <param name="arrivalDay">The day when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
-        /// <param name="content">The mail content.</param>
-        /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
-        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
-        /// <exception cref="ArgumentException">
-        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
-        /// a mail with the specified <paramref name="id"/> already exists for the specified <paramref name="arrivalDay"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is be <c>null</c>.</exception>
-        void AddMail(SDate arrivalDay, string id, string content, Item attachedItem = null);
-
-        /// <summary>
-        /// Add a mail to the player's mailbox.
-        /// </summary>
-        /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
-        /// <param name="content">The mail content.</param>
-        /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
+        /// <param name="mail">The mail to add.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to be greater than or equal to <c>0</c>.</exception>
-        /// <exception cref="ArgumentException">
-        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
-        /// a mail with the specified <paramref name="id"/> already exists for the day specified by <paramref name="daysFromNow"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is <c>null</c>.</exception>
-        void AddMail(int daysFromNow, string id, string content, List<Item> attachedItems);
+        /// <exception cref="ArgumentNullException">The specified <paramref name="mail"/> is <c>null</c>.</exception>
+        void AddMail(int daysFromNow, Mail mail);
 
         /// <summary>
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="arrivalDay">The day when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
-        /// <param name="content">The mail content.</param>
-        /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
+        /// <param name="mail">The mail to add.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
-        /// <exception cref="ArgumentException">
-        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
-        /// a mail with the specified <paramref name="id"/> already exists for the specified <paramref name="arrivalDay"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is be <c>null</c>.</exception>
-        /// </exception>
-        void AddMail(SDate arrivalDay, string id, string content, List<Item> attachedItems);
+        /// <exception cref="ArgumentNullException">The specified <paramref name="mail"/> is be <c>null</c>.</exception>
+        void AddMail(SDate arrivalDay, Mail mail);
 
         /// <summary>
         /// Determine if a mail added by this mail service already exists for a day.

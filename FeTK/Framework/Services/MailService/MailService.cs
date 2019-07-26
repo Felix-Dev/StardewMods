@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FelixDev.StardewMods.FeTK.Framework.Helpers;
+using FelixDev.StardewMods.FeTK.Framework.UI;
 
 namespace FelixDev.StardewMods.FeTK.Framework.Services
 {
@@ -91,79 +92,27 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
-        /// <param name="content">The mail content.</param>
-        /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
-        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> is less than or equal to <c>0</c>.</exception>
-        /// <exception cref="ArgumentException">
-        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
-        /// a mail with the specified <paramref name="id"/> already exists for the day specified by <paramref name="daysFromNow"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is be <c>null</c>.</exception>
-        public void AddMail(int daysFromNow, string id, string content, Item attachedItem = null)
-        {
-            AddMail(daysFromNow, id, content, attachedItem != null ? new List<Item>() { attachedItem } : null);
-        }
-
-        /// <summary>
-        /// Add a mail to the player's mailbox.
-        /// </summary>
-        /// <param name="arrivalDay">The day when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
-        /// <param name="content">The mail content.</param>
-        /// <param name="attachedItem">The mail's attached item. Can be <c>null</c>.</param>
-        /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
-        /// <exception cref="ArgumentException">
-        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
-        /// a mail with the specified <paramref name="id"/> already exists for the specified <paramref name="arrivalDay"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is be <c>null</c>.</exception>
-        public void AddMail(SDate arrivalDay, string id, string content, Item attachedItem = null)
-        {
-            if (arrivalDay == null)
-            {
-                throw new ArgumentNullException(nameof(arrivalDay));
-            }
-
-            AddMail(SDateHelper.GetCurrentDayOffsetFromDate(arrivalDay), id, content, attachedItem);
-        }
-
-        /// <summary>
-        /// Add a mail to the player's mailbox.
-        /// </summary>
-        /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
-        /// <param name="content">The mail content.</param>
-        /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
+        /// <param name="mail">The mail to add.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to be greater than or equal to <c>0</c>.</exception>
-        /// <exception cref="ArgumentException">
-        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
-        /// a mail with the specified <paramref name="id"/> already exists for the day specified by <paramref name="daysFromNow"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is <c>null</c>.</exception>
-        public void AddMail(int daysFromNow, string id, string content, List<Item> attachedItems)
+        /// <exception cref="ArgumentNullException">The specified <paramref name="mail"/> is <c>null</c>.</exception>
+        public void AddMail(int daysFromNow, Mail mail)
         {
             if (daysFromNow < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(daysFromNow), "The day offset cannot be a negative number!");
             }
 
-            if (string.IsNullOrWhiteSpace(id))
+            if (mail == null)
             {
-                throw new ArgumentException("The mail ID needs to contain at least one non-whitespace character!", nameof(id));
-            }
-
-            if (content == null)
-            {
-                throw new ArgumentNullException(nameof(content));
+                throw new ArgumentNullException(nameof(mail));
             }
 
             var arrivalDate = SDate.Now().AddDays(daysFromNow);
             var arrivalGameDay = arrivalDate.DaysSinceStart;
 
-            if (HasMailForDayCore(arrivalGameDay, id))
+            if (HasMailForDayCore(arrivalGameDay, mail.Id))
             {
-                string message = $"A mail with the ID \"{id}\" already exists for the date {arrivalDate}!";
+                string message = $"A mail with the ID \"{mail.Id}\" already exists for the date {arrivalDate}!";
 
                 monitor.Log(message + " Please use a different mail ID!");
                 throw new ArgumentException(message);
@@ -171,42 +120,32 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
             // Add the mail to the mail manager. Surface exceptions, if any, as they will indicate
             // errors with the user supplied arguments.
-            mailManager.Add(this.modId, id, arrivalDate);
+            mailManager.Add(this.modId, mail.Id, arrivalDate);
            
-            var mail = new Mail(id, content, arrivalDate)
-            {
-                AttachedItems = attachedItems
-            };
 
             if (!mailList.ContainsKey(arrivalGameDay))
             {
                 mailList[arrivalGameDay] = new Dictionary<string, Mail>();
             }
 
-            mailList[arrivalGameDay].Add(id, mail);
+            mailList[arrivalGameDay].Add(mail.Id, mail);
         }
 
         /// <summary>
         /// Add a mail to the player's mailbox.
         /// </summary>
         /// <param name="arrivalDay">The day when the mail will arrive in the mailbox.</param>
-        /// <param name="id">The ID of the mail.</param>
-        /// <param name="content">The mail content.</param>
-        /// <param name="attachedItems">The mail's attached items. Can be <c>null</c>.</param>
+        /// <param name="mail">The mail to add.</param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
-        /// <exception cref="ArgumentException">
-        /// The <paramref name="id"/> is <c>null</c> or does not contain at least one non-whitespace character -or-
-        /// a mail with the specified <paramref name="id"/> already exists for the specified <paramref name="arrivalDay"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="content"/> is be <c>null</c>.</exception>
-        public void AddMail(SDate arrivalDay, string id, string content, List<Item> attachedItems)
+        /// <exception cref="ArgumentNullException">The specified <paramref name="mail"/> is be <c>null</c>.</exception>
+        public void AddMail(SDate arrivalDay, Mail mail)
         {
             if (arrivalDay == null)
             {
                 throw new ArgumentNullException(nameof(arrivalDay));
             }
 
-            AddMail(SDateHelper.GetCurrentDayOffsetFromDate(arrivalDay), id, content, attachedItems);
+            AddMail(SDateHelper.GetCurrentDayOffsetFromDate(arrivalDay), mail);
         }
 
         /// <summary>
@@ -265,8 +204,8 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="gameDay">The day to check for.</param>
         /// <param name="mailId">The ID of the mail.</param>
         /// <returns>
-        /// <c>True</c>, if a mail with the specified <paramref name="mailId"/> has already been added for the specified <paramref name="gameDay"/>, 
-        /// otherwise <c>false</c>.
+        /// <c>true</c> if a mail with the specified <paramref name="mailId"/> has already been added for the specified <paramref name="gameDay"/>; 
+        /// otherwise, <c>false</c>.
         /// </returns>
         private bool HasMailForDayCore(int gameDay, string mailId)
         {
@@ -295,7 +234,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             this.mailList[e.ArrivalDay.DaysSinceStart].Remove(e.MailId);
 
             // Raise the mail-closed event.
-            this.MailClosed?.Invoke(this, new MailClosedEventArgs(e.MailId, e.SelectedItems));
+            this.MailClosed?.Invoke(this, new MailClosedEventArgs(e.MailId, e.InteractionRecord));
         }
 
         /// <summary>
@@ -347,20 +286,48 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         {
             public MailSaveData() { }
 
-            public MailSaveData(string id, string content, int arrivalDay)
+            public MailSaveData(string id, string text, int arrivalDay)
             {
                 Id = id;
                 AbsoluteArrivalDay = arrivalDay;
-                Content = content;
+                Text = text;
             }
+
+            public MailType MailType { get; set; }
 
             public string Id { get; set; }
 
-            public string Content { get; set; }
+            public string Text { get; set; }
 
             public int AbsoluteArrivalDay { get; set; }
 
+            #region Item Mail Content
+
             public List<Dictionary<string, string>> AttachedItemsSaveData { get; set; }
+
+            #endregion // Item Mail Content
+
+            #region Money Mail Content
+
+            public int Money { get; set; }
+
+            #endregion // Money Mail Content
+
+            #region Quest Mail Content
+
+            public int QuestId { get; set; }
+
+            public bool IsAutomaticallyAccepted { get; set; }
+
+            #endregion
+
+            #region Recipe Mail Content
+
+            public string RecipeName { get; set; }
+
+            public RecipeType RecipeType { get; set; }
+
+            #endregion // Recipe Mail Content
         }
 
         private class SaveDataBuilder
@@ -376,22 +343,35 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             {
                 var mailSaveDataList = new List<MailSaveData>();
 
-                foreach (var mailsForDay in mailList.Values)
+                foreach (KeyValuePair<int, IDictionary<string, Mail>> daysAndMail in mailList)
                 {
-                    foreach (var mail in mailsForDay.Values)
+                    foreach (var mail in daysAndMail.Value.Values)
                     {
-                        var mailSaveData = new MailSaveData(mail.Id, mail.Content, mail.ArrivalDay.DaysSinceStart);
+                        var mailSaveData = new MailSaveData(mail.Id, mail.Text, daysAndMail.Key);
 
-                        if (mail.AttachedItems != null && mail.AttachedItems.Count > 0) 
+                        switch (mail)
                         {
-                            var attachedItemsSaveData = new List<Dictionary<string, string>>();
-                            
-                            foreach (var item in mail.AttachedItems)
-                            {
-                                attachedItemsSaveData.Add(itemSerializeHelper.Deconstruct(item));
-                            }
-
-                            mailSaveData.AttachedItemsSaveData = attachedItemsSaveData;
+                            case ItemMail itemMail:
+                                mailSaveData.MailType = MailType.ItemMail;
+                                mailSaveData.AttachedItemsSaveData = itemMail.AttachedItems?.Select(item => itemSerializeHelper.Deconstruct(item)).ToList();
+                                break;
+                            case MoneyMail moneyMail:
+                                mailSaveData.MailType = MailType.MoneyMail;
+                                mailSaveData.Money = moneyMail.AttachedMoney;
+                                break;
+                            case RecipeMail recipeMail:
+                                mailSaveData.MailType = MailType.RecipeMail;
+                                mailSaveData.RecipeName = recipeMail.RecipeName;
+                                mailSaveData.RecipeType = recipeMail.RecipeType;
+                                break;
+                            case QuestMail questMail:
+                                mailSaveData.MailType = MailType.QuestMail;
+                                mailSaveData.QuestId = questMail.QuestId;
+                                mailSaveData.IsAutomaticallyAccepted = questMail.IsAutomaticallyAccepted;
+                                break;
+                            default:
+                                mailSaveData.MailType = MailType.PlainMail;
+                                break;
                         }
 
                         mailSaveDataList.Add(mailSaveData);
@@ -412,20 +392,29 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                         mailList[mailSaveData.AbsoluteArrivalDay] = new Dictionary<string, Mail>();
                     }
 
-                    var mailItem = new Mail(mailSaveData.Id, mailSaveData.Content, SDateHelper.GetDateFromDay(mailSaveData.AbsoluteArrivalDay));
-
-                    if (mailSaveData.AttachedItemsSaveData != null && mailSaveData.AttachedItemsSaveData.Count > 0)
+                    Mail mail = null;
+                    switch (mailSaveData.MailType)
                     {
-                        var attachedItems = new List<Item>();
-                        foreach (var itemSaveData in mailSaveData.AttachedItemsSaveData)
-                        {
-                            attachedItems.Add(itemSerializeHelper.Construct(itemSaveData));
-                        }
+                        case MailType.ItemMail:
+                            var attachedItems = mailSaveData.AttachedItemsSaveData.Select(itemSaveData => itemSerializeHelper.Construct(itemSaveData)).ToList();
+                            mail = new ItemMail(mailSaveData.Id, mailSaveData.Text, attachedItems);
+                            break;
+                        case MailType.MoneyMail:
+                            mail = new MoneyMail(mailSaveData.Id, mailSaveData.Text, mailSaveData.Money);
+                            break;
+                        case MailType.RecipeMail:
+                            mail = new RecipeMail(mailSaveData.Id, mailSaveData.Text, mailSaveData.RecipeName, mailSaveData.RecipeType);
+                            break;
+                        case MailType.QuestMail:
+                            mail = new QuestMail(mailSaveData.Id, mailSaveData.Text, mailSaveData.QuestId, mailSaveData.IsAutomaticallyAccepted);
+                            break;
+                        default:
+                            mail = new Mail(mailSaveData.Id, mailSaveData.Text);
+                            break;
 
-                        mailItem.AttachedItems = attachedItems;
                     }
 
-                    mailList[mailSaveData.AbsoluteArrivalDay].Add(mailSaveData.Id, mailItem);
+                    mailList[mailSaveData.AbsoluteArrivalDay].Add(mailSaveData.Id, mail);
                 }
 
                 return mailList;

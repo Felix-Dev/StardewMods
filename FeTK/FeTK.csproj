@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetEditor.cs" />
+    <Compile Include="Framework\Services\MailService\Extensions\MailExtensions.cs" />
     <Compile Include="Framework\Helpers\ColorHelper.cs" />
     <Compile Include="Framework\Helpers\SDateHelper.cs" />
     <Compile Include="Framework\Helpers\SpriteTextHelper.cs" />
@@ -63,16 +64,38 @@
     <Compile Include="Framework\Services\MailService\MailManager.cs" />
     <Compile Include="Framework\Services\MailService\MailAssetEditor\MailAssetDataEntry.cs" />
     <Compile Include="Framework\Services\MailService\MailAssetEditor\MailAssetLoadingEventArgs.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\Interfaces\IItemMailContent.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\Interfaces\IMailContent.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\Interfaces\IMoneyMailContent.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\Interfaces\IQuestMailContent.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\Interfaces\IRecipeMailContent.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\ItemMail.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MailContent\ItemMailContent.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MailContent\MailContent.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MailContent\QuestMailContent.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MailContent\RecipeMailContent.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MailInteractionRecords\QuestMailInteractionRecord.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MailInteractionRecords\RecipeMailInteractionRecord.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\QuestMail.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MailInteractionRecords\ItemMailInteractionRecord.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MailInteractionRecords\MailInteractionRecord.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MailInteractionRecords\MoneyMailInteractionRecord.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MoneyMail.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MailContent\MoneyMailContent.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\RecipeMail.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\RecipeType.cs" />
     <Compile Include="Framework\UI\Menus\LetterViewerMenu\LetterViewerMenuClosedEventArgs.cs" />
+    <Compile Include="Framework\UI\Menus\LetterViewerMenu\LetterViewerMenuEx.cs" />
     <Compile Include="Framework\UI\Menus\LetterViewerMenu\LetterViewerMenuWrapper.cs" />
     <Compile Include="Framework\ModHelpers\ModSaveDataHelper.cs" />
     <Compile Include="Framework\Data\Parsers\StringColorParser.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\MailType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Framework\Serialization\ItemSerializer\IItemSerializeHelper.cs" />
     <Compile Include="Framework\Serialization\ItemSerializer\ItemSerializeHelper.cs" />
     <Compile Include="Framework\Serialization\ItemSerializer\SerializeHelpers\ToolSerializeHelper.cs" />
     <Compile Include="Framework\Services\MailService\Events\MailClosedEventArgs.cs" />
-    <Compile Include="Framework\Services\MailService\Mail.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\Mail.cs" />
     <Compile Include="Framework\Services\MailService\MailService.cs" />
     <Compile Include="Framework\Services\MailService\Events\MailOpeningEventArgs.cs" />
     <Compile Include="Framework\Services\ServiceFactory.cs" />
@@ -87,6 +110,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Framework\Services\MailService\README.md" />
     <None Include="manifest.json" />
   </ItemGroup>
   <ItemGroup />
