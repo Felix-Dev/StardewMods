@@ -16,9 +16,6 @@ namespace FelixDev.StardewMods.FeTK.Framework.Serialization
     /// <remarks>Currently only supports (de-)serializing vanilla items.</remarks>
     internal class ItemSerializer
     {
-        /// <summary>Indicates the item to be (de-)serialized is of a game-provided item type.</summary>
-        private const string ITEM_TYPE_VANILLA = "Vanilla";
-
         /// <summary>The serializer to use for game-provided item types.</summary>
         private readonly XmlSerializer itemSerializer;
 
