@@ -83,7 +83,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                     $"contain the string {MAIL_ID_SEPARATOR}", nameof(modId));
             }
 
-            if (mailId.Contains(MAIL_ID_SEPARATOR) || mailId.Contains(MAIL_ID_SEPARATOR))
+            if (string.IsNullOrWhiteSpace(mailId) || mailId.Contains(MAIL_ID_SEPARATOR))
             {
                 throw new ArgumentException($"The mail ID \"{mailId}\" has to contain at least one non-whitespace character and cannot " +
                     $"contain the string {MAIL_ID_SEPARATOR}", nameof(mailId));

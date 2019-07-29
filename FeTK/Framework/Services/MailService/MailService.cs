@@ -2,7 +2,6 @@
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using FelixDev.StardewMods.FeTK.ModHelpers;
-using FelixDev.StardewMods.FeTK.Serialization;
 using StardewValley;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FelixDev.StardewMods.FeTK.Framework.Helpers;
-using FelixDev.StardewMods.FeTK.Framework.UI;
+using FelixDev.StardewMods.FeTK.Framework.Serialization;
 
 namespace FelixDev.StardewMods.FeTK.Framework.Services
 {
@@ -48,7 +47,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Contains all mails added with this mail service which have not been read by the player yet. 
         /// For each day a collection of mails with that arrival day is stored (using a mapping [mail ID] -> [mail]).
         /// </summary>
-        private IDictionary<int, IDictionary<string, Mail>> mailList = new Dictionary<int, IDictionary<string, Mail>>();
+        private IDictionary<int, IDictionary<string, Mail>> timedMails = new Dictionary<int, IDictionary<string, Mail>>();
+
+        private Dictionary<string, Mail> conditionalMails = new Dictionary<string, Mail>();
 
         /// <summary>
         /// Raised when a mail begins to open. The mail content can still be changed at this point.
@@ -123,12 +124,12 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             mailManager.Add(this.modId, mail.Id, arrivalDate);
            
 
-            if (!mailList.ContainsKey(arrivalGameDay))
+            if (!timedMails.ContainsKey(arrivalGameDay))
             {
-                mailList[arrivalGameDay] = new Dictionary<string, Mail>();
+                timedMails[arrivalGameDay] = new Dictionary<string, Mail>();
             }
 
-            mailList[arrivalGameDay].Add(mail.Id, mail);
+            timedMails[arrivalGameDay].Add(mail.Id, mail);
         }
 
         /// <summary>
@@ -209,7 +210,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// </returns>
         private bool HasMailForDayCore(int gameDay, string mailId)
         {
-            return this.mailList.ContainsKey(gameDay) && this.mailList[gameDay].ContainsKey(mailId);
+            return this.timedMails.ContainsKey(gameDay) && this.timedMails[gameDay].ContainsKey(mailId);
         }
 
         /// <summary>
@@ -231,7 +232,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             // Remove the mail from the service. 
             // We don't need to do key checks here because the service is only notified 
             // for closed mails belonging to it.
-            this.mailList[e.ArrivalDay.DaysSinceStart].Remove(e.MailId);
+            this.timedMails[e.ArrivalDay.DaysSinceStart].Remove(e.MailId);
 
             // Raise the mail-closed event.
             this.MailClosed?.Invoke(this, new MailClosedEventArgs(e.MailId, e.InteractionRecord));
@@ -261,7 +262,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             }
 
             int arrivalGameDay = arrivalDay.DaysSinceStart;
-            return !mailList.TryGetValue(arrivalGameDay, out IDictionary<string, Mail> mailForDay)
+            return !timedMails.TryGetValue(arrivalGameDay, out IDictionary<string, Mail> mailForDay)
                 || !mailForDay.TryGetValue(mailId, out Mail mail)
                 ? null
                 : mail;
@@ -269,7 +270,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
         private void OnSaving(object sender, SavingEventArgs e)
         {
-            var saveData = saveDataBuilder.Construct(this.mailList);
+            var saveData = saveDataBuilder.Construct(this.timedMails);
             saveDataHelper.WriteData(this.saveDataKey, saveData);
         }
 
@@ -277,7 +278,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         {
             var saveData = saveDataHelper.ReadData<List<MailSaveData>>(this.saveDataKey);
 
-            mailList = saveData != null
+            timedMails = saveData != null
                 ? saveDataBuilder.Reconstruct(saveData)
                 : new Dictionary<int, IDictionary<string, Mail>>();
         }
@@ -303,7 +304,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
             #region Item Mail Content
 
-            public List<Dictionary<string, string>> AttachedItemsSaveData { get; set; }
+            public List<ItemSaveData> AttachedItemsSaveData { get; set; }
 
             #endregion // Item Mail Content
 
@@ -332,11 +333,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
         private class SaveDataBuilder
         {
-            private readonly IItemSerializeHelper<Item> itemSerializeHelper;
+            private readonly ItemSerializer itemSerializer;
 
             public SaveDataBuilder()
             {
-                itemSerializeHelper = new ItemSerializeHelper();
+                itemSerializer = new ItemSerializer();
             }
 
             public IList<MailSaveData> Construct(IDictionary<int, IDictionary<string, Mail>> mailList)
@@ -353,7 +354,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                         {
                             case ItemMail itemMail:
                                 mailSaveData.MailType = MailType.ItemMail;
-                                mailSaveData.AttachedItemsSaveData = itemMail.AttachedItems?.Select(item => itemSerializeHelper.Deconstruct(item)).ToList();
+                                mailSaveData.AttachedItemsSaveData = itemMail.AttachedItems?.Select(item => itemSerializer.Deconstruct(item)).ToList();
                                 break;
                             case MoneyMail moneyMail:
                                 mailSaveData.MailType = MailType.MoneyMail;
@@ -396,7 +397,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                     switch (mailSaveData.MailType)
                     {
                         case MailType.ItemMail:
-                            var attachedItems = mailSaveData.AttachedItemsSaveData.Select(itemSaveData => itemSerializeHelper.Construct(itemSaveData)).ToList();
+                            var attachedItems = mailSaveData.AttachedItemsSaveData.Select(itemSaveData => itemSerializer.Construct(itemSaveData)).ToList();
                             mail = new ItemMail(mailSaveData.Id, mailSaveData.Text, attachedItems);
                             break;
                         case MailType.MoneyMail:
