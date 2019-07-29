@@ -10,39 +10,74 @@ using System.Xml.Serialization;
 
 namespace FelixDev.StardewMods.FeTK.Framework.Serialization
 {
+    /// <summary>
+    /// Provides an API to (de-)serialize instances of the <see cref="Item"/> class.
+    /// </summary>
+    /// <remarks>Currently only supports (de-)serializing vanilla items.</remarks>
     internal class ItemSerializer
     {
+        /// <summary>Indicates the item to be (de-)serialized is of a game-provided item type.</summary>
+        private const string ITEM_TYPE_VANILLA = "Vanilla";
+
+        /// <summary>The serializer to use for game-provided item types.</summary>
         private readonly XmlSerializer itemSerializer;
 
+        /// <summary>
+        /// Create a new instance of the <see cref="ItemSerializer"/> class.
+        /// </summary>
         public ItemSerializer()
         {
             itemSerializer = new XmlSerializer(typeof(Item));
         }
 
+        /// <summary>
+        /// Construct a matching <see cref="Item"/> instance from the provided data.
+        /// </summary>
+        /// <param name="itemData">The data to reconstruct into a <see cref="Item"/> instance.</param>
+        /// <returns>A <see cref="Item"/> instance matching the data given by <paramref name="itemData"/>.</returns>
+        /// <exception cref="ArgumentNullException">The given <paramref name="itemData"/> is <c>null</c>.</exception>
+        /// <exception cref="NotImplementedException">The given <paramref name="itemData"/> does not represent a supported <see cref="Item"/> instance.</exception>
+        /// <exception cref="InvalidOperationException">An error occured during deserialization.</exception>
         public Item Construct(ItemSaveData itemData)
         {
-            if (itemData is null)
+            if (itemData == null)
             {
                 throw new ArgumentNullException(nameof(itemData));
             }
 
-            switch (itemData.ItemType)
+            switch (itemData.ItemTypeOrigin)
             {
-                case "Vanilla":
+                case ItemTypeOrigin.Vanilla:
                     StringReader strReader = new StringReader((string)itemData.ItemData);
                     using (var reader = XmlReader.Create(strReader))
                     {
-                        return (Item)itemSerializer.Deserialize(reader);
+                        try
+                        {
+                            return (Item)itemSerializer.Deserialize(reader);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            string error = $"Cannot parse the given item data. The data doesn't appear to be valid XML!\nTechnical details: {ex.Message}";
+                            throw new InvalidOperationException(error);
+                        }
+                        
                     }
 
                 default:
-                    throw new NotImplementedException($"Unsupported item type {itemData.ItemType}");
+                    throw new NotImplementedException($"Unsupported item type \"{itemData.ItemTypeOrigin}\"");
             }
         }
 
+        /// <summary>
+        /// Deconstruct a <see cref="Item"/> instance into a format which can be serialized.
+        /// </summary>
+        /// <param name="item">The <see cref="Item"/> instance to deconstruct.</param>
+        /// <returns>A serializable representation of the <see cref="Item"/> instance.</returns>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="item"/> is <c>null</c>.</exception>
+        /// <exception cref="InvalidOperationException">An error occured during deserialization.</exception>
         public ItemSaveData Deconstruct(Item item)
         {
-            if (item is null)
+            if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
             }
@@ -56,10 +91,19 @@ namespace FelixDev.StardewMods.FeTK.Framework.Serialization
             StringWriter strWriter = new StringWriter();
             using (var writer = XmlWriter.Create(strWriter, settings))
             {
-                itemSerializer.Serialize(writer, item);
+                try
+                {
+                    itemSerializer.Serialize(writer, item);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    string error = $"Cannot serialize the given item! \nTechnical details: {ex.Message}";
+                    throw new InvalidOperationException(error);
+                }
+                
             }
 
-            return new ItemSaveData("Vanilla", strWriter.ToString());
+            return new ItemSaveData(ItemTypeOrigin.Vanilla, strWriter.ToString());
         }
     }
 }

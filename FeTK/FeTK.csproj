@@ -51,6 +51,7 @@
     <Compile Include="AssetEditor.cs" />
     <Compile Include="Framework\Serialization\ItemSerializer\ItemSaveData.cs" />
     <Compile Include="Framework\Serialization\ItemSerializer\ItemSerializer.cs" />
+    <Compile Include="Framework\Serialization\ItemSerializer\ItemTypeOrigin.cs" />
     <Compile Include="Framework\Services\MailService\Extensions\MailExtensions.cs" />
     <Compile Include="Framework\Helpers\ColorHelper.cs" />
     <Compile Include="Framework\Helpers\SDateHelper.cs" />

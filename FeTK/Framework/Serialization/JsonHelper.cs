@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace FelixDev.StardewMods.FeTK.Framework.Serialization
 {
+    /// <summary>
+    /// Encapsulates SMAPI's JSON file parsing.
+    /// </summary>
+    /// <remarks>Copied from https://github.com/Pathoschild/SMAPI/blob/develop/src/SMAPI.Toolkit/Serialisation/JsonHelper.cs </remarks>
     internal class JsonHelper
     {
         /// <summary>The JSON settings to use when serialising and deserialising files.</summary>
@@ -17,10 +21,6 @@ namespace FelixDev.StardewMods.FeTK.Framework.Serialization
             ObjectCreationHandling = ObjectCreationHandling.Replace, // avoid issue where default ICollection<T> values are duplicated each time the config is loaded
         };
 
-
-        /*********
-        ** Public methods
-        *********/
         /// <summary>Read a JSON file.</summary>
         /// <typeparam name="TModel">The model type.</typeparam>
         /// <param name="fullPath">The absolete file path.</param>
