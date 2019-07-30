@@ -94,17 +94,16 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 throw new ArgumentNullException(nameof(arrivalDay));
             }
 
-            /*
-             * Components for the internal mail ID: MOD_ID + user ID + Arrival Day.
-             * 
-             * Multiple mods can add mails with the same IDs for the same day, so in order to have
-             * a straightforward relation between mail and the mod which added it, we need to add the mod ID 
-             * to the internal mail ID.
-             * 
-             * We also add the arrival day to the internal mail ID because for each mod, mails with the 
-             * same ID for different arrival days can be added. The user cannot, however, have multiple mails 
-             * with the same ID for the same day for the same mod.
-             */
+            // Components for the internal mail ID: MOD_ID + user ID + Arrival Day.
+            //  
+            // Multiple mods can add mails with the same IDs for the same day, so in order to have
+            // a straightforward relation between mail and the mod which added it, we need to add the mod ID
+            // to the internal mail ID.
+            //  
+            // We also add the arrival day to the internal mail ID because for each mod, mails with the 
+            // same ID for different arrival days can be added.The user cannot, however, have multiple mails
+            // with the same ID for the same day for the same mod.
+
             int absoluteArrivalDay = arrivalDay.DaysSinceStart;
             string internalMailId = modId + MAIL_ID_SEPARATOR + mailId + MAIL_ID_SEPARATOR + absoluteArrivalDay;
 
@@ -151,7 +150,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
             if (mailSenders.ContainsKey(modId))
             {
-                throw new ArgumentException($"A mail sender for the mod with ID \"{modId}\" has already been registered.", nameof(modId));
+                throw new ArgumentException($"A mail sender for the mod with ID \"{modId}\" has already been registered.");
             }
 
             mailSenders[modId] = mailSender ?? throw new ArgumentNullException(nameof(mailSender));

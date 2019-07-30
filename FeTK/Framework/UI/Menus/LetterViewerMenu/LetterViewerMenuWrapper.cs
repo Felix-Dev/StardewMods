@@ -93,6 +93,15 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
             /// <summary>Provides access to the <see cref="IMonitor"/> API provided by SMAPI.</summary>
             private static readonly IMonitor monitor = ToolkitMod._Monitor;
 
+            /// <summary>Gender switch character.</summary>
+            private const string SPECIAL_TOKEN_GENDER_SWITCH = "|";
+
+            /// <summary>Player name character.</summary>
+            private const string SPECIAL_TOKEN_PLAYER_NAME = "@";
+
+            /// <summary>Random NPC name command.</summary>
+            private const string SPECIAL_COMMAND_RANDOM_NPC_NAME = "%secretsanta";
+
             /// <summary>The type of the mail visualized by this menu.</summary>
             private MailType mailType;
 
@@ -108,26 +117,6 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
 
             /// <summary>Contains the attached items which were selected by the player.</summary>
             private List<Item> selectedItems;
-
-            /// <summary>
-            /// Create a new instance of the <see cref="LetterViewerMenuEx2"/> class.
-            /// </summary>
-            /// <param name="id">The ID of the mail.</param>
-            /// <param name="text">The text content of the mail.</param>
-            public LetterViewerMenuEx2(string id, string text)
-                : base(text)
-            {
-                reflectionHelper
-                    .GetField<bool>(this, "isMail")
-                    .SetValue(true);
-                reflectionHelper
-                    .GetField<string>(this, "mailTitle")
-                    .SetValue(id);
-
-                MailId = id;
-
-                this.mailType = MailType.PlainMail;
-            }
 
             /// <summary>
             /// Create a new instance of the <see cref="LetterViewerMenuEx2"/> class.
@@ -239,8 +228,8 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
 
                 string label = Game1.content.LoadString("Strings\\UI:AcceptQuest");
                 menu.acceptQuestButton = new ClickableComponent(
-                    new Rectangle(menu.xPositionOnScreen + menu.width / 2 - 128, menu.yPositionOnScreen + menu.height - 128, 
-                                 (int)Game1.dialogueFont.MeasureString(label).X + 24, 
+                    new Rectangle(menu.xPositionOnScreen + menu.width / 2 - 128, menu.yPositionOnScreen + menu.height - 128,
+                                 (int)Game1.dialogueFont.MeasureString(label).X + 24,
                                  (int)Game1.dialogueFont.MeasureString(label).Y + 24),
                                  "")
                 {
@@ -318,7 +307,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                 }
 
                 // Add the recipe to the recipes the player already obtained.
-           
+
                 int translatedNameIndex;
                 if (recipeType == RecipeType.Cooking)
                 {
@@ -326,13 +315,13 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                     menu.CookingOrCrafting = Game1.content.LoadString("Strings\\UI:LearnedRecipe_cooking");
                     Game1.player.cookingRecipes.Add(recipeName, 0);
                 }
-                else 
+                else
                 {
                     translatedNameIndex = 5; // See Data/CraftingRecipes{.lg-LG}.xnb files
                     menu.CookingOrCrafting = Game1.content.LoadString("Strings\\UI:LearnedRecipe_crafting");
                     Game1.player.craftingRecipes.Add(recipeName, 0);
                 }
-                
+
                 // Set the name of the recipe depending on the currently selected display language.
                 string[] recipeParams = recipeData.Split('/');
                 if (LocalizedContentManager.CurrentLanguageCode != LocalizedContentManager.LanguageCode.en)
@@ -340,14 +329,14 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                     if (recipeParams.Length < translatedNameIndex + 1)
                     {
                         menu.LearnedRecipe = recipeName;
-                        monitor.Log($"There is no translated name for the recipe \"{recipeName}\" available! Using the recipe name as a fallback name.", 
+                        monitor.Log($"There is no translated name for the recipe \"{recipeName}\" available! Using the recipe name as a fallback name.",
                             LogLevel.Warn);
                     }
                     else
                     {
                         // Read the translated name field from the recipe asset.
                         menu.LearnedRecipe = recipeParams[translatedNameIndex];
-                    }               
+                    }
                 }
                 else
                 {
@@ -356,6 +345,26 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                 }
 
                 return menu;
+            }
+
+            /// <summary>
+            /// Create a new instance of the <see cref="LetterViewerMenuEx2"/> class.
+            /// </summary>
+            /// <param name="id">The ID of the mail.</param>
+            /// <param name="text">The text content of the mail.</param>
+            public LetterViewerMenuEx2(string id, string text)
+                : base(PreParseTextContent(text))
+            {
+                reflectionHelper
+                    .GetField<bool>(this, "isMail")
+                    .SetValue(true);
+                reflectionHelper
+                    .GetField<string>(this, "mailTitle")
+                    .SetValue(id);
+
+                MailId = id;
+
+                this.mailType = MailType.PlainMail;
             }
 
             /// <summary>
@@ -405,6 +414,33 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                 }
 
                 base.receiveLeftClick(x, y, playSound);
+            }
+
+            /// <summary>
+            /// Preparses the mail's text content.
+            /// </summary>
+            /// <param name="text">The text content to parse.</param>
+            /// <returns>The parsed text content.</returns>
+            /// <remarks>
+            /// In our creation of the <see cref="LetterViewerMenu"/> for the mail, we skip the game's mail content parsing.
+            /// We are not interested in special commands such as "%item" but we are interested in commands/tokens which change
+            /// the mail's text content. These tokens/commands are handled in this function.
+            /// </remarks>
+            private static string PreParseTextContent(string text)
+            {
+                if (text.Contains(SPECIAL_TOKEN_GENDER_SWITCH))
+                {
+                    text = Game1.player.IsMale
+                        ? text.Substring(0, text.IndexOf(SPECIAL_TOKEN_GENDER_SWITCH))
+                        : text.Substring(text.IndexOf(SPECIAL_TOKEN_GENDER_SWITCH) + 1);
+                }
+
+                text = text.Replace(SPECIAL_TOKEN_PLAYER_NAME, Game1.player.Name);
+
+                Random r = new Random((int)(Game1.uniqueIDForThisGame / 2UL) ^ Game1.year ^ (int)Game1.player.UniqueMultiplayerID);
+                text = text.Replace(SPECIAL_COMMAND_RANDOM_NPC_NAME, Utility.getRandomTownNPC(r).displayName);
+
+                return text;
             }
 
             /// <summary>

@@ -28,7 +28,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
     /// you can even have <color> tags inside of other <color> tags.
     /// 
     /// A valid <color> syntax thus is defined as follows:
-    /// ...<color=#[A-Za-z0-9]{6}>...</color>...
+    /// ...<color=#[A-Fa-f0-9]{6}>...</color>...
     /// where ... = [Optional text and <color></color> start/end tags]
     /// 
     /// Examples:

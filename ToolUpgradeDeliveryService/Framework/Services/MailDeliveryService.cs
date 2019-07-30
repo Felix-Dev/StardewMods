@@ -230,7 +230,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
             // For example, this adds compatibility for the mod [Rented Tools] (i.e. rented tools will be removed).
             if (ModEntry.ModConfig.RemoveToolDuplicates)
             {
-                var removableItems = Game1.player.Items.Where(item => (item is Tool) && (item as Tool).BaseName.Equals(selectedTool.BaseName));
+                var removableItems = Game1.player.Items.Where(item => item is Tool tool && tool.BaseName.Equals(selectedTool.BaseName));
                 foreach (var item in removableItems)
                 {
                     Game1.player.removeItemFromInventory(item);
@@ -272,9 +272,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         private void SetToolMailForDay(int dayOffset, Tool tool)
         {
             string mailId = GetMailIdFromTool(tool);
-
             string text = GetTranslatedMailTextContent(tool);
-            text = text.Replace("@", Game1.player.Name);
 
             var toolMail = new ItemMail(mailId, text, tool);
             mailService.AddMail(dayOffset, toolMail);
