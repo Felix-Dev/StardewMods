@@ -16,18 +16,22 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
     /// To color a string, use the <color> tag:
     /// <color=COLOR_VALUE>Some text</color> <-- Displays "Some text" in the color specified by [COLOR_VALUE].
     /// 
-    /// Color values can only be specified in the hexadecimal format. A hexadecimal color is specified with: #RRGGBB, 
-    /// where the RR (red), GG (green) and BB (blue) hexadecimal integers specify the components of the color. 
-    /// All values must be between 00 (lowest value) and FF (highest value).
+    /// Color values can be specified using the following color representations:
+    ///     (1) The hexadecimal format. A hexadecimal color is specified with: #RRGGBB, 
+    ///     where the RR (red), GG (green) and BB (blue) hexadecimal integers specify the components of the color. 
+    ///     All values must be between 00 (lowest value) and FF (highest value) and the values are case-insensitive.
+    ///     (2) A HTML color name. See https://htmlcolorcodes.com/color-names/ for a list of all valid color names.
+    ///     Names are case-insensitive.
     /// 
-    /// If we want to color the above text "Some text" in red, we thus have to write:
-    /// <color=#FF0000>Some text</color>
+    /// If we want to color the above text "Some text" in red, we thus can write the text as follows:
+    /// <color=#FF0000>Some text</color> -or- <color=Red>Some text</color>
     /// 
     /// Each string can contain zero or more <color></color> tag pairs. If a string contains no such pair, the 
     /// specified default text color will be used. You can have multiple <color> tags side-by-side and 
     /// you can even have <color> tags inside of other <color> tags.
     /// 
-    /// A valid <color> syntax thus is defined as follows:
+    /// A valid <color> syntax thus is defined as follows (instead of a color value in the format'#[A-Fa-f0-9]{6}' a HTML color name
+    /// can also be used):
     /// ...<color=#[A-Fa-f0-9]{6}>...</color>...
     /// where ... = [Optional text and <color></color> start/end tags]
     /// 
@@ -35,7 +39,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
     ///  - "Tomorrow we will all meet at the <color=#FF0000">Town Center</color> to celebrate the end of harvest season!"
     ///  ---> Displays "Town Center" in red, the remaining text in the default text color.
     ///  
-    /// - "Some <color=#FF0000>red</color>, some <color=#00FF00>green</color> and some <color=#0000FF>blue</color>."
+    /// - "Some <color=#FF0000>red</color>, some <color=Green>green</color> and some <color=#0000FF>blue</color>."
     /// ---> Displays "red" in red, "green" in green, "blue" in blue and the remaining text in the default text color.
     /// 
     /// - "<color=#000000>Some small <color=#C47902>light source</color> surrounded by darkness.</color>"
@@ -51,7 +55,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
         /// <summary>
         /// Create a new instance of the <see cref="StringColorParser"/> class.
         /// </summary>
-        /// <param name="defaultColor">The default text color if no color has been specified.</param>
+        /// <param name="defaultColor">The default text color to use in case color-parsing errors.</param>
         public StringColorParser(Color defaultColor)
         {
             DefaultColor = defaultColor;
@@ -79,7 +83,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
                 throw new ArgumentNullException(nameof(input));
             }
 
-            bool couldParse = DoParse(0, 0, input, input, DefaultColor, out ParseResultData parseResultData);
+            bool couldParse = DoParse(0, 0, input, input, DefaultColor, DefaultColor, out ParseResultData parseResultData);
             if (!couldParse)
             {
                 textColorMappings = null;
@@ -114,7 +118,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
                 throw new ArgumentNullException(nameof(input));
             }
 
-            bool couldParse = DoParse(0, 0, input, input, defaultColor, out ParseResultData parseResultData);
+            bool couldParse = DoParse(0, 0, input, input, defaultColor, defaultColor, out ParseResultData parseResultData);
             if (!couldParse)
             {
                 textColorData = null;
@@ -132,10 +136,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
         /// <param name="currentIndexInOriginalString">The current index into the original string.</param>
         /// <param name="input">The original input string parsing was started on.</param>
         /// <param name="unhandledInputPart">The sub-string of the specified <paramref name="input"/> which has yet to be parsed.</param>
+        /// <param name="defaultColor">The default text color to use if there is a color-parsing error.</param>
         /// <param name="levelColor">The text color to apply to characters in the current level.</param>
         /// <param name="parseResultData">The parsed data or <c>null</c> if the string couldn't be parsed.</param>
         /// <returns><c>true</c> if the specified string <paramref name="unhandledInputPart"/> was successfully parsed; otherwise, <c>false</c>.</returns>
-        private static bool DoParse(int level, int currentIndexInOriginalString, string input, string unhandledInputPart, Color levelColor, out ParseResultData parseResultData)
+        private static bool DoParse(int level, int currentIndexInOriginalString, string input, string unhandledInputPart, Color defaultColor, Color levelColor, out ParseResultData parseResultData)
         {
             // Immediately return if the string to parse is empty.
             if (unhandledInputPart.Equals(string.Empty))
@@ -148,7 +153,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
             }
 
             // Get the different color start tags and color end tags in the current unparsed (sub-)string.
-            var colorTagOpeningMatches = Regex.Matches(unhandledInputPart, "<color=#(?<color>[A-Fa-f0-9]{6})>");
+            var colorTagOpeningMatches = Regex.Matches(unhandledInputPart, "<color=(?<color>#[A-Fa-f0-9]{6}|[A-Za-z]+)>");
             var colorTagClosingMatches = Regex.Matches(unhandledInputPart, "</color>");
 
             // In case the current string contains no color start tags any longer, the number of remaining color end tags has to match 
@@ -276,6 +281,22 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
                     currentIndexInOriginalString + colorTagOpeningMatch.Index + colorTagOpeningMatch.Length
                     );
 
+                // Get the text color for the block of text enclosed by the current color start tag. Use the specified
+                // default text color if no valid color was specified.
+                Color textColor;
+                string sColor = colorTagOpeningMatch.Groups["color"].Value;
+                if (!ColorHelper.TryGetColorFromString(sColor, out Color? color))
+                {                    
+                    textColor = defaultColor;
+                    Monitor.Log($"StringColorParser: The specified color value \"{sColor}\" is not a valid color! " +
+                        $"Using the specified default text color \"{defaultColor}\" instead.");
+                }
+                else
+                {                    
+                    textColor = color.Value;
+                }
+
+
                 // Parse the inner data of color start tag. The inner data can also contain color tags so we recursively set up the 
                 // parsing process.
                 bool couldParse = DoParse(
@@ -283,7 +304,8 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
                     currentIndexInOriginalString + colorTagOpeningMatch.Index + colorTagOpeningMatch.Length,
                     input,
                     input.Substring(currentIndexInOriginalString + colorTagOpeningMatch.Index + colorTagOpeningMatch.Length),
-                    ColorHelper.GetColorFromString("#" + colorTagOpeningMatch.Groups["color"].Value),
+                    defaultColor,
+                    textColor,
                     out ParseResultData nestedParseResultData
                     );
 
@@ -325,6 +347,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
                     parseResultData.StartIndexOfNextUnhandledStringPart,
                     input,
                     input.Substring(parseResultData.StartIndexOfNextUnhandledStringPart),
+                    defaultColor,
                     levelColor,
                     out nestedParseResultData
                     );
