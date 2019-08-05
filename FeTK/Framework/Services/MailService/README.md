@@ -49,7 +49,7 @@ Example 1:
 
 Example 2:
 ```
-"Some <color=#FF0000>red</color>, some <color=#00FF00>green</color> and some <color=#0000FF>blue</color>."
+"Some <color=#FF0000>red</color>, some <color=Green>green</color> and some <color=#0000FF>blue</color>."
 ```
 ![](../../../docs/images/mail-service-text-coloring-api-example-2.png)
 
