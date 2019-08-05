@@ -149,11 +149,12 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
                     new List<TextColorInfo>() { new TextColorInfo("", levelColor) }, 
                     currentIndexInOriginalString
                     );
+
                 return true;
             }
 
             // Get the different color start tags and color end tags in the current unparsed (sub-)string.
-            var colorTagOpeningMatches = Regex.Matches(unhandledInputPart, "<color=(?<color>#[A-Fa-f0-9]{6}|[A-Za-z]+)>");
+            var colorTagOpeningMatches = Regex.Matches(unhandledInputPart, "<color=(?<color>[^>]*)>");
             var colorTagClosingMatches = Regex.Matches(unhandledInputPart, "</color>");
 
             // In case the current string contains no color start tags any longer, the number of remaining color end tags has to match 
@@ -171,6 +172,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
                         new List<TextColorInfo>() { new TextColorInfo(unhandledInputPart.Substring(0, colorTagClosingStartIndex), levelColor) },
                         currentIndexInOriginalString + colorTagClosingStartIndex + colorTagClosingMatches[0].Length
                         );
+
                     return true;
                 }
 
@@ -182,6 +184,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
                         new List<TextColorInfo>() { new TextColorInfo(unhandledInputPart, levelColor) },
                         currentIndexInOriginalString + unhandledInputPart.Length
                         );
+
                     return true;
                 }
                 else
@@ -189,9 +192,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
                     // Reaching this code part means there was a negative number of pending color start tags, 
                     // something which simply cannot happen without some major event (such as memory corruption)
                     // having taken place.
-
-                    Monitor.Log("StringColorParser.DoParse(): Catastrophic failure! Number of pending color start tags cannot be negative!", LogLevel.Error);
+                    
                     parseResultData = null;
+                    Monitor.Log("StringColorParser.DoParse(): Catastrophic failure! Number of pending color start tags cannot be negative!", LogLevel.Error);
+
                     return false;
                 }
             }
@@ -206,6 +210,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
             else if (colorTagClosingMatches.Count != level + colorTagOpeningMatches.Count)
             {
                 parseResultData = null;
+                Monitor.Log($"StringColorParser.DoParse(): Mismatch between the number of color start tags and color end tags in string \"{unhandledInputPart}\"!", 
+                    LogLevel.Error);
+
                 return false;
             }
 
@@ -251,11 +258,15 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
                             new List<TextColorInfo>() { new TextColorInfo(unhandledInputPart.Substring(0, colorTagClosingStartIndex), levelColor) },
                             currentIndexInOriginalString + colorTagClosingStartIndex + colorTagClosingMatches[0].Length
                             );
+
                         return true;
                     }
 
                     // Case of first example above: Report failure
                     parseResultData = null;
+                    Monitor.Log($"StringColorParser.DoParse(): There is at least one color end tag without a corresponding color close tag in string \"{unhandledInputPart}\"!",
+                        LogLevel.Error);
+
                     return false;
                 }
 
@@ -371,9 +382,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
                 // Reaching this code part means there was a negative number of color start tags, 
                 // something which simply cannot happen without some major event (such as memory corruption)
                 // having taken place.
-
-                Monitor.Log("StringColorParser.DoParse(): Catastrophic failure! Number of color start tags cannot be negative!", LogLevel.Error);
+                
                 parseResultData = null;
+                Monitor.Log("StringColorParser.DoParse(): Catastrophic failure! Number of color start tags cannot be negative!", LogLevel.Error);
+
                 return false;
             }
         }
