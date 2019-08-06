@@ -304,14 +304,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
             foreach (var day in registeredMailsForDay.Keys)
             {
-                if (day > currentDay)
+                if (day <= currentDay)
                 {
-                    // The list of keys is not guaranteed to be sorted from [earlier] to [later], 
-                    // so we have to iterate through all entries. 
-                    continue;
+                    customMailData.AddRange(registeredMailsForDay[day].Select(mailId => new MailAssetDataEntry(mailId, "PlaceholderContent")));
                 }
-
-                customMailData.AddRange(registeredMailsForDay[day].Select(mailId => new MailAssetDataEntry(mailId, "PlaceholderContent")));
             }
 
             mailAssetEditor.AddMailAssetData(customMailData);
