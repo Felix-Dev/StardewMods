@@ -13,8 +13,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Helpers
     /// </summary>
     public static class ColorHelper
     {
+        /// <summary>A list of supported color names and their translated <see cref="Color"/> values.</summary>
         private static readonly Dictionary<string, Color> colorTable = new Dictionary<string, Color>()
         {
+            // Values taken from https://htmlcolorcodes.com/color-names/
+
             { "aliceblue", new Color(240, 248, 255)},
             { "antiquewhite", new Color(250, 235, 215)},
             { "aqua", new Color(0, 255, 255)},
@@ -179,6 +182,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.Helpers
                 throw new ArgumentException(nameof(sColor));
             }
 
+            // Ignore all white-space characters.
+            sColor = new string(sColor.Where(c => !char.IsWhiteSpace(c)).ToArray());
+
             if (sColor.StartsWith("#"))
             {
                 var tColor = GetColorFromHexCode(sColor);
@@ -188,7 +194,6 @@ namespace FelixDev.StardewMods.FeTK.Framework.Helpers
                 }
 
                 return tColor.Value;
-
             }
             else
             {
@@ -231,6 +236,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.Helpers
                 return false;
             }
 
+            // Ignore all white-space characters.
+            sColor = new string(sColor.Where(c => !char.IsWhiteSpace(c)).ToArray());
+
             if (sColor.StartsWith("#"))
             {
                 color = GetColorFromHexCode(sColor);
@@ -262,7 +270,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Helpers
                 return null;
             }
 
-            hexCode = hexCode.Replace("#", string.Empty);
+            hexCode = hexCode.Replace("#", "");
 
             try
             {
@@ -305,9 +313,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Helpers
         /// <remarks>
         /// For a list of supported color names, see: https://htmlcolorcodes.com/color-names/
         /// </remarks>
-        private static Color? GetColorFromName(string htmlColor)
+        private static Color? GetColorFromName(string htmlColorName)
         {
-            return colorTable.TryGetValue(htmlColor.ToLower(), out Color color) 
+            string colorName = htmlColorName.ToLower();
+            return colorTable.TryGetValue(colorName, out Color color) 
                 ? (Color?)color 
                 : null;
         }

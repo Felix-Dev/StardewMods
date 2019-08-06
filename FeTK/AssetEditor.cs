@@ -82,7 +82,7 @@ namespace FelixDev.StardewMods.FeTK
                 throw new ArgumentNullException(nameof(assetName));
             }
 
-            if (assetName.Equals(string.Empty))
+            if (assetName.Equals(""))
             {
                 RequestAssetCacheRefresh(this.gameAssetNames.Values.ToList());
             }

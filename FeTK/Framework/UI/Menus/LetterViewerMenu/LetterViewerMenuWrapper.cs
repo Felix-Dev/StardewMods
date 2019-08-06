@@ -44,7 +44,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                 throw new ArgumentNullException(nameof(mail));
             }
 
-            string textContent = mail.Text.Equals(string.Empty) ? " " : mail.Text;
+            string textContent = mail.Text.Equals("") ? " " : mail.Text;
 
             switch (mail)
             {

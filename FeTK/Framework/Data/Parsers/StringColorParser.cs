@@ -143,7 +143,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Data.Parsers
         private static bool DoParse(int level, int currentIndexInOriginalString, string input, string unhandledInputPart, Color defaultColor, Color levelColor, out ParseResultData parseResultData)
         {
             // Immediately return if the string to parse is empty.
-            if (unhandledInputPart.Equals(string.Empty))
+            if (unhandledInputPart.Equals(""))
             {
                 parseResultData = new ParseResultData(
                     new List<TextColorInfo>() { new TextColorInfo("", levelColor) }, 

@@ -31,6 +31,8 @@ If we want to color the above text "some text" in red, we thus can write it as f
 <color=Red>some text</color>
 ```
 
+Note: Any leading, trailing or inner white-space characters in `COLOR_VALUE` will be ingored.
+
 Every mail content can contain zero or more `<color></color>` tag pairs. Any mail content which is not enclosed by such a pair, will be 
 colored in the game's default text color (based on the mail background). You can have multiple `<color></color>` tags side-by-side and you can even use nested `<color>` start tags (`<color>` tags inside other `<color>` tags).
 

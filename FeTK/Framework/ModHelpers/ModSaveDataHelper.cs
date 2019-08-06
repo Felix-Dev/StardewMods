@@ -108,7 +108,7 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
         /// <returns>The file path on success; otherwise <c>null</c> if no save was loaded.</returns>
         private string GetSaveDataFilePath()
         {
-            if (Constants.SaveFolderName == null || Constants.SaveFolderName.Equals(string.Empty))
+            if (Constants.SaveFolderName == null || Constants.SaveFolderName.Equals(""))
             {
                 return null;
             }
