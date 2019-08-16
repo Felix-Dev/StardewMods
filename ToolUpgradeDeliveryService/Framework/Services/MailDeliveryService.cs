@@ -54,7 +54,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
 
             modRegistry = ModEntry.ModHelper.ModRegistry;
 
-            mailService = ServiceFactory.GetFactory(ModEntry._ModManifest.UniqueID, ModEntry.ModHelper).GetMailService();
+            mailService = ServiceFactory.GetFactory(ModEntry._ModManifest.UniqueID).GetMailService();
 
             running = false;
         }

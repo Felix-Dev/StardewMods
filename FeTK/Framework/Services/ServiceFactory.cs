@@ -23,9 +23,6 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>The unique ID of the mod for which this service factory was created.</summary>
         private readonly string modId;
 
-        /// <summary>The IModHelper instance of the mod which requested this service factory.</summary>
-        private readonly IModHelper modHelper;
-
         /// <summary>
         /// Contains the created <see cref="MailService"/> instance for a service factory. Each factory has at most one instance.
         /// </summary>
@@ -35,20 +32,13 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Get an instance of the <see cref="ServiceFactory"/> class.
         /// </summary>
         /// <param name="modId">The unique ID of the relevant mod.</param>
-        /// <param name="modHelper">The <see cref="IModHelper"/> instance of the mod.</param>
         /// <returns>A service factory for the specified mod.</returns>
         /// <exception cref="ArgumentException">The <paramref name="modId"/> is not a valid mod ID (the ID has to contain at least one number/letter character).</exception>
-        /// <exception cref="ArgumentNullException">The <paramref name="modHelper"/> cannot be <c>null</c>.</exception>
-        public static ServiceFactory GetFactory(string modId, IModHelper modHelper)
+        public static ServiceFactory GetFactory(string modId)
         {
             if (string.IsNullOrWhiteSpace(modId))
             {
                 throw new ArgumentException(nameof(modId));
-            }
-
-            if (modHelper == null)
-            {
-                throw new ArgumentNullException(nameof(modHelper));
             }
 
             if (serviceFactories.ContainsKey(modId))
@@ -56,7 +46,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 return serviceFactories[modId];
             }
 
-            var serviceFactory = new ServiceFactory(modId, modHelper);
+            var serviceFactory = new ServiceFactory(modId);
             serviceFactories[modId] = serviceFactory;
 
             return serviceFactory;
@@ -66,11 +56,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Initialize an instance of the <see cref="ServiceFactory"/> class.
         /// </summary>
         /// <param name="modId">The unique ID of the relevant mod.</param>
-        /// <param name="modHelper">The <see cref="IModHelper"/> instance of the mod.</param>
-        private ServiceFactory(string modId, IModHelper modHelper)
+        private ServiceFactory(string modId)
         {
             this.modId = modId;
-            this.modHelper = modHelper;
         }
 
         /// <summary>
