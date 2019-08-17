@@ -58,6 +58,20 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         bool HasMailForDay(SDate day, string mailId);
 
         /// <summary>
+        /// Get whether the specified mail was already sent to the player.
+        /// </summary>
+        /// <param name="mailId">The ID of the mail.</param>
+        /// <returns>
+        /// <c>true</c> if a mail with the specified <paramref name="mailId"/> was already sent to the player; 
+        /// otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// The specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character.
+        /// </exception>
+        bool HasReceivedMail(string mailId);
+
+        /// <summary>
         /// Determine if a mail with the given <paramref name="mailId"/> added by this mail service is currently in the mailbox.
         /// </summary>
         /// <param name="mailId">The ID of the mail.</param>

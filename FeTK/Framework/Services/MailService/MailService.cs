@@ -47,9 +47,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Contains all mails added with this mail service which have not been read by the player yet. 
         /// For each day a collection of mails with that arrival day is stored (using a mapping [mail ID] -> [mail]).
         /// </summary>
-        private IDictionary<int, IDictionary<string, Mail>> timedMails = new Dictionary<int, IDictionary<string, Mail>>();
-
-        private Dictionary<string, Mail> conditionalMails = new Dictionary<string, Mail>();
+        private Dictionary<int, Dictionary<string, Mail>> timedMails = new Dictionary<int, Dictionary<string, Mail>>();
 
         /// <summary>
         /// Raised when a mail begins to open. The mail content can still be changed at this point.
@@ -180,6 +178,28 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         }
 
         /// <summary>
+        /// Get whether the specified mail was already sent to the player.
+        /// </summary>
+        /// <param name="mailId">The ID of the mail.</param>
+        /// <returns>
+        /// <c>true</c> if a mail with the specified <paramref name="mailId"/> was already sent to the player; 
+        /// otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// The specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character.
+        /// </exception>
+        public bool HasReceivedMail(string mailId)
+        {
+            if (string.IsNullOrWhiteSpace(mailId))
+            {
+                throw new ArgumentException("The mail ID needs to contain at least one non-whitespace character!", nameof(mailId));
+            }
+
+            return mailManager.HasReceivedMail(this.modId, mailId);
+        }
+
+        /// <summary>
         /// Determine if a mail with the given <paramref name="mailId"/> added by this mail service is currently in the mailbox.
         /// </summary>
         /// <param name="mailId">The ID of the mail.</param>
@@ -262,7 +282,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             }
 
             int arrivalGameDay = arrivalDay.DaysSinceStart;
-            return !timedMails.TryGetValue(arrivalGameDay, out IDictionary<string, Mail> mailForDay)
+            return !timedMails.TryGetValue(arrivalGameDay, out Dictionary<string, Mail> mailForDay)
                 || !mailForDay.TryGetValue(mailId, out Mail mail)
                 ? null
                 : mail;
@@ -280,7 +300,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
             timedMails = saveData != null
                 ? saveDataBuilder.Reconstruct(saveData)
-                : new Dictionary<int, IDictionary<string, Mail>>();
+                : new Dictionary<int, Dictionary<string, Mail>>();
         }
 
         private class MailSaveData
@@ -340,11 +360,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 itemSerializer = new ItemSerializer();
             }
 
-            public IList<MailSaveData> Construct(IDictionary<int, IDictionary<string, Mail>> mailList)
+            public List<MailSaveData> Construct(Dictionary<int, Dictionary<string, Mail>> mailList)
             {
                 var mailSaveDataList = new List<MailSaveData>();
 
-                foreach (KeyValuePair<int, IDictionary<string, Mail>> daysAndMail in mailList)
+                foreach (KeyValuePair<int, Dictionary<string, Mail>> daysAndMail in mailList)
                 {
                     foreach (var mail in daysAndMail.Value.Values)
                     {
@@ -382,9 +402,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 return mailSaveDataList;
             }
 
-            public IDictionary<int, IDictionary<string, Mail>> Reconstruct(IList<MailSaveData> mailSaveDataList)
+            public Dictionary<int, Dictionary<string, Mail>> Reconstruct(List<MailSaveData> mailSaveDataList)
             {
-                var mailList = new Dictionary<int, IDictionary<string, Mail>>();
+                var mailList = new Dictionary<int, Dictionary<string, Mail>>();
 
                 foreach (var mailSaveData in mailSaveDataList)
                 {

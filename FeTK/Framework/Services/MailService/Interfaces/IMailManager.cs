@@ -58,5 +58,22 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// non-whitespace character.
         /// </exception>
         bool HasMailInMailbox(string modId, string mailId);
+
+        /// <summary>
+        /// Get whether the specified mail was already sent to the player.
+        /// </summary>
+        /// <param name="modId">The ID of the mod which created this mail.</param>
+        /// <param name="mailId">The ID of the mail.</param>
+        /// <returns>
+        /// <c>true</c> if a mail with the specified <paramref name="mailId"/> created by the mod with the 
+        /// specified <paramref name="modId"/> was already sent to the player; otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// The specified <paramref name="modId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character -or-
+        /// the specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character.
+        /// </exception>
+        bool HasReceivedMail(string modId, string mailId);
     }
 }

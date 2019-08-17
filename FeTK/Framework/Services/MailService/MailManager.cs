@@ -35,11 +35,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>The save data manager for this mail manager.</summary>
         private readonly ModSaveDataHelper saveDataHelper;
 
-        private readonly IDictionary<string, IMailSender> mailSenders = new Dictionary<string, IMailSender>();
+        private readonly Dictionary<string, IMailSender> mailSenders = new Dictionary<string, IMailSender>();
 
-        private IDictionary<int, IList<string>> registeredMailsForDay = new Dictionary<int, IList<string>>();
+        private Dictionary<int, List<string>> registeredMailsForDay = new Dictionary<int, List<string>>();
 
-        private IDictionary<string, MailMetaData> registeredMailsMetaData = new Dictionary<string, MailMetaData>();
+        private Dictionary<string, MailMetaData> registeredMailsMetaData = new Dictionary<string, MailMetaData>();
 
         /// <summary>
         /// Create a new instance of the <see cref="MailManager"/> class.
@@ -107,13 +107,13 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             int absoluteArrivalDay = arrivalDay.DaysSinceStart;
             string internalMailId = modId + MAIL_ID_SEPARATOR + mailId + MAIL_ID_SEPARATOR + absoluteArrivalDay;
 
-            if (registeredMailsMetaData.ContainsKey(internalMailId))
+            if (this.registeredMailsMetaData.ContainsKey(internalMailId))
             {
                 throw new ArgumentException($"A mail with the specified ID \"{mailId}\" for the given mod \"{modId}\" for the " +
                     $"specified arrival day \"{arrivalDay}\" already exists!");
             }
 
-            registeredMailsMetaData[internalMailId] = new MailMetaData(modId, mailId, absoluteArrivalDay);
+            this.registeredMailsMetaData[internalMailId] = new MailMetaData(modId, mailId, absoluteArrivalDay);
 
             if (!registeredMailsForDay.ContainsKey(absoluteArrivalDay))
             {
@@ -148,12 +148,12 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 throw new ArgumentException("The mod ID needs to contain at least one non-whitespace character!", nameof(modId));
             }
 
-            if (mailSenders.ContainsKey(modId))
+            if (this.mailSenders.ContainsKey(modId))
             {
                 throw new ArgumentException($"A mail sender for the mod with ID \"{modId}\" has already been registered.");
             }
 
-            mailSenders[modId] = mailSender ?? throw new ArgumentNullException(nameof(mailSender));
+            this.mailSenders[modId] = mailSender ?? throw new ArgumentNullException(nameof(mailSender));
         }
 
         /// <summary>
@@ -184,6 +184,36 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             }
 
             return Game1.mailbox.Any(s => s.StartsWith(modId + MAIL_ID_SEPARATOR + mailId));
+        }
+
+        /// <summary>
+        /// Get whether the specified mail was already sent to the player.
+        /// </summary>
+        /// <param name="modId">The ID of the mod which created this mail.</param>
+        /// <param name="mailId">The ID of the mail.</param>
+        /// <returns>
+        /// <c>true</c> if a mail with the specified <paramref name="mailId"/> created by the mod with the 
+        /// specified <paramref name="modId"/> was already sent to the player; otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// The specified <paramref name="modId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character -or-
+        /// the specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character.
+        /// </exception>
+        public bool HasReceivedMail(string modId, string mailId)
+        {
+            if (string.IsNullOrWhiteSpace(modId))
+            {
+                throw new ArgumentException("The mod ID needs to contain at least one non-whitespace character!", nameof(modId));
+            }
+
+            if (string.IsNullOrWhiteSpace(mailId))
+            {
+                throw new ArgumentException("The mail ID needs to contain at least one non-whitespace character!", nameof(mailId));
+            }
+
+            return Game1.player.mailReceived.Any(id => id.StartsWith(modId + MAIL_ID_SEPARATOR + mailId + MAIL_ID_SEPARATOR));
         }
 
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)
@@ -221,8 +251,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                     // owning this mail any longer. This can be due to the removal of a mod consuming the mail API of FeTK
                     // by the user. We can thus savely remove this mail from the framework on saving, as even if the consuming
                     // mod will be added back, for this save, the mail won't be displayed any longer (because it was already shown).
-                    this.registeredMailsMetaData.Remove(mailId);
-                    this.registeredMailsForDay[mailMetaData.ArrivalDay].Remove(mailId);
+                    RemoveMail(mailId, mailMetaData.ArrivalDay);
 
                     monitor.Log($"The mail \"{mailMetaData.UserId}\" was added by the mod {mailMetaData.ModId} which seems to be no longer present.");
                     return;
@@ -324,7 +353,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         {
             var nextDay = SDate.Now().AddDays(1).DaysSinceStart;
 
-            if (!registeredMailsForDay.TryGetValue(nextDay, out IList<string> mailIdsForDay))
+            if (!registeredMailsForDay.TryGetValue(nextDay, out List<string> mailIdsForDay))
             {
                 return;
             }
@@ -354,7 +383,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             }
             else
             {
-                this.registeredMailsForDay = new Dictionary<int, IList<string>>();
+                this.registeredMailsForDay = new Dictionary<int, List<string>>();
                 this.registeredMailsMetaData = new Dictionary<string, MailMetaData>();
             }
         }
@@ -417,15 +446,15 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         {
             public SaveData() { }
 
-            public SaveData(IDictionary<int, IList<string>> mailPerDay, IDictionary<string, MailMetaData> mailMetaData)
+            public SaveData(Dictionary<int, List<string>> mailPerDay, Dictionary<string, MailMetaData> mailMetaData)
             {
                 MailPerDay = mailPerDay;
                 MailMetaData = mailMetaData;
             }
 
-            public IDictionary<int, IList<string>> MailPerDay { get; set; }
+            public Dictionary<int, List<string>> MailPerDay { get; set; }
 
-            public IDictionary<string, MailMetaData> MailMetaData { get; set; }
+            public Dictionary<string, MailMetaData> MailMetaData { get; set; }
         }
     }
 }
