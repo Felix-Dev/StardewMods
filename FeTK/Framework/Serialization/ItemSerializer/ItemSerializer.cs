@@ -14,7 +14,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Serialization
     /// Provides an API to (de-)serialize instances of the <see cref="Item"/> class.
     /// </summary>
     /// <remarks>Currently only supports (de-)serializing vanilla items.</remarks>
-    internal class ItemSerializer
+    internal class ItemSerializer : IItemSerializer
     {
         /// <summary>The serializer to use for game-provided item types.</summary>
         private readonly XmlSerializer itemSerializer;

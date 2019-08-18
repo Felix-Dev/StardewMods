@@ -86,7 +86,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             this.saveDataKey = SAVE_DATA_KEY_PREFIX + "." + modId;
 
             this.saveDataHelper = ModSaveDataHelper.GetSaveDataHelper(modId);
-            this.saveDataBuilder = new SaveDataBuilder();
+            this.saveDataBuilder = new SaveDataBuilder(new ItemSerializer());
 
             events.GameLoop.Saving += OnSaving;
             events.GameLoop.SaveLoaded += OnSaveLoaded;
@@ -420,15 +420,16 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// </summary>
         private class SaveDataBuilder
         {
-            /// <summary>The serializer to use when serializing/derializing <see cref="Item"/> instances.</summary>
-            private readonly ItemSerializer itemSerializer;
+            /// <summary>The serializer to use when (de-)serializing <see cref="Item"/> instances.</summary>
+            private readonly IItemSerializer itemSerializer;
 
             /// <summary>
             /// Create a new instance of the <see cref="saveDataBuilder"/> class.
             /// </summary>
-            public SaveDataBuilder()
+            /// <param name="itemSerializer">The <see cref="IItemSerializer"/> instance to (de-)serialize <see cref="Item"/> instances.</param>
+            public SaveDataBuilder(IItemSerializer itemSerializer)
             {
-                itemSerializer = new ItemSerializer();
+                this.itemSerializer = itemSerializer;
             }
 
             /// <summary>
