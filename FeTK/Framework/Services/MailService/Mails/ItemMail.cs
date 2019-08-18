@@ -33,7 +33,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="attachedItems">The items attached to the mail. Can be <c>null</c>.</param>
         /// <exception cref="ArgumentException">The speicified <paramref name="id"/> is <c>null</c>, empty or contains only whitespace characters.</exception>
         /// <exception cref="ArgumentNullException">The specified <paramref name="text"/> is <c>null</c>.</exception>
-        public ItemMail(string id, string text, List<Item> attachedItems) 
+        public ItemMail(string id, string text, IList<Item> attachedItems) 
             : base(id, text)
         {
             AttachedItems = attachedItems;
@@ -42,6 +42,6 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// The items, if any, attached to the mail. Can be <c>null</c>.
         /// </summary>
-        public List<Item> AttachedItems { get; set; }
+        public IList<Item> AttachedItems { get; set; }
     }
 }

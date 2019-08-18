@@ -15,6 +15,6 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// The items, if any, attached to the mail. Can be <c>null</c>.
         /// </summary>
-        List<Item> AttachedItems { get; set; }
+        IList<Item> AttachedItems { get; set; }
     }
 }

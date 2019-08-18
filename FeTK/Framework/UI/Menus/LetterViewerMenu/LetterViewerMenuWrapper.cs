@@ -125,7 +125,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
             /// <param name="text">The text content of the mail.</param>
             /// <param name="attachedItems">The items attached to the mail. Can be <c>null</c>.</param>
             /// <returns>The created <see cref="LetterViewerMenuEx2"/> instance.</returns>
-            public static LetterViewerMenuEx2 CreateItemMailMenu(string id, string text, List<Item> attachedItems)
+            public static LetterViewerMenuEx2 CreateItemMailMenu(string id, string text, IList<Item> attachedItems)
             {
                 var menu = new LetterViewerMenuEx2(id, text)
                 {
