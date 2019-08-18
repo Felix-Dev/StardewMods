@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace FelixDev.StardewMods.FeTK.Framework.Services
 {
     /// <summary>
-    /// Provides (simplified) access to different services a consuming mod can use. 
+    /// The <see cref="ServiceFactory"/> class provides an API to access different services a consuming mod can use. 
     /// 
     /// This class uses the Singleton pattern: Each consuming mod can have exactly one
     /// instance of the <see cref="ServiceFactory"/> class.
@@ -41,19 +41,16 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 throw new ArgumentException(nameof(modId));
             }
 
-            if (serviceFactories.ContainsKey(modId))
+            if (!serviceFactories.TryGetValue(modId, out ServiceFactory serviceFactory))
             {
-                return serviceFactories[modId];
+                serviceFactories.Add(modId, serviceFactory = new ServiceFactory(modId));
             }
-
-            var serviceFactory = new ServiceFactory(modId);
-            serviceFactories[modId] = serviceFactory;
 
             return serviceFactory;
         }
 
         /// <summary>
-        /// Initialize an instance of the <see cref="ServiceFactory"/> class.
+        /// Create a new instance of the <see cref="ServiceFactory"/> class.
         /// </summary>
         /// <param name="modId">The unique ID of the relevant mod.</param>
         private ServiceFactory(string modId)
@@ -64,7 +61,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// Get a mail service for the mod to use which requested this service factory.
         /// </summary>
-        /// <returns>A newly created instance for a mod (if no such instance existed yet), otherwise the already existing one.</returns>
+        /// <returns>
+        /// A newly created instance for a mod (if no such instance existed yet), otherwise the already existing one.
+        /// </returns>
         public IMailService GetMailService()
         {
             if (mailService == null)

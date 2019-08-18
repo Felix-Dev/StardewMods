@@ -17,11 +17,31 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 {
     /// <summary>
     /// Provides an API to add a mail to the game.
+    /// 
+    /// There are basically two approaches to add our to create the UI for our custom mails.
+    /// * Approach 1: Use Harmony and patch the <see cref="GameLocation.mailbox"/> function.
+    /// * Approach 2: Inject our custom mails into the game's mail asset cache and replace 
+    ///               created <see cref="LetterViewerMenu"/> instances with a correctly populated mail UI.
+    /// 
+    /// The current implementation of the <see cref="MailManager"/> class uses the second approach. 
+    /// We inject our custom mails via their internal IDs and some placeholder content into the game's 
+    /// mail asset cache using SMAPI's <see cref="IAssetEditor"/>. We then listen to the created
+    /// <see cref="LetterViewerMenu"/> instances and - for our custom mails - replace that UI with a UI
+    /// populated with the actual mail content (text, attached items,...).
     /// </summary>
     internal class MailManager : IMailManager
     {
-        /// <summary>The internal </summary>
-        private const string MAIL_ID_SEPARATOR = "@@@";
+        /// <summary>
+        /// A prefix for the mail ID created by the mail manger. Used together with <seealso cref="MAIL_ID_SUFFIX"/> to reduce
+        /// chances of false positives, that is mails with the same ID as mails which were added by the mail manager.
+        /// </summary>
+        private const string MAIL_ID_PREFIX = "@@@";
+
+        /// <summary>
+        /// A suffix for the mail ID created by the mail manger. Used together with <seealso cref="MAIL_ID_PREFIX"/> to reduce
+        /// chances of false positives, that is mails with the same ID as mails which were added by the mail manager.
+        /// </summary>
+        private const string MAIL_ID_SUFFIX = "@@@";
 
         /// <summary>The prefix of the key used to identify the save data created by this mail manager.</summary>
         private const string SAVE_DATA_KEY = "FelixDev.StardewMods.FeTK.Framework.Services.MailManagerCore";
@@ -35,16 +55,23 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>Provides access to the <see cref="IReflectionHelper"/> API provided by SMAPI.</summary>
         private static readonly IReflectionHelper reflectionHelper = ToolkitMod.ModHelper.Reflection;
 
+        /// <summary>The game asset editor used to inject custom mail assets into the game's mail asset cache.</summary>
         private readonly MailAssetEditor mailAssetEditor;
 
         /// <summary>The save data manager for this mail manager.</summary>
         private readonly ModSaveDataHelper saveDataHelper;
 
+        /// <summary>Contains the registered mail senders for consuming mods. Mapping is [mod ID] -> [mail sender].</summary>
         private readonly Dictionary<string, IMailSender> mailSenders = new Dictionary<string, IMailSender>();
 
+        /// <summary>Contains the mail for a game day. Mails are represented using their internal IDs.</summary>
         private Dictionary<int, List<string>> registeredMailsForDay = new Dictionary<int, List<string>>();
 
+        /// <summary>Contains meta data for a mail. Mails are indentified via their internal IDs.</summary>
         private Dictionary<string, MailMetaData> registeredMailsMetaData = new Dictionary<string, MailMetaData>();
+
+        /// <summary>Indicates whether the game's mail asset cache should be reloaded.</summary>
+        private bool requestMailAssetCacheReloading;
 
         /// <summary>
         /// Create a new instance of the <see cref="MailManager"/> class.
@@ -82,16 +109,16 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <exception cref="ArgumentNullException">The specified <paramref name="arrivalDay"/> is <c>null</c>.</exception>
         public void Add(string modId, string mailId, SDate arrivalDay)
         {
-            if (string.IsNullOrWhiteSpace(modId) || modId.Contains(MAIL_ID_SEPARATOR))
+            if (string.IsNullOrWhiteSpace(modId) || modId.Contains(MAIL_ID_PREFIX))
             {
                 throw new ArgumentException($"The mod ID \"{modId}\" has to contain at least one non-whitespace character and cannot " +
-                    $"contain the string {MAIL_ID_SEPARATOR}", nameof(modId));
+                    $"contain the string {MAIL_ID_PREFIX}", nameof(modId));
             }
 
-            if (string.IsNullOrWhiteSpace(mailId) || mailId.Contains(MAIL_ID_SEPARATOR))
+            if (string.IsNullOrWhiteSpace(mailId) || mailId.Contains(MAIL_ID_PREFIX))
             {
                 throw new ArgumentException($"The mail ID \"{mailId}\" has to contain at least one non-whitespace character and cannot " +
-                    $"contain the string {MAIL_ID_SEPARATOR}", nameof(mailId));
+                    $"contain the string {MAIL_ID_PREFIX}", nameof(mailId));
             }
 
             if (arrivalDay == null)
@@ -110,7 +137,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             // with the same ID for the same day for the same mod.
 
             int absoluteArrivalDay = arrivalDay.DaysSinceStart;
-            string internalMailId = modId + MAIL_ID_SEPARATOR + mailId + MAIL_ID_SEPARATOR + absoluteArrivalDay;
+            string internalMailId = MAIL_ID_PREFIX + modId + mailId + absoluteArrivalDay + MAIL_ID_SUFFIX;
 
             if (this.registeredMailsMetaData.ContainsKey(internalMailId))
             {
@@ -183,7 +210,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 throw new ArgumentException("The mail ID needs to contain at least one non-whitespace character!", nameof(mailId));
             }
 
-            return Game1.mailbox.Any(s => s.StartsWith(modId + MAIL_ID_SEPARATOR + mailId));
+            return Game1.mailbox.Any(s => s.StartsWith(modId + MAIL_ID_PREFIX + mailId));
         }
 
         /// <summary>
@@ -213,9 +240,15 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 throw new ArgumentException("The mail ID needs to contain at least one non-whitespace character!", nameof(mailId));
             }
 
-            return Game1.player.mailReceived.Any(id => id.StartsWith(modId + MAIL_ID_SEPARATOR + mailId + MAIL_ID_SEPARATOR));
+            return Game1.player.mailReceived.Any(id => id.StartsWith(modId + MAIL_ID_PREFIX + mailId + MAIL_ID_PREFIX));
         }
 
+        /// <summary>
+        /// Called when a game menu is opened. This function is responsible for creating the UI for 
+        /// the user registered mails.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
             if (!(e.OldMenu is LetterViewerMenu) && e.NewMenu is LetterViewerMenu letterMenu)
@@ -325,7 +358,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         private void OnMailDataLoading(object sender, MailAssetLoadingEventArgs e)
         {
             var currentDay = SDate.Now().DaysSinceStart;
-            List<MailAssetDataEntry> customMailData = new List<MailAssetDataEntry>();
+            var customMailData = new List<MailAssetDataEntry>();
 
             foreach (var day in registeredMailsForDay.Keys)
             {
@@ -338,37 +371,67 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             mailAssetEditor.AddMailAssetData(customMailData);
         }
 
+        /// <summary>
+        /// Called when a new game started. Requests the game's mail asset cache to be refreshed if there
+        /// are new custom mails for this game day.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
-            // Update the loaded mail game asset to include the IDs of our custom mails
+            // Request a refresh of the loaded mail game asset cache to include the IDs of our custom mails
             // which are in the player's mailbox for today.
-            mailAssetEditor.RequestAssetCacheRefresh();
+            if (requestMailAssetCacheReloading)
+            {
+                mailAssetEditor.RequestAssetCacheRefresh();
+                requestMailAssetCacheReloading = false;
+            }      
         }
 
+        /// <summary>
+        /// Called when a game day is ending. This function adds any custom mail scheduled for the next day
+        /// to the player's mailbox.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
         private void OnDayEnding(object sender, DayEndingEventArgs e)
         {
-            var nextDay = SDate.Now().AddDays(1).DaysSinceStart;
-
+            int nextDay = SDate.Now().AddDays(1).DaysSinceStart;
             if (!registeredMailsForDay.TryGetValue(nextDay, out List<string> mailIdsForDay))
             {
                 return;
             }
 
+            // Add tomorrow's custom mail to the player's mailbox.
             foreach (var mailId in mailIdsForDay)
             {
                 Game1.addMailForTomorrow(mailId);
 
-                // TODO: comment why we need no checks here (or put differently, why we will let exceptions surface)
                 var userId = registeredMailsMetaData[mailId].UserId;
                 monitor.Log($"Added the mail with ID \"{userId}\" to tomorrow's inbox.");
             }
+
+            // Only request asset cache reloading when a new mail has been added to the mailbox.
+            requestMailAssetCacheReloading = mailIdsForDay.Count > 0;
         }
 
+        /// <summary>
+        /// Called when the game is about to write data to a save file. This function is responsible for writing 
+        /// registered custom mail data to the current save file.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
         private void OnSaving(object sender, SavingEventArgs e)
         {
             saveDataHelper.WriteData(SAVE_DATA_KEY, new SaveData(registeredMailsForDay, registeredMailsMetaData));
         }
 
+        /// <summary>
+        /// Called after the game loaded a save file. This function is repsonsible for reading registered custom mail data
+        /// from the loaded save file.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
             var saveData = saveDataHelper.ReadData<SaveData>(SAVE_DATA_KEY);
@@ -422,8 +485,17 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             return mail;
         }
 
+        /// <summary>
+        /// The class <see cref="MailMetaData"/> encapsulates metadata for a custom mail.
+        /// </summary>
         private class MailMetaData
         {
+            /// <summary>
+            /// Create a new instance of the <see cref="MailMetaData"/> class.
+            /// </summary>
+            /// <param name="modId">The ID of the mod which added the mail.</param>
+            /// <param name="userId">The user-given mail ID.</param>
+            /// <param name="arrivalDay">The arrival day of the mail in the player's mailbox.</param>
             public MailMetaData(string modId, string userId, int arrivalDay)
             {
                 ModId = modId;
@@ -431,25 +503,55 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 ArrivalDay = arrivalDay;
             }
 
+            /// <summary>
+            /// The ID of the mod which added the mail.
+            /// </summary>
             public string ModId { get; }
 
+            /// <summary>
+            /// The user-given mail ID.
+            /// </summary>
             public string UserId { get; }
 
+            /// <summary>
+            /// The arrival day of the mail in the player's mailbox.
+            /// </summary>
             public int ArrivalDay { get; }
         }
 
+        /// <summary>
+        /// The <see cref="SaveData"/> class encapsulates data used by the <see cref="MailManager"/> class which needs to 
+        /// be written to/read from a game's save file.
+        /// </summary>
         private class SaveData
         {
+            /// <summary>
+            /// Create a new instance of the <see cref="SaveData"/> class.
+            /// </summary>
+            /// <remarks>
+            /// This constructur is used by the used save game serializer.
+            /// </remarks>
             public SaveData() { }
 
+            /// <summary>
+            /// Create a new instance of the <see cref="SaveData"/> class.
+            /// </summary>
+            /// <param name="mailPerDay">Contains the registered mails for each day.</param>
+            /// <param name="mailMetaData">Contains metadata about each registered mail.</param>
             public SaveData(Dictionary<int, List<string>> mailPerDay, Dictionary<string, MailMetaData> mailMetaData)
             {
                 MailPerDay = mailPerDay;
                 MailMetaData = mailMetaData;
             }
 
+            /// <summary>
+            /// The registered mail for a game day. Mails are identified using their IDs.
+            /// </summary>
             public Dictionary<int, List<string>> MailPerDay { get; set; }
 
+            /// <summary>
+            /// Contains metadata for mails. Mapping is [Mail ID] -> [metadata].
+            /// </summary>
             public Dictionary<string, MailMetaData> MailMetaData { get; set; }
         }
     }

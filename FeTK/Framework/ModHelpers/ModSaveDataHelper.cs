@@ -49,12 +49,12 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
                 return globalSaveDataHelper;
             }
 
-            if (!saveDataHelpers.ContainsKey(dataOwner))
+            if (!saveDataHelpers.TryGetValue(dataOwner, out ModSaveDataHelper saveDataHelper))
             {
-                saveDataHelpers[dataOwner] = new ModSaveDataHelper(dataOwner);
+                saveDataHelpers.Add(dataOwner, saveDataHelper = new ModSaveDataHelper(dataOwner));
             }
 
-            return saveDataHelpers[dataOwner];
+            return saveDataHelper;
         }
 
         private ModSaveDataHelper(string dataOwner)

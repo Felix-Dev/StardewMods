@@ -8,12 +8,12 @@ namespace FelixDev.StardewMods.FeTK.Framework.Helpers.Extensions
 {
     /// <summary>
     /// The <see cref="DictionaryExtensions"/> class provides an API to simplify common tasks when working with 
-    /// instances of the <see cref="Dictionary{TKey, TValue}" class. />
+    /// instances of the <see cref="Dictionary{TKey, TValue}"/> class.
     /// </summary>
     public static class DictionaryExtensions
     {
         /// <summary>
-        /// Add the specified value to the dictionary where its elements are lists of values.
+        /// Add the specified value to the dictionary which elements are lists of values.
         /// </summary>
         /// <typeparam name="TKey">The type of the keys in the dictionary.</typeparam>
         /// <typeparam name="TValue">The type of the values contained in the dictionary's list elements.</typeparam>
@@ -35,7 +35,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Helpers.Extensions
         }
 
         /// <summary>
-        /// Remove the specified value from a dictionary where its elements are lists of values.
+        /// Remove the specified value from a dictionary which elements are lists of values.
         /// </summary>
         /// <typeparam name="TKey">The type of the keys in the dictionary.</typeparam>
         /// <typeparam name="TValue">The type of the values contained in the dictionary's list elements.</typeparam>

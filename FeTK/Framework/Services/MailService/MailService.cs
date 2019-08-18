@@ -47,7 +47,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Contains all mails added with this mail service which have not been read by the player yet. 
         /// For each day a collection of mails with that arrival day is stored (using a mapping [mail ID] -> [mail]).
         /// </summary>
-        private Dictionary<int, Dictionary<string, Mail>> timedMails = new Dictionary<int, Dictionary<string, Mail>>();
+        private Dictionary<int, Dictionary<string, Mail>> mailList = new Dictionary<int, Dictionary<string, Mail>>();
 
         /// <summary>
         /// Raised when a mail begins to open. The mail content can still be changed at this point.
@@ -75,8 +75,13 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 throw new ArgumentException("The mod ID needs to contain at least one non-whitespace character!", nameof(modId));
             }
 
+            if (mailManager == null)
+            {
+                throw new ArgumentNullException(nameof(mailManager));
+            }
+
             this.modId = modId;
-            this.mailManager = mailManager ?? throw new ArgumentNullException(nameof(mailManager));
+            this.mailManager = mailManager;
 
             this.saveDataKey = SAVE_DATA_KEY_PREFIX + "." + modId;
 
@@ -122,12 +127,12 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             mailManager.Add(this.modId, mail.Id, arrivalDate);
            
 
-            if (!timedMails.ContainsKey(arrivalGameDay))
+            if (!mailList.ContainsKey(arrivalGameDay))
             {
-                timedMails[arrivalGameDay] = new Dictionary<string, Mail>();
+                mailList[arrivalGameDay] = new Dictionary<string, Mail>();
             }
 
-            timedMails[arrivalGameDay].Add(mail.Id, mail);
+            mailList[arrivalGameDay].Add(mail.Id, mail);
         }
 
         /// <summary>
@@ -230,7 +235,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// </returns>
         private bool HasMailForDayCore(int gameDay, string mailId)
         {
-            return this.timedMails.ContainsKey(gameDay) && this.timedMails[gameDay].ContainsKey(mailId);
+            return this.mailList.ContainsKey(gameDay) && this.mailList[gameDay].ContainsKey(mailId);
         }
 
         /// <summary>
@@ -252,7 +257,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             // Remove the mail from the service. 
             // We don't need to do key checks here because the service is only notified 
             // for closed mails belonging to it.
-            this.timedMails[e.ArrivalDay.DaysSinceStart].Remove(e.MailId);
+            this.mailList[e.ArrivalDay.DaysSinceStart].Remove(e.MailId);
 
             // Raise the mail-closed event.
             this.MailClosed?.Invoke(this, new MailClosedEventArgs(e.MailId, e.InteractionRecord));
@@ -282,31 +287,59 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             }
 
             int arrivalGameDay = arrivalDay.DaysSinceStart;
-            return !timedMails.TryGetValue(arrivalGameDay, out Dictionary<string, Mail> mailForDay)
+            return !mailList.TryGetValue(arrivalGameDay, out Dictionary<string, Mail> mailForDay)
                 || !mailForDay.TryGetValue(mailId, out Mail mail)
                 ? null
                 : mail;
         }
 
+        /// <summary>
+        /// Called when the game is about to write data to a save file. This function is responsible for saving
+        /// the mail list to the save file.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
         private void OnSaving(object sender, SavingEventArgs e)
         {
-            var saveData = saveDataBuilder.Construct(this.timedMails);
+            var saveData = saveDataBuilder.Construct(this.mailList);
             saveDataHelper.WriteData(this.saveDataKey, saveData);
         }
 
+        /// <summary>
+        /// Called after the game loaded a save file. This function is responsible for reading the mail list
+        /// from the loaded save file.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
             var saveData = saveDataHelper.ReadData<List<MailSaveData>>(this.saveDataKey);
 
-            timedMails = saveData != null
+            this.mailList = saveData != null
                 ? saveDataBuilder.Reconstruct(saveData)
                 : new Dictionary<int, Dictionary<string, Mail>>();
         }
 
+        /// <summary>
+        /// The <see cref="MailSaveData"/> class encapsulates data about a <see cref="Mail"/> instance which needs to 
+        /// be written to/read from a game's save file.
+        /// </summary>
         private class MailSaveData
         {
+            /// <summary>
+            /// Create a new instance of the <see cref="MailSaveData"/> class.
+            /// </summary>
+            /// <remarks>
+            /// This constructur is used by the used save game serializer.
+            /// </remarks>
             public MailSaveData() { }
 
+            /// <summary>
+            /// Create a new instance of the <see cref="MailSaveData"/> class.
+            /// </summary>
+            /// <param name="id">The ID of the mail.</param>
+            /// <param name="text">The text content of the mail.</param>
+            /// <param name="arrivalDay">The in-game day when the mail arrives in the player's mailbox.</param>
             public MailSaveData(string id, string text, int arrivalDay)
             {
                 Id = id;
@@ -314,52 +347,95 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 Text = text;
             }
 
+            /// <summary>
+            /// The type of the mail.
+            /// </summary>
             public MailType MailType { get; set; }
 
+            /// <summary>
+            /// The ID of the mail.
+            /// </summary>
             public string Id { get; set; }
 
+            /// <summary>
+            /// The text content of the mail.
+            /// </summary>
             public string Text { get; set; }
 
+            /// <summary>
+            /// The in-game day when the mail arrives in the player's mailbox.
+            /// </summary>
             public int AbsoluteArrivalDay { get; set; }
 
             #region Item Mail Content
 
+            /// <summary>
+            /// The items attached to the mail.
+            /// </summary>
             public List<ItemSaveData> AttachedItemsSaveData { get; set; }
 
             #endregion // Item Mail Content
 
             #region Money Mail Content
 
+            /// <summary>
+            /// The money attached to the mail.
+            /// </summary>
             public int Money { get; set; }
 
             #endregion // Money Mail Content
 
             #region Quest Mail Content
 
+            /// <summary>
+            /// The ID of the quest attached to the mail.
+            /// </summary>
             public int QuestId { get; set; }
 
+            /// <summary>
+            /// Indicates if the quest is automatically accepted or needs to be accepted manually.
+            /// </summary>
             public bool IsAutomaticallyAccepted { get; set; }
 
             #endregion
 
             #region Recipe Mail Content
 
+            /// <summary>
+            /// The name of the recipe attached to the mail.
+            /// </summary>
             public string RecipeName { get; set; }
 
+            /// <summary>
+            /// The type of the recipe attached to the mail.
+            /// </summary>
             public RecipeType RecipeType { get; set; }
 
             #endregion // Recipe Mail Content
         }
 
+        /// <summary>
+        /// The <see cref="saveDataBuilder"/> class provides an API to (de-)serialize the mail list of a <see cref="MailService"/>
+        /// instance.
+        /// </summary>
         private class SaveDataBuilder
         {
+            /// <summary>The serializer to use when serializing/derializing <see cref="Item"/> instances.</summary>
             private readonly ItemSerializer itemSerializer;
 
+            /// <summary>
+            /// Create a new instance of the <see cref="saveDataBuilder"/> class.
+            /// </summary>
             public SaveDataBuilder()
             {
                 itemSerializer = new ItemSerializer();
             }
 
+            /// <summary>
+            /// Serialize the mail list of a <see cref="MailService"/> instance.
+            /// </summary>
+            /// <param name="mailList">The mail list to serialize.</param>
+            /// <returns>A serializable format of the mail list.</returns>
             public List<MailSaveData> Construct(Dictionary<int, Dictionary<string, Mail>> mailList)
             {
                 var mailSaveDataList = new List<MailSaveData>();
@@ -402,6 +478,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 return mailSaveDataList;
             }
 
+            /// <summary>
+            /// Deserialize the mail list of a <see cref="MailService"/> instance.
+            /// </summary>
+            /// <param name="mailSaveDataList">The serializable format of the mail list.</param>
+            /// <returns>The deserialized mail list.</returns>
             public Dictionary<int, Dictionary<string, Mail>> Reconstruct(List<MailSaveData> mailSaveDataList)
             {
                 var mailList = new Dictionary<int, Dictionary<string, Mail>>();
