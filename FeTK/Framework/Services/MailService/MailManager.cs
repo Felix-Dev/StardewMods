@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FelixDev.StardewMods.FeTK.Framework.Helpers;
+using FelixDev.StardewMods.FeTK.Framework.Helpers.Extensions;
 using FelixDev.StardewMods.FeTK.Framework.UI;
 using FelixDev.StardewMods.FeTK.ModHelpers;
 using StardewModdingAPI;
@@ -14,8 +15,12 @@ using StardewValley.Menus;
 
 namespace FelixDev.StardewMods.FeTK.Framework.Services
 {
+    /// <summary>
+    /// Provides an API to add a mail to the game.
+    /// </summary>
     internal class MailManager : IMailManager
     {
+        /// <summary>The internal </summary>
         private const string MAIL_ID_SEPARATOR = "@@@";
 
         /// <summary>The prefix of the key used to identify the save data created by this mail manager.</summary>
@@ -114,12 +119,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             }
 
             this.registeredMailsMetaData[internalMailId] = new MailMetaData(modId, mailId, absoluteArrivalDay);
-
-            if (!registeredMailsForDay.ContainsKey(absoluteArrivalDay))
-            {
-                registeredMailsForDay[absoluteArrivalDay] = new List<string>();
-            }
-            registeredMailsForDay[absoluteArrivalDay].Add(internalMailId);
+            this.registeredMailsForDay.AddToList(absoluteArrivalDay, internalMailId);
 
             if (arrivalDay.Equals(SDate.Now()))
             {
@@ -266,6 +266,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                     return;
                 }
 
+                // Get the editable content for this mail.
                 MailContent content = mail.GetMailContent();
                 
                 // Raise the mail-opening event for this mail.
@@ -283,7 +284,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                     // Remove the closed mail from the mail manager.
                     RemoveMail(mailId, mailMetaData.ArrivalDay);
 
-                    // Notify its sender that the mail has been read.
+                    // Notify its sender that the mail has been closed.
                     mailSender.OnMailClosed(new MailClosedCoreEventArgs(mailMetaData.UserId, arrivalDate, e2.InteractionRecord));
                 };
 
@@ -301,13 +302,8 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="arrivalDay">The arrival day of the mail.</param>
         private void RemoveMail(string mailId, int arrivalDay)
         {
-            registeredMailsMetaData.Remove(mailId);
-
-            registeredMailsForDay[arrivalDay].Remove(mailId);
-            if (registeredMailsForDay[arrivalDay].Count == 0)
-            {
-                registeredMailsForDay.Remove(arrivalDay);
-            }
+            this.registeredMailsMetaData.Remove(mailId);
+            this.registeredMailsForDay.RemoveFromList(arrivalDay, mailId);
 
             // When testing in Multiplayer, it was noticed that apparently for non-host players,
             // already seen mails won't be removed from their [mailForTomorrow] list. This resulted
