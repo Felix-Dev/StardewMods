@@ -557,7 +557,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             /// <summary>
             /// Contains the custom mail for each day.
             /// </summary>
-            public List<MailSaveData> MailSaved { get; }
+            public List<MailSaveData> MailSaved { get; set; }
         }
     }
 }
