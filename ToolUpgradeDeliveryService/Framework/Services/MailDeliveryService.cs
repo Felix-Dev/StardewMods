@@ -125,12 +125,6 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         /// <param name="e">The event arguments.</param>
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
-            // TODO: MailDeliveryService: Remove testing code
-            Game1.player.Money = 100000;
-            Game1.player.addItemToInventoryBool(new SObject(Vector2.Zero, 334, 100));
-            Game1.player.addItemToInventoryBool(new SObject(Vector2.Zero, 335, 100));
-            Game1.player.addItemToInventoryBool(new SObject(Vector2.Zero, 336, 100));
-
             int daysLeftForToolUpgrade = Game1.player.daysLeftForToolUpgrade.Value;
             Tool upgradeTool = Game1.player.toolBeingUpgraded.Value;
 
