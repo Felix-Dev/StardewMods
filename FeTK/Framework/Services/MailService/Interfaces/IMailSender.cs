@@ -22,12 +22,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// otherwise, <c>null</c>.
         /// </returns>
         /// <exception cref="ArgumentException">
-        /// The specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one 
-        /// non-whitespace character.
+        /// The specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one non-whitespace character.
         /// </exception>
-        /// <exception cref="ArgumentNullException">
-        /// The specified <paramref name="arrivalDay"/> is <c>null</c>.
-        /// </exception>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="arrivalDay"/> is <c>null</c>.</exception>
         Mail GetMailFromId(string mailId, SDate arrivalDay);
     }
 }

@@ -275,7 +275,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
             string text = GetTranslatedMailTextContent(tool);
 
             var toolMail = new ItemMail(mailId, text, tool);
-            mailService.AddMail(dayOffset, toolMail);
+            mailService.AddMail(toolMail, dayOffset);
         }
 
         /// <summary>

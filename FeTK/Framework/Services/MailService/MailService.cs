@@ -95,11 +95,13 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// Add a mail to the player's mailbox.
         /// </summary>
-        /// <param name="daysFromNow">The day offset when the mail will arrive in the mailbox.</param>
         /// <param name="mail">The mail to add.</param>
+        /// <param name="daysFromNow">
+        /// The in-game day offset when the mail will arrive in the mailbox. Pass in "0" to instantly add a mail to the player's mailbox.
+        /// </param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="daysFromNow"/> has to be greater than or equal to <c>0</c>.</exception>
         /// <exception cref="ArgumentNullException">The specified <paramref name="mail"/> is <c>null</c>.</exception>
-        public void AddMail(int daysFromNow, Mail mail)
+        public void AddMail(Mail mail, int daysFromNow)
         {
             if (daysFromNow < 0)
             {
@@ -138,18 +140,20 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// Add a mail to the player's mailbox.
         /// </summary>
-        /// <param name="arrivalDay">The day when the mail will arrive in the mailbox.</param>
         /// <param name="mail">The mail to add.</param>
+        /// <param name="arrivalDay">
+        /// The in-game day when the mail will arrive in the player's mailbox. Pass in the current date to instantly add a mail to the mailbox.
+        /// </param>
         /// <exception cref="ArgumentOutOfRangeException">The <paramref name="arrivalDay"/> is in the past.</exception>
         /// <exception cref="ArgumentNullException">The specified <paramref name="mail"/> is be <c>null</c>.</exception>
-        public void AddMail(SDate arrivalDay, Mail mail)
+        public void AddMail(Mail mail, SDate arrivalDay)
         {
             if (arrivalDay == null)
             {
                 throw new ArgumentNullException(nameof(arrivalDay));
             }
 
-            AddMail(SDateHelper.GetCurrentDayOffsetFromDate(arrivalDay), mail);
+            AddMail(mail, SDateHelper.GetCurrentDayOffsetFromDate(arrivalDay));
         }
 
         /// <summary>
@@ -273,12 +277,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// otherwise, <c>null</c>.
         /// </returns>
         /// <exception cref="ArgumentException">
-        /// The specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one 
-        /// non-whitespace character.
+        /// The specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one non-whitespace character.
         /// </exception>
-        /// <exception cref="ArgumentNullException">
-        /// The specified <paramref name="arrivalDay"/> is <c>null</c>.
-        /// </exception>
+        /// <exception cref="ArgumentNullException">The specified <paramref name="arrivalDay"/> is <c>null</c>.</exception>
         Mail IMailSender.GetMailFromId(string mailId, SDate arrivalDay)
         {
             if (string.IsNullOrWhiteSpace(mailId))
