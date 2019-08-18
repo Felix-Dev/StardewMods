@@ -57,7 +57,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Get an <see cref="IMailService"/> instance.
         /// </summary>
         /// <returns>
-        /// An existing <see cref="IMailService"/> instance if one aready exists; otherwise a fresh instance.
+        /// An existing <see cref="IMailService"/> instance if available; otherwise a fresh instance.
         /// </returns>
         public IMailService GetMailService()
         {

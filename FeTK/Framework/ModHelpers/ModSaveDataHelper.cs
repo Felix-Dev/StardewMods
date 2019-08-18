@@ -22,21 +22,35 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
     /// </summary>
     internal class ModSaveDataHelper
     {
+        /// <summary>Provides access to the <see cref="IDataHelper"/> API provided by SMAPI.</summary>
         private static readonly IDataHelper dataHelper = ToolkitMod.ModHelper.Data;
 
-        private static IDictionary<string, ModSaveDataHelper> saveDataHelpers = new Dictionary<string, ModSaveDataHelper>();
+        /// <summary>Provides access to the <see cref="IModEvents"/> API provided by SMAPI.</summary>
+        private static readonly IModEvents events = ToolkitMod.ModHelper.Events;
 
+        /// <summary>Contains the created <see cref="ModSaveDataHelper"/> instance for each data owner.</summary>
+        private static readonly Dictionary<string, ModSaveDataHelper> saveDataHelpers = new Dictionary<string, ModSaveDataHelper>();
+
+        /// <summary>The global <see cref="ModSaveDataHelper"/> instance for data without a specified owner. </summary>
         private static ModSaveDataHelper globalSaveDataHelper;
 
         /// <summary>Encapsulates SMAPI's JSON file parsing.</summary>
         private readonly JsonHelper jsonHelper;
 
         /// <summary>The save data buffer to read from/write to. Written to the specified save data file.</summary>
-        private IDictionary<string, string> serializedSaveData;
+        private Dictionary<string, string> serializedSaveData;
 
+        /// <summary>The base path to read/write Stardew Valley specific data from/to.</summary>
         private readonly string basePath;
+
+        /// <summary>The provider of the data to read/write. Typically the unique ID of a mod.</summary>
         private readonly string dataOwner;
 
+        /// <summary>
+        /// Get a <see cref="ModSaveDataHelper"/> instance.
+        /// </summary>
+        /// <param name="dataOwner">The owner of the data to read/write. Can be <c>null</c>.</param>
+        /// <returns>An existing <see cref="ModSaveDataHelper"/> instance if available; otherwise a fresh instance.</returns>
         public static ModSaveDataHelper GetSaveDataHelper(string dataOwner = null)
         {
             if (dataOwner == null)
@@ -57,6 +71,10 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
             return saveDataHelper;
         }
 
+        /// <summary>
+        /// Create a new instance of the <see cref="ModSaveDataHelper"/> class.
+        /// </summary>
+        /// <param name="dataOwner">The owner of the data to read/write. Can be <c>null</c>.</param>
         private ModSaveDataHelper(string dataOwner)
         {
             this.basePath = Path.Combine(Constants.DataPath, "FeTK", "Saves");
@@ -64,8 +82,8 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
 
             this.jsonHelper = new JsonHelper();
 
-            ToolkitMod.ModHelper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitleScreen;
-            ToolkitMod.ModHelper.Events.GameLoop.Saved += OnSaved;
+            events.GameLoop.ReturnedToTitle += OnReturnedToTitleScreen;
+            events.GameLoop.Saved += OnSaved;
         }
 
         /// <summary>

@@ -46,7 +46,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         void AddMail(Mail mail, SDate arrivalDay);
 
         /// <summary>
-        /// Determine if a mail added by this mail service already exists for a day.
+        /// Get whether a mail added by this mail service already exists for the specified day.
         /// </summary>
         /// <param name="day">The day to check for.</param>
         /// <param name="mailId">The ID of the mail.</param>
@@ -76,15 +76,17 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         bool HasReceivedMail(string mailId);
 
         /// <summary>
-        /// Determine if a mail with the given <paramref name="mailId"/> added by this mail service is currently in the mailbox.
+        /// Get whether a mail by this mail service is currently in the mailbox.
         /// </summary>
         /// <param name="mailId">The ID of the mail.</param>
-        /// <returns><c>true</c> if a mail with the specified <paramref name="mailId"/> has already been registered and 
-        /// is currently in the mailbox; otherwise, <c>false</c>.</returns>
+        /// <returns>
+        /// <c>true</c> if a mail with the specified <paramref name="mailId"/> has already been registered and 
+        /// is currently in the mailbox; otherwise, <c>false</c>.
+        /// </returns>
         /// <exception cref="ArgumentException">
         /// The specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one 
         /// non-whitespace character.
         /// </exception>
-        bool HasRegisteredMailInMailbox(string mailId);
+        bool HasMailInMailbox(string mailId);
     }
 }

@@ -142,7 +142,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
 
             if (daysLeftForToolUpgrade == 0 && upgradeTool != null)
             {
-                if (!mailService.HasRegisteredMailInMailbox(GetMailIdFromTool(upgradeTool)))
+                if (!mailService.HasMailInMailbox(GetMailIdFromTool(upgradeTool)))
                 {
                     SetToolMailForDay(0, upgradeTool);
                 }                
