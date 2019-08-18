@@ -1,4 +1,5 @@
-﻿using StardewModdingAPI;
+﻿using FelixDev.StardewMods.FeTK.Framework.Services;
+using StardewModdingAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,8 +24,9 @@ namespace FelixDev.StardewMods.FeTK
         public override void Entry(IModHelper helper)
         {
             ModHelper = helper;
-
             _Monitor = this.Monitor;
+
+            ServiceFactory.Setup(new MailManager());
         }
     }
 }

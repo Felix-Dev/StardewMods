@@ -47,7 +47,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// Contains all mails added with this mail service which have not been read by the player yet. 
         /// For each day a collection of mails with that arrival day is stored (using a mapping [mail ID] -> [mail]).
         /// </summary>
-        private Dictionary<int, Dictionary<string, Mail>> mailList = new Dictionary<int, Dictionary<string, Mail>>();
+        private Dictionary<int, Dictionary<string, Mail>> mailListForDay = new Dictionary<int, Dictionary<string, Mail>>();
 
         /// <summary>
         /// Raised when a mail begins to open. The mail content can still be changed at this point.
@@ -127,12 +127,12 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             mailManager.Add(this.modId, mail.Id, arrivalDate);
            
 
-            if (!mailList.ContainsKey(arrivalGameDay))
+            if (!mailListForDay.ContainsKey(arrivalGameDay))
             {
-                mailList[arrivalGameDay] = new Dictionary<string, Mail>();
+                mailListForDay[arrivalGameDay] = new Dictionary<string, Mail>();
             }
 
-            mailList[arrivalGameDay].Add(mail.Id, mail);
+            mailListForDay[arrivalGameDay].Add(mail.Id, mail);
         }
 
         /// <summary>
@@ -235,7 +235,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// </returns>
         private bool HasMailForDayCore(int gameDay, string mailId)
         {
-            return this.mailList.ContainsKey(gameDay) && this.mailList[gameDay].ContainsKey(mailId);
+            return this.mailListForDay.ContainsKey(gameDay) && this.mailListForDay[gameDay].ContainsKey(mailId);
         }
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             // Remove the mail from the service. 
             // We don't need to do key checks here because the service is only notified 
             // for closed mails belonging to it.
-            this.mailList[e.ArrivalDay.DaysSinceStart].Remove(e.MailId);
+            this.mailListForDay[e.ArrivalDay.DaysSinceStart].Remove(e.MailId);
 
             // Raise the mail-closed event.
             this.MailClosed?.Invoke(this, new MailClosedEventArgs(e.MailId, e.InteractionRecord));
@@ -266,14 +266,19 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// Retrieve a mail by its ID and arrival day.
         /// </summary>
-        /// <param name="mailId">The ID of the mail. Needs to contain at least one non-whitespace character.</param>
+        /// <param name="mailId">The ID of the mail.</param>
         /// <param name="arrivalDay">The mail's arrival day in the mailbox of the receiver.</param>
         /// <returns>
-        /// A <see cref="Mail"/> instance with the specified <paramref name="mailId"/> and <paramref name="arrivalDay"/> on success,
-        /// othewise <c>null</c>.
+        /// A <see cref="Mail"/> instance with the specified <paramref name="mailId"/> and <paramref name="arrivalDay"/> on success;
+        /// otherwise, <c>null</c>.
         /// </returns>
-        /// <exception cref="ArgumentException">The specified <paramref name="mailId"/> is an invalid mod ID.</exception>
-        /// <exception cref="ArgumentNullException">The specified <paramref name="arrivalDay"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        /// The specified <paramref name="mailId"/> is <c>null</c> or does not contain at least one 
+        /// non-whitespace character.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// The specified <paramref name="arrivalDay"/> is <c>null</c>.
+        /// </exception>
         Mail IMailSender.GetMailFromId(string mailId, SDate arrivalDay)
         {
             if (string.IsNullOrWhiteSpace(mailId))
@@ -287,7 +292,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             }
 
             int arrivalGameDay = arrivalDay.DaysSinceStart;
-            return !mailList.TryGetValue(arrivalGameDay, out Dictionary<string, Mail> mailForDay)
+            return !mailListForDay.TryGetValue(arrivalGameDay, out Dictionary<string, Mail> mailForDay)
                 || !mailForDay.TryGetValue(mailId, out Mail mail)
                 ? null
                 : mail;
@@ -301,8 +306,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="e">The event data.</param>
         private void OnSaving(object sender, SavingEventArgs e)
         {
-            var saveData = saveDataBuilder.Construct(this.mailList);
-            saveDataHelper.WriteData(this.saveDataKey, saveData);
+            var mailSaveData = this.saveDataBuilder.Construct(this.mailListForDay);
+
+            var saveData = new SaveData(mailSaveData);
+            this.saveDataHelper.WriteData(this.saveDataKey, saveData);
         }
 
         /// <summary>
@@ -313,10 +320,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <param name="e">The event data.</param>
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
-            var saveData = saveDataHelper.ReadData<List<MailSaveData>>(this.saveDataKey);
+            var saveData = saveDataHelper.ReadData<SaveData>(this.saveDataKey);
 
-            this.mailList = saveData != null
-                ? saveDataBuilder.Reconstruct(saveData)
+            this.mailListForDay = saveData != null
+                ? this.saveDataBuilder.Reconstruct(saveData.MailSaved)
                 : new Dictionary<int, Dictionary<string, Mail>>();
         }
 
@@ -522,6 +529,35 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
                 return mailList;
             }
+        }
+
+        /// <summary>
+        /// The <see cref="SaveData"/> class encapsulates data used by the <see cref="MailService"/> class which needs to 
+        /// be written to/read from a game's save file.
+        /// </summary>
+        private class SaveData
+        {
+            /// <summary>
+            /// Create a new instance of the <see cref="SaveData"/> class.
+            /// </summary>
+            /// <remarks>
+            /// This constructur is used by the used save game serializer.
+            /// </remarks>
+            public SaveData() { }
+
+            /// <summary>
+            /// Create a new instance of the <see cref="SaveData"/> class.
+            /// </summary>
+            /// <param name="mailSaved">Contains the custom mail for each day.</param>
+            public SaveData(List<MailSaveData> mailSaved)
+            {
+                MailSaved = mailSaved;
+            }
+
+            /// <summary>
+            /// Contains the custom mail for each day.
+            /// </summary>
+            public List<MailSaveData> MailSaved { get; }
         }
     }
 }
