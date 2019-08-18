@@ -59,12 +59,11 @@ To create a mail with both text and attached items, use:
 ```cs
 public ItemMail(string id, string text, Item item)
 ```
-where ```id``` is the ID of the mail, ```text``` is the text content of the mail and ```item``` is the attached item of the mail.
--or-
+_or_
 ```cs
 public ItemMail(string id, string text, IList<Item> items)
 ```
-where ```id``` is the ID of the mail, ```text``` is the text content of the mail and ```items``` is a list of the attached items of a mail.
+where ```id``` is the ID of the mail, ```text``` is the text content of the mail and ```item``` (```items```) is the attached item (list of attached items) of a mail.
 
 #### Money mail
 To create a mail with both text and attached money, use:
@@ -99,17 +98,21 @@ public QuestMail(string id, string text, int questId, bool isAutomaticallyAccept
 where ```id``` is the ID of the mail, ```text``` is the text content of the mail, ```questId``` is the ID of the attached quest and 
 ```isAutomaticallyAccepted``` an indicator if the quest is automatically accepted or requires manual acception by the player.
 
+### Add mail
+
 Now let's take a closer look at how to add mails to the game:
 ```cs
 public void AddMail(Mail mail, int daysFromNow)
 ```
-- or -
+_or_
 ```cs
 using StardewModdingAPI.Utilities;
 
 public void AddMail(Mail mail, SDate arrivalDay)
 ```
-where ```mail``` is one of the mail types from above and ```daysFromNow``` and ```arrivalDay``` specify the in-game day when the mail will be added to the player's mailbox. Valid values for either of them are a value specifying the current day or a value specifying any day in the future. If the current day is specified (either ```daysFromNow = 0``` or ```arrivalDay = SDate.Now()```) the specified mail instantly arrives in the player's mailbox. Otherwise, the mail will arrive in the morning of the specified day.
+where ```mail``` is one of the mail types from above and ```daysFromNow``` and ```arrivalDay``` specify the in-game day when the mail will be added to the player's mailbox. Valid values for either of them are a value specifying the current day or a value specifying any day in the future. If the current day is specified (either ```daysFromNow = 0``` or ```arrivalDay = SDate.Now()```) the specified mail instantly arrives in the player's mailbox. Otherwise, the mail will arrive in the morning of the specified day. 
+
+Note: A mail service cannot have multiple mails with the same ID scheduled for the same day!
 
 ## More visualization options for the mail's textual content
 The Mail API introduces a **Text Coloring API** to improve the visual representation of a mail's content. This API is available both for mails added via the framework and mails added via other frameworks, such as [Content Patcher](https://github.com/Pathoschild/StardewMods/tree/develop/ContentPatcher).
