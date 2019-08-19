@@ -206,7 +206,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
             ClickableComponent snappedComponent = this.currentlySnappedComponent;
             switch (direction)
             {
-                case CursorDirection.North:
+                case CursorDirection.Up:
                     if (this.currentlySnappedComponent.upNeighborID == -99999)
                         this.snapToDefaultClickableComponent();
                     else if (this.currentlySnappedComponent.upNeighborID == -7777)
@@ -265,7 +265,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                         break;
                     }
                     break;
-                case CursorDirection.South:
+                case CursorDirection.Down:
                     if (this.currentlySnappedComponent.downNeighborID == -99999)
                         this.snapToDefaultClickableComponent();
                     else if (this.currentlySnappedComponent.downNeighborID == -7777)

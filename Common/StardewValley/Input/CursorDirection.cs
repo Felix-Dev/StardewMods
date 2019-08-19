@@ -6,9 +6,9 @@ namespace FelixDev.StardewMods.Common.StardewValley.Input
 {
     public enum CursorDirection
     {
-        North = 0,
+        Up = 0,
         Right,
-        South,
+        Down,
         Left
     }
 }
