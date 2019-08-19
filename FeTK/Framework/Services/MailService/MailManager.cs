@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FelixDev.FelixDev.StardewMods.Common.Helpers.Extensions;
+using FelixDev.StardewMods.Common.Helpers.Extensions;
 using FelixDev.StardewMods.FeTK.Framework.Helpers;
 using FelixDev.StardewMods.FeTK.Framework.UI;
 using FelixDev.StardewMods.FeTK.ModHelpers;
