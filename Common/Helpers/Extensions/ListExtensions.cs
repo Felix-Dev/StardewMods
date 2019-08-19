@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StardewMods.Common.Helpers
+namespace FelixDev.StardewMods.Common.Helpers.Extensions
 {
     internal static class ListExtensions
     {
