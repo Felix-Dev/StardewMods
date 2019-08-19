@@ -1,6 +1,5 @@
-﻿using StardewModdingAPI;
-using StardewMods.Common;
-using FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework;
+﻿using FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework;
+using StardewModdingAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,25 +14,27 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService
     /// </summary>
     internal class ModEntry : Mod
     {
-        public static CommonServices CommonServices { get; private set; }
+        /// <summary>The mail-delivery service to use.</summary>
+        private MailDeliveryService mailDeliveryService;
 
         /// <summary>The mod configuration from the player.</summary>
         public static ModConfig ModConfig { get; private set; }
 
+        /// <summary>Provides access to the simplified APIs for writing mods provided by SMAPI.</summary>
         public static IModHelper ModHelper { get; private set; }
 
-        public static IManifest _ModManifest { get; private set; }
+        /// <summary>Provides access to the <see cref="IMonitor"/> API provided by SMAPI.</summary>
+        public static IMonitor _Monitor { get; private set; }
 
-        private MailDeliveryService mailDeliveryService;
+        /// <summary>Provides access to the <see cref="IManifest"/> API provided by SMAPI.</summary>
+        public static IManifest _ModManifest { get; private set; }
 
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
-            // Add services
-            CommonServices = new CommonServices(Monitor, helper.Events, helper.Translation, helper.Reflection, helper.Content, helper.Data);
-
             ModHelper = helper;
+            _Monitor = this.Monitor;
             _ModManifest = this.ModManifest;
 
             // Setup services & mod configuration

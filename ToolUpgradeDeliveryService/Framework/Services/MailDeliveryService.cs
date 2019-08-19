@@ -1,4 +1,6 @@
-﻿using StardewModdingAPI;
+﻿using FelixDev.StardewMods.FeTK.Framework.Services;
+using FelixDev.StardewMods.ToolUpgradeDeliveryService.Compatibility;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Tools;
@@ -7,18 +9,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FelixDev.StardewMods.ToolUpgradeDeliveryService.Compatibility;
 
-using Microsoft.Xna.Framework;
-
-using SObject = StardewValley.Object;
 using Translation = FelixDev.StardewMods.ToolUpgradeDeliveryService.Common.Translation;
-using FelixDev.StardewMods.FeTK.Framework.Services;
 
 namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
 {
     /// <summary>
-    /// This class is responsible for sending Clint's [upgraded-tool] mail to the player and adding the tool
+    /// The <see cref="MailDeliveryService"/> class is responsible for sending Clint's [upgraded-tool] mail to the player and adding the tool
     /// to the player's inventory.
     /// </summary>
     internal class MailDeliveryService
@@ -29,15 +26,25 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         /// <summary>The unique ID of the external mod [Rush Orders].</summary>
         private const string MOD_RUSH_ORDERS_MOD_ID = "spacechase0.RushOrders";
 
-        private readonly IMonitor monitor;
-        private readonly IModEvents events;
-        private readonly ITranslationHelper translationHelper;
-        private readonly IModRegistry modRegistry;
+        /// <summary>Provides access to the <see cref="IModEvents"/> API provided by SMAPI.</summary>
+        private static readonly IModEvents events = ModEntry.ModHelper.Events;      
 
+        /// <summary>Provides access to the <see cref="IModRegistry"/> API provided by SMAPI.</summary>
+        private static readonly IModRegistry modRegistry = ModEntry.ModHelper.ModRegistry;
+
+        /// <summary>Provides access to the <see cref="IMonitor"/> API provided by SMAPI.</summary>
+        private static readonly IMonitor monitor = ModEntry._Monitor;
+
+        /// <summary>Provides access to the <see cref="ITranslationHelper"/> API provided by SMAPI.</summary>
+        private static readonly ITranslationHelper translationHelper = ModEntry.ModHelper.Translation;
+
+        /// <summary>The <see cref="IMailService"/> instance used to add tool-upgrade mails to the game.</summary>
         private readonly IMailService mailService;
 
+        /// <summary>Indicates whether the mail delivery service is currently running.</summary>
         private bool running;
 
+        /// <summary>Indicates whether the player is using the mod [Rush Orders].</summary>
         private bool isPlayerUsingRushedOrders;
 
         /// <summary>An API to interact with the external mod [Rush Orders].</summary>
@@ -48,12 +55,6 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         /// </summary>
         public MailDeliveryService()
         {
-            events = ModEntry.CommonServices.Events;
-            translationHelper = ModEntry.CommonServices.TranslationHelper;
-            monitor = ModEntry.CommonServices.Monitor;
-
-            modRegistry = ModEntry.ModHelper.ModRegistry;
-
             mailService = ServiceFactory.GetFactory(ModEntry._ModManifest.UniqueID).GetMailService();
 
             running = false;
@@ -110,8 +111,10 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         }
 
         /// <summary>
-        /// Called when the game has been launched.
+        /// Called when the game has been launched. Adds compatibility for external mods.
         /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event data.</param>
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             AddModCompatibility();
@@ -122,7 +125,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         /// Checks, if a mail with the upgraded tool should be sent to the player for the next day.
         /// </summary>
         /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
+        /// <param name="e">The event data.</param>
         private void OnDayStarted(object sender, DayStartedEventArgs e)
         {
             int daysLeftForToolUpgrade = Game1.player.daysLeftForToolUpgrade.Value;
@@ -173,7 +176,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
                 return;
             }
 
-            Tool attachedTool = (Tool)mailContent.AttachedItems[0];
+            var attachedTool = (Tool)mailContent.AttachedItems[0];
             Tool currentToolUpgrade = Game1.player.toolBeingUpgraded.Value;
 
             /*
@@ -205,7 +208,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         /// and adds the selected tool - if any - to the player's inventory.
         /// </summary>
         /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
+        /// <param name="e">The event data.</param>
         private void OnMailClosed(object sender, MailClosedEventArgs e)
         {
             // If the mail is not a tool uprade mail by Clint or no tool was selected -> do nothing
