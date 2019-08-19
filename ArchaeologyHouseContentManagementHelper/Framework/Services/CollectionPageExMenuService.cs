@@ -1,4 +1,4 @@
-﻿using FelixDev.StardewMods.Common.Helpers.Extensions;
+﻿using FelixDev.FelixDev.StardewMods.Common.Helpers.Extensions;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;

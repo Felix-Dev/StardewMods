@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FelixDev.StardewMods.Common.Helpers.Extensions
+namespace FelixDev.FelixDev.StardewMods.Common.Helpers.Extensions
 {
     /// <summary>
     /// The <see cref="DictionaryExtensions"/> class provides an API to simplify common tasks when working with 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
-using StardewMods.Common.StardewValley.Input;
+using FelixDev.StardewMods.Common.StardewValley.Input;
 using StardewValley;
 using StardewValley.Menus;
 using System;
@@ -119,12 +119,12 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 
                 // Add the current lost book to the current page of the [Lost Book] collection
                 ClickableTextureComponent lostBookTextureObject = new ClickableTextureComponent(
-                    name: StardewMods.Common.StardewValley.Constants.ID_GAME_OBJECT_LOST_BOOK.ToString() + " " + drawShadow.ToString() + " " + lostBooksIndices[i], 
+                    name: FelixDev.StardewMods.Common.StardewValley.Constants.ID_GAME_OBJECT_LOST_BOOK.ToString() + " " + drawShadow.ToString() + " " + lostBooksIndices[i], 
                     bounds: new Rectangle(x1, y1, 64, 64), 
                     label: (string)null, 
                     hoverText: "", 
                     texture: Game1.objectSpriteSheet, 
-                    sourceRect: Game1.getSourceRectForStandardTileSheet(Game1.objectSpriteSheet, StardewMods.Common.StardewValley.Constants.ID_GAME_OBJECT_LOST_BOOK, 16, 16), 
+                    sourceRect: Game1.getSourceRectForStandardTileSheet(Game1.objectSpriteSheet, FelixDev.StardewMods.Common.StardewValley.Constants.ID_GAME_OBJECT_LOST_BOOK, 16, 16), 
                     scale: 4f, 
                     drawShadow: drawShadow)
                 {
