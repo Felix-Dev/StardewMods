@@ -114,9 +114,9 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
         /// </remarks>
         private void OnSaved(object sender, SavedEventArgs e)
         {
-            if (!Context.IsMainPlayer && serializedSaveData != null)
+            if (!Context.IsMainPlayer && this.serializedSaveData != null)
             {
-                jsonHelper.WriteJsonFile(GetSaveDataFilePath(), serializedSaveData);
+                this.jsonHelper.WriteJsonFile(GetSaveDataFilePath(), this.serializedSaveData);
             }
         }
 
@@ -126,14 +126,11 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
         /// <returns>The file path on success; otherwise <c>null</c> if no save was loaded.</returns>
         private string GetSaveDataFilePath()
         {
-            if (Constants.SaveFolderName == null || Constants.SaveFolderName.Equals(""))
-            {
-                return null;
-            }
-
-            return dataOwner == null
-                ? Path.Combine(this.basePath, Constants.SaveFolderName)
-                : Path.Combine(this.basePath, Constants.SaveFolderName + " - Mods", dataOwner, Constants.SaveFolderName);
+            return string.IsNullOrEmpty(Constants.SaveFolderName)
+                ? null
+                : this.dataOwner == null
+                    ? Path.Combine(this.basePath, Constants.SaveFolderName)
+                    : Path.Combine(this.basePath, Constants.SaveFolderName + " - Mods", this.dataOwner, Constants.SaveFolderName);
         }
 
         /// <summary>
@@ -155,18 +152,18 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
 
             if (!Context.IsMainPlayer)
             {
-                if (serializedSaveData == null)
+                if (this.serializedSaveData == null)
                 {
                     string saveDataPath = GetSaveDataFilePath() ?? throw new InvalidOperationException("The player hasn't loaded a save yet.");
-                    bool result = jsonHelper.ReadJsonFileIfExists(saveDataPath, out serializedSaveData);
+                    bool result = jsonHelper.ReadJsonFileIfExists(saveDataPath, out this.serializedSaveData);
                     if (!result)
                     {
-                        serializedSaveData = new Dictionary<string, string>();
+                        this.serializedSaveData = new Dictionary<string, string>();
                     }
                 }
 
-                return serializedSaveData.TryGetValue(dataId, out string serialisedData)
-                        ? jsonHelper.Deserialise<TData>(serialisedData)
+                return this.serializedSaveData.TryGetValue(dataId, out string serialisedData)
+                        ? this.jsonHelper.Deserialise<TData>(serialisedData)
                         : null;
             }
             else
@@ -206,17 +203,17 @@ namespace FelixDev.StardewMods.FeTK.ModHelpers
 
             if (!Context.IsMainPlayer)
             {
-                if (serializedSaveData == null)
+                if (this.serializedSaveData == null)
                 {
                     string saveDataPath = GetSaveDataFilePath() ?? throw new InvalidOperationException("The player hasn't loaded a save yet.");
-                    bool result = jsonHelper.ReadJsonFileIfExists(saveDataPath, out serializedSaveData);
+                    bool result = jsonHelper.ReadJsonFileIfExists(saveDataPath, out this.serializedSaveData);
                     if (!result)
                     {
-                        serializedSaveData = new Dictionary<string, string>();
+                        this.serializedSaveData = new Dictionary<string, string>();
                     }
                 }
 
-                serializedSaveData[dataId] = jsonHelper.Serialise(data);
+                this.serializedSaveData[dataId] = this.jsonHelper.Serialise(data);
             }
             else
             {
