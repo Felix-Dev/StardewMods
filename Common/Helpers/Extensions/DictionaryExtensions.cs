@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace FelixDev.StardewMods.FeTK.Framework.Helpers.Extensions
+namespace FelixDev.StardewMods.Common.Helpers.Extensions
 {
     /// <summary>
     /// The <see cref="DictionaryExtensions"/> class provides an API to simplify common tasks when working with 

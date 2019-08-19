@@ -50,7 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetEditor.cs" />
-    <Compile Include="Framework\Helpers\Extensions\DictionaryExtensions.cs" />
     <Compile Include="Framework\Serialization\ItemSerializer\IItemSerializer.cs" />
     <Compile Include="Framework\Serialization\ItemSerializer\ItemSaveData.cs" />
     <Compile Include="Framework\Serialization\ItemSerializer\ItemSerializer.cs" />
