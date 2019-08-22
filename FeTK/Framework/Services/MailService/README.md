@@ -8,15 +8,19 @@ The Mail API of the framework exposes a couple of features modders can use:
 Note: Not every feature requires mails to be added to the game via the framework!
 
 ## Easy and powerful way to add mails to the game
-The Mail API provides an easy way to add mails to the game _uniquely_ for each mod. That way you don't have to worry about mail ID conflicts between different mods. All currently available in-game mail types can be added to the game. Let's take a first look at code adding a mail to the game.
+The Mail API provides an easy and powerful way to add mails to the game:
+* Mails can be added to the player's mailbox either *instantly* or at the *begin* of a new day.
+* Mail IDs are *unique* to each mod. Multiple mods can add mails with the same IDs without any ID conflicts arrising between those mods.
+
+Let's take a first look at code adding a mail to the game.
 ```cs
-private void AddMail()
+private void AddMailExample()
 {
    // Obtain an exclusive mail service for this mod.
    IMailService mailService = ServiceFactory.GetFactory("YourModID").GetMailService();
 
    // Create a mail to send to the player. Here we create a mail some textual content and an attached axe.
-   var mail = new ItemMail("MyItemMail", "Some textual content", new Axe());
+   var mail = new ItemMail("MyItemMailID", "Some text content", new Axe());
 
    // Send the mail to the player. It will arrive in the player's mailbox at the beginning of the next day. 
    mailService.AddMail(mail, 1 /* mail for tomorrow */);
@@ -41,78 +45,22 @@ Finally, we tell our previously obtained mail service to add the mail to the gam
 ```cs
 mailService.AddMail(mail, 1 /* mail for tomorrow */);
 ```
-With the above line, we specify that our above created item mail will arrive in the player's mailbox in the morning of the next day.
-
-Given this brief overview, let's now take a closer look at the supported mail types and how to send mails for specific days.
-
-### Supported Items
-
-#### Plain text mail
-To create a mail with only text, use:
+With the above line, we specify that our above created item mail will arrive in the player's mailbox in the morning of the next day. If, instead, we want to *instantly* send the mail we would have to write:
 ```cs
-public Mail(string id, string text)
+mailService.AddMail(mail, 0 /* instant mailbox arrival */);
 ```
-where ```id``` is the ID of the mail and ```text``` is the text content of the mail.
+Please note that a mod cannot have multiple mails with the same ID scheduled for the same day in the player's mailbox *at the same time*.
 
-#### Item mail
-To create a mail with both text and attached items, use:
-```cs
-public ItemMail(string id, string text, Item item)
-```
-_or_
-```cs
-public ItemMail(string id, string text, IList<Item> items)
-```
-where ```id``` is the ID of the mail, ```text``` is the text content of the mail and ```item``` (```items```) is the attached item (list of attached items) of a mail.
+### Supported Mail Types
+Below is a list of all supported mail types:
 
-#### Money mail
-To create a mail with both text and attached money, use:
-```cs
-public MoneyMail(string id, string text, int attachedMoney)
-```
-where ```id``` is the ID of the mail, ```text``` is the text content of the mail and ```attachedMoney``` is the attached money of the mail. 
-The money is recceived by the player upon opening the mail.
-
-#### Recipe mail
-To create a mail with both text and an attached recipe, use:
-```cs
-public RecipeMail(string id, string text, string recipeName, RecipeType recipeType)
-```
-where ```id``` is the ID of the mail, ```text``` is the text content of the mail, ```recipeName``` is the name of the attached recipe and 
-```recipeType``` is one of the following values:
-```cs
-public enum RecipeType
-{
-  /// <summary>A cooking recipe.</summary>
-  Cooking = 0,
-  /// <summary>A crafting recipe.</summary>
-  Crafting
-}
-```
-
-#### Quest mail
-To create a mail with both text and an attached quest, use:
-```cs
-public QuestMail(string id, string text, int questId, bool isAutomaticallyAccepted = false)
-```
-where ```id``` is the ID of the mail, ```text``` is the text content of the mail, ```questId``` is the ID of the attached quest and 
-```isAutomaticallyAccepted``` an indicator if the quest is automatically accepted or requires manual acception by the player.
-
-### Add mail
-
-Now let's take a closer look at how to add mails to the game:
-```cs
-public void AddMail(Mail mail, int daysFromNow)
-```
-_or_
-```cs
-using StardewModdingAPI.Utilities;
-
-public void AddMail(Mail mail, SDate arrivalDay)
-```
-where ```mail``` is one of the mail types from above and ```daysFromNow``` and ```arrivalDay``` specify the in-game day when the mail will be added to the player's mailbox. Valid values for either of them are a value specifying the current day or a value specifying any day in the future. If the current day is specified (either ```daysFromNow = 0``` or ```arrivalDay = SDate.Now()```) the specified mail instantly arrives in the player's mailbox. Otherwise, the mail will arrive in the morning of the specified day. 
-
-Note: A mail service cannot have multiple mails with the same ID scheduled for the same day!
+| Mail Type       | Description                                             | Remarks                                                     |
+|:---------------:|---------------------------------------------------------| ----------------------------------------------------------- |
+| Mail            | Mail with text content only.                            | Text content can be the _empty_ string (for all mail types) |
+| ItemMail        | Mail with text content and zero or more attached items. |                                                             |
+| MoneyMail       | Mail with text content and attached money.              | Supported currencies: *Money*, *Star Tokens*, *Qi coins*    |
+| QuestMail       | Mail with text content and zero or one attached quest.  | Attached quest can be accepted *automatically* or *manually.*  |
+| RecipeMail      | Mail with text content and zero or one attached recipe. | Supported recipe types: *Cooking*, *Crafting*               |
 
 ## More visualization options for the mail's textual content
 The Mail API introduces a **Text Coloring API** to improve the visual representation of a mail's content. This API is available both for mails added via the framework and mails added via other frameworks, such as [Content Patcher](https://github.com/Pathoschild/StardewMods/tree/develop/ContentPatcher).
