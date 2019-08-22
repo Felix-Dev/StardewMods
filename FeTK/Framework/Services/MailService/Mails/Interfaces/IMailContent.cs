@@ -14,7 +14,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// The text content of the mail.
         /// </summary>
-        /// <exception cref="ArgumentNullException">The mail text cannot be <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">The mail text is <c>null</c>.</exception>
         string Text { get; set; }
     }
 }

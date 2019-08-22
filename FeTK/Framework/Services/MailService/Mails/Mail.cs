@@ -28,13 +28,8 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 throw new ArgumentException("The mail ID needs to contain at least one non-whitespace character!", nameof(id));
             }
 
-            if (text == null)
-            {
-                throw new ArgumentNullException(nameof(text));
-            }
-
             Id = id;
-            Text = text;
+            Text = text ?? throw new ArgumentNullException(nameof(text));
         }
 
 
@@ -46,11 +41,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// The text content of the mail.
         /// </summary>
-        /// <exception cref="ArgumentNullException">The mail text cannot be <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">The mail text is <c>null</c>.</exception>
         public string Text
         {
             get => text;
-            set => text = value ?? throw new ArgumentNullException(nameof(text));
+            set => text = value ?? throw new ArgumentNullException(nameof(value));
         }
     }
 }

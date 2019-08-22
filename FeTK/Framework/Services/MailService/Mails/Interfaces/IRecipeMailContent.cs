@@ -14,6 +14,13 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// The name of the recipe included in the mail.
         /// </summary>
+        /// <exception cref="ArgumentNullException">The specified recipe name is <c>null</c>.</exception>
         string RecipeName { get; set; }
+
+        /// <summary>
+        /// The type of the recipe included in the mail.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The specified recipe type is invalid.</exception>
+        RecipeType RecipeType { get; set; }
     }
 }

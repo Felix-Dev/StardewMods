@@ -23,11 +23,11 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 case ItemMail itemMail:
                     return new ItemMailContent(itemMail.Text, itemMail.AttachedItems);
                 case MoneyMail moneyMail:
-                    return new MoneyMailContent(moneyMail.Text, moneyMail.AttachedMoney);
+                    return new MoneyMailContent(moneyMail.Text, moneyMail.AttachedMoney, moneyMail.Currency);
                 case RecipeMail recipeMail:
-                    return new RecipeMailContent(recipeMail.Text, recipeMail.RecipeName);
+                    return new RecipeMailContent(recipeMail.Text, recipeMail.RecipeName, recipeMail.RecipeType);
                 case QuestMail questMail:
-                    return new QuestMailContent(questMail.Text, questMail.QuestId);
+                    return new QuestMailContent(questMail.Text, questMail.QuestId, questMail.IsAutomaticallyAccepted);
                 default:
                     return new MailContent(mail.Text);
             }
@@ -55,14 +55,17 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 case MoneyMail moneyMail:
                     moneyMail.Text = mailContent.Text;
                     moneyMail.AttachedMoney = ((MoneyMailContent)mailContent).AttachedMoney;
+                    moneyMail.Currency = ((MoneyMailContent)mailContent).Currency;
                     break;
                 case RecipeMail recipeMail:
                     recipeMail.Text = mailContent.Text;
                     recipeMail.RecipeName = ((RecipeMailContent)mailContent).RecipeName;
+                    recipeMail.RecipeType = ((RecipeMailContent)mailContent).RecipeType;
                     break;
                 case QuestMail questMail:
                     questMail.Text = mailContent.Text;
                     questMail.QuestId = ((QuestMailContent)mailContent).QuestId;
+                    questMail.IsAutomaticallyAccepted = ((QuestMailContent)mailContent).IsAutomaticallyAccepted;
                     break;
                 default:
                     mail.Text = mailContent.Text;

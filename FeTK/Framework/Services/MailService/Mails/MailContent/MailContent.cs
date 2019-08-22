@@ -31,7 +31,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         public string Text
         {
             get => text;
-            set => text = value ?? throw new ArgumentNullException(nameof(text));
+            set => text = value ?? throw new ArgumentNullException(nameof(value));
         }
     }
 }

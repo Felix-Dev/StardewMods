@@ -12,9 +12,14 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
     public interface IQuestMailContent : IMailContent
     {
         /// <summary>
-        /// The ID of the quest included in the mail.
+        /// The ID of the quest included in the mail. A quest ID less than one (1) indicates no quest.
         /// </summary>
-        /// <remarks>A quest ID less than one (1) indicates no quest.</remarks>
         int QuestId { get; set; }
+
+        /// <summary>
+        /// Determines whether the quest is automatically added to the player's quest log on opening the mail, 
+        /// or of the player needs to manually accept it.
+        /// </summary>
+        bool IsAutomaticallyAccepted { get; set; }
     }
 }

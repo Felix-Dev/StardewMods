@@ -23,12 +23,13 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// </summary>
         /// <param name="text">The text content of the mail.</param>
         /// <param name="attachedMoney">The monetary value attached to the mail.</param>
+        /// <param name="currency">The currency of the <paramref name="attachedMoney"/>.</param>
         /// <exception cref="ArgumentNullException">The specified <paramref name="text"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
         /// The specified <paramref name="attachedMoney"/> is less than zero -or-
         /// the specified <paramref name="currency"/> is invalid.
         /// </exception>
-        public MoneyMailContent(string text, int attachedMoney, Currency currency = Currency.Money) 
+        public MoneyMailContent(string text, int attachedMoney, Currency currency) 
             : base(text)
         {
             if (attachedMoney < 0)
@@ -53,7 +54,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         {
             get => attachedMoney;
             set => attachedMoney = value < 0
-                ? throw new ArgumentOutOfRangeException("The attached monetary value cannot be less than zero!")
+                ? throw new ArgumentOutOfRangeException(nameof(value), "The attached monetary value cannot be less than zero!")
                 : value;
         }
 
