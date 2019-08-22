@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FelixDev.StardewMods.FeTK.Framework.Helpers;
 using FelixDev.StardewMods.FeTK.Framework.Serialization;
+using FelixDev.StardewMods.Common.StardewValley;
 
 namespace FelixDev.StardewMods.FeTK.Framework.Services
 {
@@ -386,9 +387,14 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             #region Money Mail Content
 
             /// <summary>
-            /// The money attached to the mail.
+            /// The monetary value attached to the mail.
             /// </summary>
             public int Money { get; set; }
+
+            /// <summary>
+            /// The currency of the monetary value attached to the mail.
+            /// </summary>
+            public Currency Currency { get; set; }
 
             #endregion // Money Mail Content
 
@@ -463,6 +469,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                             case MoneyMail moneyMail:
                                 mailSaveData.MailType = MailType.MoneyMail;
                                 mailSaveData.Money = moneyMail.AttachedMoney;
+                                mailSaveData.Currency = moneyMail.Currency;
                                 break;
                             case RecipeMail recipeMail:
                                 mailSaveData.MailType = MailType.RecipeMail;
@@ -510,7 +517,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                             mail = new ItemMail(mailSaveData.Id, mailSaveData.Text, attachedItems);
                             break;
                         case MailType.MoneyMail:
-                            mail = new MoneyMail(mailSaveData.Id, mailSaveData.Text, mailSaveData.Money);
+                            mail = new MoneyMail(mailSaveData.Id, mailSaveData.Text, mailSaveData.Money, mailSaveData.Currency);
                             break;
                         case MailType.RecipeMail:
                             mail = new RecipeMail(mailSaveData.Id, mailSaveData.Text, mailSaveData.RecipeName, mailSaveData.RecipeType);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FelixDev.StardewMods.Common.StardewValley;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,9 +13,15 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
     public interface IMoneyMailContent : IMailContent
     {
         /// <summary>
-        /// The money attached to the mail.
+        /// The monetary value attached to the mail.
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException">The attached money cannot be less than zero.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">The attached monetary value cannot be less than zero.</exception>
         int AttachedMoney { get; set; }
+
+        /// <summary>
+        /// The currency of the monetary value attached to the mail.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The specified currency is invalid.</exception>
+        Currency Currency { get; set; }
     }
 }

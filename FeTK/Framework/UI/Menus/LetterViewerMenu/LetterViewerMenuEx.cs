@@ -343,8 +343,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                 // Draw the amount of attached money, if any.
                 if (this.MoneyIncluded > 0)
                 {
-                    string s = Game1.content.LoadString("Strings\\UI:LetterViewer_MoneyIncluded", this.MoneyIncluded);
-                    SpriteText.drawString(b, s, this.xPositionOnScreen + this.width / 2 - SpriteText.getWidthOfString(s, 999999) / 2, this.yPositionOnScreen + this.height - 96, 999999, -1, 9999, 0.75f, 0.865f, false, -1, "", -1);
+                    DrawMoney(b);
                 }
 
                 // Draw the attached recipe, if any. 
@@ -386,6 +385,16 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                 new Rectangle?(Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 0, 16, 16)),
                 Color.White, 0.0f, Vector2.Zero, (float)(4.0 + Game1.dialogueButtonScale / 150.0),
                 SpriteEffects.None, 1f);
+        }
+
+        /// <summary>
+        /// Draws the attached money to the screen.
+        /// </summary>
+        /// <param name="b">The sprite batch used to draw to the screen.</param>
+        protected virtual void DrawMoney(SpriteBatch b)
+        {
+            string s = Game1.content.LoadString("Strings\\UI:LetterViewer_MoneyIncluded", this.MoneyIncluded);
+            SpriteText.drawString(b, s, this.xPositionOnScreen + this.width / 2 - SpriteText.getWidthOfString(s, 999999) / 2, this.yPositionOnScreen + this.height - 96, 999999, -1, 9999, 0.75f, 0.865f, false, -1, "", -1);
         }
     }
 }

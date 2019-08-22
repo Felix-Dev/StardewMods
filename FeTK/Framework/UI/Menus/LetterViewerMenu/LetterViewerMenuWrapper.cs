@@ -8,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using FelixDev.StardewMods.Common.StardewValley;
+using Microsoft.Xna.Framework.Graphics;
+using StardewValley.BellsAndWhistles;
 
 namespace FelixDev.StardewMods.FeTK.Framework.UI
 {
@@ -52,7 +55,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                     this.letterMenu =  LetterViewerMenuEx2.CreateItemMailMenu(itemMail.Id, textContent, itemMail.AttachedItems);
                     break;
                 case MoneyMail moneyMail:
-                    this.letterMenu = LetterViewerMenuEx2.CreateMoneyMailMenu(moneyMail.Id, textContent, moneyMail.AttachedMoney);
+                    this.letterMenu = LetterViewerMenuEx2.CreateMoneyMailMenu(moneyMail.Id, textContent, moneyMail.AttachedMoney, moneyMail.Currency);
                     break;
                 case RecipeMail recipeMail:
                     this.letterMenu = LetterViewerMenuEx2.CreateRecipeMailMenu(recipeMail.Id, textContent, recipeMail.RecipeName, recipeMail.RecipeType);
@@ -104,6 +107,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
 
             /// <summary>The type of the mail visualized by this menu.</summary>
             private MailType mailType;
+
+            /// <summary>The currency of the monetary value included in the mail.</summary>
+            private Currency currency;
 
             /// <summary>The ID of the quest included in the mail.</summary>
             /// <remarks>
@@ -169,18 +175,32 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
             /// </summary>
             /// <param name="id">The ID of the mail.</param>
             /// <param name="text">The text content of the mail.</param>
-            /// <param name="money">The money attached to the mail.</param>
+            /// <param name="money">The monetaray value attached to the mail.</param>
+            /// <param name="currency">The currency of the specified <paramref name="money"/>.</param>
             /// <returns>The created <see cref="LetterViewerMenuEx2"/> instance.</returns>
-            public static LetterViewerMenuEx2 CreateMoneyMailMenu(string id, string text, int money)
+            public static LetterViewerMenuEx2 CreateMoneyMailMenu(string id, string text, int money, Currency currency)
             {
                 var menu = new LetterViewerMenuEx2(id, text)
                 {
-                    mailType = MailType.MoneyMail
+                    mailType = MailType.MoneyMail,
+
+                    MoneyIncluded = money,
+                    currency = currency
                 };
 
-                // Attach money to the mail and add it to the player's account.
-                menu.MoneyIncluded = money;
-                Game1.player.Money += money;
+                // Add mentary value to the player's account.
+                switch (currency)
+                {
+                    case Currency.Money:
+                        Game1.player.Money += money;
+                        break;
+                    case Currency.QiCoins:
+                        Game1.player.clubCoins += money;
+                        break;
+                    case Currency.StarTokens:
+                        Game1.player.festivalScore += money;
+                        break;
+                }
 
                 return menu;
             }
@@ -458,7 +478,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                         InteractionRecord = new ItemMailInteractionRecord(this.selectedItems, unselectedItems);
                         break;
                     case MailType.MoneyMail:
-                        InteractionRecord = new MoneyMailInteractionRecord(this.MoneyIncluded);
+                        InteractionRecord = new MoneyMailInteractionRecord(this.MoneyIncluded, this.currency);
                         break;
                     case MailType.RecipeMail:
                         InteractionRecord = new RecipeMailInteractionRecord(this.LearnedRecipe);
@@ -472,6 +492,24 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                 }
 
                 base.cleanupBeforeExit();
+            }
+
+            /// <summary>
+            /// Draw the attached monetary value to the screen. This adds support for drawning different
+            /// currencies.
+            /// </summary>
+            /// <param name="b">The sprite batch used to draw to the screen.</param>
+            protected override void DrawMoney(SpriteBatch b)
+            {
+                string s = this.MoneyIncluded.ToString();
+
+                int x = this.xPositionOnScreen + this.width / 2 - SpriteText.getWidthOfString(s, 999999) / 2;
+                int y = this.yPositionOnScreen + this.height - 96;
+                int trailingX = x + SpriteText.getWidthOfString(s, 999999);
+
+                SpriteText.drawString(b, s, x, y, 999999, -1, 9999, 0.75f, 0.865f, false, -1, "", -1);
+
+                Utility.drawWithShadow(b, Game1.mouseCursors, new Vector2(trailingX + 4, y), new Rectangle(193 + (int)this.currency * 9, 373, 9, 10), Color.White, 0.0f, Vector2.Zero, 4f, false, 1f, -1, -1, 0.35f);
             }
         }
     }
