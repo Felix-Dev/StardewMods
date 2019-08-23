@@ -68,7 +68,7 @@ This framework provides two events consuming mods can use to update mail content
 ### Mail-Opening Event
 The mail-opening event is raised when the mail is about to be displayed to the player. It allows to change the mail's content (such as text, attached items/money/quest/recipe). Here is some example code:
 ```cs
-private void BirthdayMailExample()
+private void BirthdayMailOpeningExample()
 {
    IMailService mailService = ServiceFactory.GetFactory("YourModID").GetMailService();
 
@@ -76,7 +76,7 @@ private void BirthdayMailExample()
    mailService.MailOpening += OnMailOpening;
 
    // Create a mail with an attached birthday cake.
-   var birthdayCake = new SObject(Vector2.Zero, 221 /* pink cake ID */, 1);
+   var birthdayCake = new StardewValley.Object(Vector2.Zero, 221 /* pink cake ID */, 1);
    var mail = new ItemMail("BirthdayMail", "Hey Player!^^Here is a birthday cake for you to enjoy :)^Happy Birthday!", birthdayCake);
 
    mailService.AddMail(mail, 1);
@@ -95,7 +95,7 @@ private void OnMailOpening(object sender, MailOpeningEventArgs e)
            var itemMailContent = (ItemMailContent)e.Content;
            
            // Create the new trash item replacing our original birthday cake.
-           var trash = new SObject(Vector2.Zero, 168 /* trash item ID */, 1);
+           var trash = new StardewValley.Object(Vector2.Zero, 168 /* trash item ID */, 1);
 
            // Replace the attached birthday cake item with a "wasted cake" and add
            // some explanation message to the mail's text content for the player.
@@ -127,7 +127,7 @@ First off, we check if the ID of the closed mail matches the ID we gave our birt
 if (e.Id == "BirthdayMail")
 {
 ```
-The `MailClosedEventArgs` exposes the ID of the closed mail in its `Id` property. Now that we know the closed mail is our birthday cake mail, we next have to find out how much time the arrival of this mail in the player's mailbox has since passed before the player actually opened it.
+The `MailOpeningEventArgs` exposes the ID of the closed mail in its `Id` property. Now that we know the closed mail is our birthday cake mail, we next have to find out how much time the arrival of this mail in the player's mailbox has since passed before the player actually opened it.
 ```cs
 // If the cake has already been attached to the mail for two days or longer we replace it with a trash item
 // (cake is now wasted).
@@ -140,7 +140,7 @@ Again, the event data contains just the information we need! Its property `Arriv
 var itemMailContent = (ItemMailContent)e.Content;
 
 // Create the new trash item replacing our original birthday cake.
-var trash = new SObject(Vector2.Zero, 168 /* trash item ID */, 1);
+var trash = new StardewValley.Object(Vector2.Zero, 168 /* trash item ID */, 1);
 
 // Replace the attached birthday cake item with a "wasted cake" and add
 // some explanation message to the mail's text content for the player.
@@ -155,14 +155,98 @@ Below is a table describing the mail content which can be changed for each mail 
 | Mail Type       | Changeable Content                                                                               |
 |:---------------:|--------------------------------------------------------------------------------------------------|
 | Mail            | &bull; Mail Text                                                                                 |
-| ItemMail        | &bull; Mail Text <br/> &bull; Attached Items                                                     | 
+| ItemMail        | &bull; Mail Text <br/> &bull; Attached Items                                                     |
 | MoneyMail       | &bull; Mail Text <br/> &bull; Monetary Value <br/> &bull; Currency of Monetary Value             |
 | QuestMail       | &bull; Mail Text <br/> &bull; Quest ID <br/> &bull; Quest Type <br/> &bull; Quest Acception Type |
 | RecipeMail      | &bull; Mail Text <br/> &bull; Recipe Name <br/> &bull; Recipe Type                               |
 
 
 ### Mail-Closed Event
-The mail-closed event is raised when the player closes a mail. It exposes information about how the player interacted with a mail's content, i.e. what were the attached items the player selected?/did the player accept a quest?, etc....Again, here is some example code: //TODO
+The mail-closed event is raised when the player closes a mail. It exposes information about how the player interacted with a mail's content, i.e. the attached items the player selected/did the player accept the atatched quest/etc....Again, here is some example code:
+```cs
+private void BirthdayMailClosedExample()
+{
+   IMailService mailService = ServiceFactory.GetFactory("YourModID").GetMailService();
+
+   // Add an event handler for the mail-closed event.
+   mailService.MailClosed += OnMailClosed;
+
+   // Create a mail with an attached birthday cake.
+   var birthdayCake = new SObject(Vector2.Zero, 221 /* pink cake ID */, 1);
+   var mail = new ItemMail("JasBirthdayMail", "Hey Player!^I made a birthday cake for you.^^Happy Birthday!^-Jas", birthdayCake);
+
+   mailService.AddMail(mail, 1);
+}
+
+private void OnMailClosed(object sender, MailClosedEventArgs e)
+{
+   // We are only interested in the player's interaction with Jas' birthday mail.
+   if (e.Id == "JasBirthdayMail")
+   {
+       // Get the player's interaction record with this mail.
+       var interactionRecord = (ItemMailInteractionRecord)e.InteractionRecord;
+
+       // The player selected Jas' birthday cake.
+       if (interactionRecord.SelectedItems.Any(itm => itm.ParentSheetIndex == 221 /* pink cake ID */))
+       {
+           // Jas is happy you enjoyed her birthday cake!
+       }
+       // The player didn't select Jas' birthday cake.
+       else
+       {
+           // Jas is angry and disappointed!
+           Game1.player.changeFriendship(-10000, Game1.getCharacterFromName("Jas"));
+       }
+   }
+}
+```
+What happens here? In this example, Jas sends the player a birthday mail with a birthday cake she worked hard through the whole night to perfect it. Obviously, she is now interested in finding out if you enjoyed her cake! Conversely if you, the player, just outright dismiss her hard work, she will be extremely angry and disappointed! Let's see how the code implements this (it's similar to the above's Mail-Opening event code example):
+
+FIrst off, we add a listener for the `MailClosed` event of our mail service:
+```cs
+// Add an event handler for the mail-opening event.
+mailService.MailClosed += OnMailClosed;
+```
+In our event handler, we then check if ID of the closed mail matches the ID of Jas' birthday mail:
+```cs
+// We are only interested in the player's interaction with Jas' birthday mail.
+if (e.Id == "JasBirthdayMail")
+{
+```
+Next, we obtain the player's interaction record with the content of Jas' birthday mail:
+```cs
+// Get the player's interaction record with this mail.
+var interactionRecord = (ItemMailInteractionRecord)e.InteractionRecord;
+```
+Since Jas' birthday cake mail is of type `ItemMail`, its mail interaction record is of type `ItemMailInteractionRecord`. (For other mail types, the same naming schema is used, i.e. `RecipeMailInteractionRecord`, `QuestMailInteractionRecord`,....).
+
+Now that we have the interaction record, we can find out whether the plaayer actually took Jas' birthday cake out of the mail or if they just heartlessly threw it away:
+```cs
+// The player selected Jas' birthday cake.
+if (interactionRecord.SelectedItems.Any(itm => itm.ParentSheetIndex == 221 /* pink cake ID */))
+{
+  // Jas is happy you enjoyed her birthday cake!
+}
+// The player didn't select Jas' birthday cake.
+else
+{
+  // Jas is angry and disappointed!
+  Game1.player.changeFriendship(-10000, Game1.getCharacterFromName("Jas"));
+}
+```
+The `ItemMailInteractionRecord` class contains two properties `SelectedItems` and `UnselectedItems` which tell us which attached mail items were selected by the player and which were not, respectively. In case the cake is not inluded in `SelectedItems` we automatically know it was not selected by the player (in fact, it is included in the `UnselectedItems` list). From there, we express Jas' anger and disappointment towards the player.
+
+#### Mail Player Interaction Record Overview
+Below is a table describing the different mail interaction records for each mail type:
+
+| Mail Type       | Player Interaction Record                                                   |
+|:---------------:|-----------------------------------------------------------------------------|
+| Mail            | -                                                                           |
+| ItemMail        | &bull; Items selected <br/> &bull; Items not selected                       |
+| MoneyMail       | &bull; Received monetary value <br/> &bull; Currency of monetary value      |
+| QuestMail       | &bull; ID of attached Quest <br/> &bull; Whether quest was accepted         |
+| RecipeMail      | &bull; Name of the recipe obtained <br/> &bull; Type of the recipe obtained |
+
 
 ## More visualization options for the mail's textual content
 The Mail API introduces a **Text Coloring API** to improve the visual representation of a mail's content. This API is available both for mails added via the framework and mails added via other frameworks, such as [Content Patcher](https://github.com/Pathoschild/StardewMods/tree/develop/ContentPatcher).
