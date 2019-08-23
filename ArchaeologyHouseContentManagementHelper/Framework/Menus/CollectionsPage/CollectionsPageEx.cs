@@ -1,7 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using FelixDev.StardewMods.Common.StardewValley;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
-using FelixDev.StardewMods.Common.StardewValley.Input;
 using StardewValley;
 using StardewValley.Menus;
 using System;
