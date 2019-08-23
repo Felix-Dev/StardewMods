@@ -1,4 +1,4 @@
-**FeTK** is a [Stardew Valley](http://stardewvalley.net/) mod framework which can be used by other modders to create experience-rich and high-quality mods. Not only does it provide to simplify common mod tasks (such as adding mails to the game) but it also adds additional features on top of those provided by the game to enable completely new experiences (such as dynamic mail content or colored text)!
+**FeTK** is a [Stardew Valley](http://stardewvalley.net/) mod framework which can be used by other modders to create experience-rich and high-quality mods. Not only does it provide APIs to simplify common mod tasks (such as adding mails to the game) but it also adds additional features on top of those provided by the game to enable completely new experiences (such as dynamic mail content or colored text)!
 
 **This documentation is for modders. If you are a player, please see the Nexus page (TODO) instead.**
 
