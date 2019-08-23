@@ -19,7 +19,7 @@ private void AddMailExample()
    // Obtain an exclusive mail service for this mod.
    IMailService mailService = ServiceFactory.GetFactory("YourModID").GetMailService();
 
-   // Create a mail to send to the player. Here we create a mail some textual content and an attached axe.
+   // Create a mail to send to the player. Here we create a mail with some text content and an attached axe.
    var mail = new ItemMail("MyItemMailID", "Some text content", new Axe());
 
    // Send the mail to the player. It will arrive in the player's mailbox at the beginning of the next day. 
@@ -56,16 +56,16 @@ Below is a list of all supported mail types:
 
 | Mail Type       | Description                                             | Remarks                                                     |
 |:---------------:|---------------------------------------------------------| ----------------------------------------------------------- |
-| Mail            | Mail with text content only.                            | Text content can be the _empty_ string (for all mail types) |
+| Mail            | Mail with text content only.                            | Text content can be the _empty_ string (for all mail types).|
 | ItemMail        | Mail with text content and zero or more attached items. |                                                             |
 | MoneyMail       | Mail with text content and attached money.              | Supported currencies: *Money*, *Star Tokens*, *Qi coins*    |
 | QuestMail       | Mail with text content and zero or one attached quest.  | Attached quest can be accepted *automatically* or *manually.*  |
 | RecipeMail      | Mail with text content and zero or one attached recipe. | Supported recipe types: *Cooking*, *Crafting*               |
 
 ## Update Mail Content and receive Player Interaction feedback
-This framework exposes two events consuming mods can use to update mail content before the mail is actually shown and to receive feedback about how the player interacted with the mail content when the mail has been closed. The two events are ```MailService.MailOpening``` and ```MailService.MailClosed```. Let's take a closer look:
+This framework provides two events consuming mods can use to update mail content before the mail is actually shown and to receive feedback about how the player interacted with the mail content when the mail has been closed. These events are exposed by the `IMailService` and are named `MailOpening` and `MailClosed`. Let's take a closer look:
 
-### Mail-Opening event
+### Mail-Opening Event
 The mail-opening event is raised when the mail is about to be displayed to the player. It allows to change the mail's content (such as text, attached items/money/quest/recipe). Here is some example code:
 ```cs
 private void BirthdayMailExample()
@@ -84,15 +84,21 @@ private void BirthdayMailExample()
 
 private void OnMailOpening(object sender, MailOpeningEventArgs e)
 {
-   // Update the birthday mail content if needed.
-   if (e.Id == "BirthdayMail" && e.Content is ItemMailContent itemMailContent)
+   // Only proceed to change the mail content when the closed mail is our birthday cake mail.
+   if (e.Id == "BirthdayMail")
    {
        // If the cake has already been attached to the mail for two days or longer we replace it with a trash item
        // (cake is now wasted).
        if (SDate.Now() >= e.ArrivalDay.AddDays(2))
        {
+           // Get the changeable mail content for a mail.
+           var itemMailContent = (ItemMailContent)e.Content;
+           
+           // Create the new trash item replacing our original birthday cake.
            var trash = new SObject(Vector2.Zero, 168 /* trash item ID */, 1);
 
+           // Replace the attached birthday cake item with a "wasted cake" and add
+           // some explanation message to the mail's text content for the player.
            itemMailContent.Text += "^^(Unfortunately, two or more days have passed since you have received this cake...the cake is now wasted!)";
            itemMailContent.AttachedItems = new List<Item>() { trash };
        }
@@ -103,12 +109,60 @@ What does this code do? It sends the following mail to the player to celebrate t
 
 ![](../../../docs/images/mail-service-mail-opening-example-1.png)
 
-When the player opens the mail from the mailbox, we check how much time has passed since the mail has been added to the player's mailbox, in other words, how long the cake has been wasting away attached to the mail without being put in a freezer. If two days or more have since passed when the player opens said mail, we update the mail content to replace the birthday cake with a now wasted cake. The result is the following:
+When the player opens the mail from the mailbox, we check how much time has passed since the mail has been added to the player's mailbox, in other words, how long the cake has been wasting away attached to the mail without being put in a freezer. If two or more days have since passed when the player opens said mail, we update the mail content to replace the birthday cake with a now wasted cake. The result is the following:
 
 ![](../../../docs/images/mail-service-mail-opening-example-2.png)
 
 Now let's dissect the code again:
-// TODO
+As seen previously, we first obtain a mail service for our mod to use. Once obtained, we add a listener to the `MailOpening` event:
+```cs
+// Add an event handler for the mail-opening event.
+mailService.MailOpening += OnMailOpening;
+```
+We then proceed to add a mail to the game as usual. The interesting part of this examaple happens in our specified event listener `OnMailOpening`:
+
+First off, we check if the ID of the closed mail matches the ID we gave our birthday mail.
+```cs
+// Only proceed to change the mail content when the closed mail is our birthday cake mail.
+if (e.Id == "BirthdayMail")
+{
+```
+The `MailClosedEventArgs` exposes the ID of the closed mail in its `Id` property. Now that we know the closed mail is our birthday cake mail, we next have to find out how much time the arrival of this mail in the player's mailbox has since passed before the player actually opened it.
+```cs
+// If the cake has already been attached to the mail for two days or longer we replace it with a trash item
+// (cake is now wasted).
+if (SDate.Now() >= e.ArrivalDay.AddDays(2))
+{
+```
+Again, the event data contains just the information we need! Its property `ArrivalDay` contains the actual in-game date when the mail was added to the player's mailbox. In the case that two or more days have since passed, we now proceed to replace the original birthday cake with a wasted version:
+```cs
+// Get the changeable mail content for a mail.
+var itemMailContent = (ItemMailContent)e.Content;
+
+// Create the new trash item replacing our original birthday cake.
+var trash = new SObject(Vector2.Zero, 168 /* trash item ID */, 1);
+
+// Replace the attached birthday cake item with a "wasted cake" and add
+// some explanation message to the mail's text content for the player.
+itemMailContent.Text += "^^(Unfortunately, two or more days have passed since you have received this cake...the cake is now wasted!)";
+itemMailContent.AttachedItems = new List<Item>() { trash };
+```
+The content of a mail which can be changed is provided by the `Content` property of the event data. Since our birthday cake mail is of type `ItemMail`, the changeable content is of type `ItemMailContent`. (For other mail types, the same naming schema is used, i.e. `RecipeMailContent`, `QuestMailContent`,....). In the case of an `ItemMail` both the text content as well as the attatched items of a mail can be changed. That way, we can easily update our birthday cake mail to now contain a wasted birthday cake instead of the originally fresh and tasty cake!
+
+#### Changeable Mail Content
+Below is a table describing the mail content which can be changed for each mail type:
+
+| Mail Type       | Changeable Content                                                                               |
+|:---------------:|--------------------------------------------------------------------------------------------------|
+| Mail            | &bull; Mail Text                                                                                 |
+| ItemMail        | &bull; Mail Text <br/> &bull; Attached Items                                                     | 
+| MoneyMail       | &bull; Mail Text <br/> &bull; Monetary Value <br/> &bull; Currency of Monetary Value             |
+| QuestMail       | &bull; Mail Text <br/> &bull; Quest ID <br/> &bull; Quest Type <br/> &bull; Quest Acception Type |
+| RecipeMail      | &bull; Mail Text <br/> &bull; Recipe Name <br/> &bull; Recipe Type                               |
+
+
+### Mail-Closed Event
+The mail-closed event is raised when the player closes a mail. It exposes information about how the player interacted with a mail's content, i.e. what were the attached items the player selected?/did the player accept a quest?, etc....Again, here is some example code: //TODO
 
 ## More visualization options for the mail's textual content
 The Mail API introduces a **Text Coloring API** to improve the visual representation of a mail's content. This API is available both for mails added via the framework and mails added via other frameworks, such as [Content Patcher](https://github.com/Pathoschild/StardewMods/tree/develop/ContentPatcher).
