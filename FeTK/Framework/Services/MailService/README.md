@@ -2,12 +2,19 @@
 
 The Mail API of the framework exposes a couple of features modders can use:
 * Easy and powerful way to add mails to the game
-* updating the mail content and get feedback on how the player interacted with the mail content
-* More visualization options for the mail's textual content
+* Dynamic mail content
+* Get feedback on player interaction with mail content
+* Add visual emphasis to mail content
 
 Note: Not every feature requires mails to be added to the game via the framework!
 
-## Easy and powerful way to add mails to the game
+## Table of Contents
+* [Add Mails](#add-mails)
+* [Dynamic Mail Content](#dynamic-mail-content)
+* [Get Player Interaction Feedback](#get-player-interaction-feedback)
+* [Add Visual Emphasis to Mail Content](#add-visual-emphasis-to-mail-content)
+
+## Add Mails
 The Mail API provides an easy and powerful way to add mails to the game:
 * Mails can be added to the player's mailbox either *instantly* or at the *begin* of a new day.
 * Mail IDs are *unique* to each mod. Multiple mods can add mails with the same IDs without any ID conflicts arrising between those mods.
@@ -62,11 +69,8 @@ Below is a list of all supported mail types:
 | QuestMail       | Mail with text content and zero or one attached quest.  | Attached quest can be accepted *automatically* or *manually.*  |
 | RecipeMail      | Mail with text content and zero or one attached recipe. | Supported recipe types: *Cooking*, *Crafting*               |
 
-## Update Mail Content and receive Player Interaction feedback
-This framework provides two events consuming mods can use to update mail content before the mail is actually shown and to receive feedback about how the player interacted with the mail content when the mail has been closed. These events are exposed by the `IMailService` and are named `MailOpening` and `MailClosed`. Let's take a closer look:
-
-### Mail-Opening Event
-The mail-opening event is raised when the mail is about to be displayed to the player. It allows to change the mail's content (such as text, attached items/money/quest/recipe). Here is some example code:
+## Dynamic Mail Content
+The mail framework provides a `MailOpening` event consuming mods can use to change mail content (such as text, attached items/money/quest/recipe) before the mail is actually shown. Let's look at some example code:
 ```cs
 private void BirthdayMailOpeningExample()
 {
@@ -114,12 +118,12 @@ When the player opens the mail from the mailbox, we check how much time has pass
 ![](../../../docs/images/mail-service-mail-opening-example-2.png)
 
 Now let's dissect the code again:
-As seen previously, we first obtain a mail service for our mod to use. Once obtained, we add a listener to the `MailOpening` event:
+As seen previously, we first obtain a mail service for our mod to use. Once obtained, we add a handler for the `MailOpening` event:
 ```cs
 // Add an event handler for the mail-opening event.
 mailService.MailOpening += OnMailOpening;
 ```
-We then proceed to add a mail to the game as usual. The interesting part of this examaple happens in our specified event listener `OnMailOpening`:
+We then proceed to add a mail to the game as usual. The interesting part of this example happens in our specified event handler `OnMailOpening`:
 
 First off, we check if the ID of the closed mail matches the ID we gave our birthday mail.
 ```cs
@@ -161,8 +165,8 @@ Below is a table describing the mail content which can be changed for each mail 
 | RecipeMail      | &bull; Mail Text <br/> &bull; Recipe Name <br/> &bull; Recipe Type                               |
 
 
-### Mail-Closed Event
-The mail-closed event is raised when the player closes a mail. It exposes information about how the player interacted with a mail's content, i.e. the attached items the player selected/did the player accept the atatched quest/etc....Again, here is some example code:
+## Get Player Interaction Feedback
+The mail framework provides a `MailClosed` event consuming mods can use to receive feedback about how the player interacted with the mail's content when the mail has been closed. For example the attached items the player selected or if the player accepted the attached quest. Let's look at some example code:
 ```cs
 private void BirthdayMailClosedExample()
 {
@@ -202,7 +206,7 @@ private void OnMailClosed(object sender, MailClosedEventArgs e)
 ```
 What happens here? In this example, Jas sends the player a birthday mail with a birthday cake she worked hard through the whole night to perfect it. Obviously, she is now interested in finding out if you enjoyed her cake! Conversely if you, the player, just outright dismiss her hard work, she will be extremely angry and disappointed! Let's see how the code implements this (it's similar to the above's Mail-Opening event code example):
 
-FIrst off, we add a listener for the `MailClosed` event of our mail service:
+FIrst off, we add a handler for the `MailClosed` event of our mail service:
 ```cs
 // Add an event handler for the mail-opening event.
 mailService.MailClosed += OnMailClosed;
@@ -248,8 +252,8 @@ Below is a table describing the different mail interaction records for each mail
 | RecipeMail      | &bull; Name of the recipe obtained <br/> &bull; Type of the recipe obtained |
 
 
-## More visualization options for the mail's textual content
-The Mail API introduces a **Text Coloring API** to improve the visual representation of a mail's content. This API is available both for mails added via the framework and mails added via other frameworks, such as [Content Patcher](https://github.com/Pathoschild/StardewMods/tree/develop/ContentPatcher).
+## Add Visual Emphasis to Mail Content
+The Mail API introduces a **Text Coloring API** to provide visual emphasis options to a mail's content. This API is available both for mails added via the framework and mails added via other frameworks, such as [Content Patcher](https://github.com/Pathoschild/StardewMods/tree/develop/ContentPatcher).
 
 The Text Coloring API provides a Markup-language based syntax to be used together with the actual mail content and thus requires no programming skills or special compatibility by the used frameworks to add mails to the game.
 
