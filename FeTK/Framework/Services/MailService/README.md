@@ -113,7 +113,7 @@ What does this code do? It sends the following mail to the player to celebrate t
 
 ![](../../../docs/images/mail-service-mail-opening-example-1.png)
 
-When the player opens the mail from the mailbox, we check how much time has passed since the mail has been added to the player's mailbox, in other words, how long the cake has been wasting away attached to the mail without being put in a freezer. If two or more days have since passed when the player opens said mail, we update the mail content to replace the birthday cake with a now wasted cake. The result is the following:
+When the player opens the mail, we check how much time has passed since the mail has been added to the player's mailbox, in other words, how long the cake has been wasting away attached to the mail (without being put in a freezer). If two or more days have since passed when the player opens said mail, we update the mail content to replace the birthday cake with a now wasted cake. The result is the following:
 
 ![](../../../docs/images/mail-service-mail-opening-example-2.png)
 
@@ -187,7 +187,7 @@ private void OnMailClosed(object sender, MailClosedEventArgs e)
    // We are only interested in the player's interaction with Jas' birthday mail.
    if (e.Id == "JasBirthdayMail")
    {
-       // Get the player's interaction record with this mail.
+       // Get the player's interaction record for this mail.
        var interactionRecord = (ItemMailInteractionRecord)e.InteractionRecord;
 
        // The player selected Jas' birthday cake.
@@ -204,7 +204,7 @@ private void OnMailClosed(object sender, MailClosedEventArgs e)
    }
 }
 ```
-What happens here? In this example, Jas sends the player a birthday mail with a birthday cake she worked hard through the whole night to perfect it. Obviously, she is now interested in finding out if you enjoyed her cake! Conversely if you, the player, just outright dismiss her hard work, she will be extremely angry and disappointed! Let's see how the code implements this (it's similar to the above's Mail-Opening event code example):
+What happens here? In this example, Jas sends the player a birthday mail with a birthday cake she worked hard through the whole night to make it perfect. Obviously, she is now wants to know whether you enjoyed her cake! Conversely if you, the player, just outright dismiss her hard work, she will be extremely angry and disappointed! Let's see how the code implements this (it's similar to the above's Mail-Opening event code example):
 
 FIrst off, we add a handler for the `MailClosed` event of our mail service:
 ```cs
