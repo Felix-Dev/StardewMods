@@ -87,6 +87,7 @@
     <Compile Include="Framework\Services\MailService\Mails\MailInteractionRecords\MoneyMailInteractionRecord.cs" />
     <Compile Include="Framework\Services\MailService\Mails\MoneyMail.cs" />
     <Compile Include="Framework\Services\MailService\Mails\MailContent\MoneyMailContent.cs" />
+    <Compile Include="Framework\Services\MailService\Mails\RecipeData.cs" />
     <Compile Include="Framework\Services\MailService\Mails\RecipeMail.cs" />
     <Compile Include="Framework\Services\MailService\Mails\RecipeType.cs" />
     <Compile Include="Framework\UI\Menus\LetterViewerMenu\LetterViewerMenuClosedEventArgs.cs" />

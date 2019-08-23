@@ -415,14 +415,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             #region Recipe Mail Content
 
             /// <summary>
-            /// The name of the recipe attached to the mail.
+            /// The recipe attached to the mail.
             /// </summary>
-            public string RecipeName { get; set; }
-
-            /// <summary>
-            /// The type of the recipe attached to the mail.
-            /// </summary>
-            public RecipeType RecipeType { get; set; }
+            public RecipeData Recipe { get; set; }
 
             #endregion // Recipe Mail Content
         }
@@ -473,8 +468,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                                 break;
                             case RecipeMail recipeMail:
                                 mailSaveData.MailType = MailType.RecipeMail;
-                                mailSaveData.RecipeName = recipeMail.RecipeName;
-                                mailSaveData.RecipeType = recipeMail.RecipeType;
+                                mailSaveData.Recipe = recipeMail.Recipe;
                                 break;
                             case QuestMail questMail:
                                 mailSaveData.MailType = MailType.QuestMail;
@@ -520,7 +514,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                             mail = new MoneyMail(mailSaveData.Id, mailSaveData.Text, mailSaveData.Money, mailSaveData.Currency);
                             break;
                         case MailType.RecipeMail:
-                            mail = new RecipeMail(mailSaveData.Id, mailSaveData.Text, mailSaveData.RecipeName, mailSaveData.RecipeType);
+                            mail = new RecipeMail(mailSaveData.Id, mailSaveData.Text, mailSaveData.Recipe);
                             break;
                         case MailType.QuestMail:
                             mail = new QuestMail(mailSaveData.Id, mailSaveData.Text, mailSaveData.QuestId, mailSaveData.IsAutomaticallyAccepted);

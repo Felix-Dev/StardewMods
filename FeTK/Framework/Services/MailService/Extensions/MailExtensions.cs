@@ -25,7 +25,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 case MoneyMail moneyMail:
                     return new MoneyMailContent(moneyMail.Text, moneyMail.AttachedMoney, moneyMail.Currency);
                 case RecipeMail recipeMail:
-                    return new RecipeMailContent(recipeMail.Text, recipeMail.RecipeName, recipeMail.RecipeType);
+                    return new RecipeMailContent(recipeMail.Text, recipeMail.Recipe);
                 case QuestMail questMail:
                     return new QuestMailContent(questMail.Text, questMail.QuestId, questMail.IsAutomaticallyAccepted);
                 default:
@@ -59,8 +59,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                     break;
                 case RecipeMail recipeMail:
                     recipeMail.Text = mailContent.Text;
-                    recipeMail.RecipeName = ((RecipeMailContent)mailContent).RecipeName;
-                    recipeMail.RecipeType = ((RecipeMailContent)mailContent).RecipeType;
+                    recipeMail.Recipe = ((RecipeMailContent)mailContent).Recipe;
                     break;
                 case QuestMail questMail:
                     questMail.Text = mailContent.Text;

@@ -14,15 +14,15 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// Create a new instance of the <see cref="RecipeMailInteractionRecord"/> class.
         /// </summary>
-        /// <param name="recipeName">The name of the recipe received by the player.</param>
-        public RecipeMailInteractionRecord(string recipeName)
+        /// <param name="recipe">The recipe received by the player. Can be <c>null</c>.</param>
+        public RecipeMailInteractionRecord(RecipeData recipe)
         {
-            RecipeName = recipeName;
+            this.Recipe = recipe;
         }
 
         /// <summary>
-        /// The name of the recipe which was received by the player.
+        /// The recipe which was received by the player.
         /// </summary>
-        public string RecipeName { get; }
+        public RecipeData Recipe { get; }
     }
 }

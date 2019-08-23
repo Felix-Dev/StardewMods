@@ -36,7 +36,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         public ItemMail(string id, string text, IList<Item> attachedItems) 
             : base(id, text)
         {
-            AttachedItems = attachedItems;
+            this.AttachedItems = attachedItems;
         }
 
         /// <summary>

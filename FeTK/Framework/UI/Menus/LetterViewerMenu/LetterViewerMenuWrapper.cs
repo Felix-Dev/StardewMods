@@ -58,7 +58,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                     this.letterMenu = LetterViewerMenuEx2.CreateMoneyMailMenu(moneyMail.Id, textContent, moneyMail.AttachedMoney, moneyMail.Currency);
                     break;
                 case RecipeMail recipeMail:
-                    this.letterMenu = LetterViewerMenuEx2.CreateRecipeMailMenu(recipeMail.Id, textContent, recipeMail.RecipeName, recipeMail.RecipeType);
+                    this.letterMenu = LetterViewerMenuEx2.CreateRecipeMailMenu(recipeMail.Id, textContent, recipeMail.Recipe);
                     break;
                 case QuestMail questMail:
                     this.letterMenu = LetterViewerMenuEx2.CreateQuestMailMenu(questMail.Id, textContent, questMail.QuestId, questMail.IsAutomaticallyAccepted);
@@ -110,6 +110,9 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
 
             /// <summary>The currency of the monetary value included in the mail.</summary>
             private Currency currency;
+
+            /// <summary>The recipe attached to the mail.</summary>
+            private RecipeData recipe;
 
             /// <summary>The ID of the quest included in the mail.</summary>
             /// <remarks>
@@ -275,31 +278,33 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
             /// </summary>
             /// <param name="id">The ID of the mail.</param>
             /// <param name="text">The text content of the mail.</param>
-            /// <param name="recipeName">The name of the recipe attached to the mail.</param>
-            /// <param name="recipeType">The type of the recipe attached to the mail.</param>
+            /// <param name="recipe">The recipe attached to the mail.</param>
             /// <returns>The created <see cref="LetterViewerMenuEx2"/> instance.</returns>
-            public static LetterViewerMenuEx2 CreateRecipeMailMenu(string id, string text, string recipeName, RecipeType recipeType)
+            /// <exception cref="InvalidOperationException">If the specified recipe was not found.</exception>
+            public static LetterViewerMenuEx2 CreateRecipeMailMenu(string id, string text, RecipeData recipe)
             {
                 var menu = new LetterViewerMenuEx2(id, text)
                 {
                     mailType = MailType.RecipeMail,
                 };
 
-                // If there is no recipe attached to the mail we are done.
-                if (recipeName == null)
+                // If there is no recipe attached to the mail -> we are done.
+                if (recipe == null)
                 {
                     return menu;
                 }
 
+                menu.recipe = recipe;
+
                 // Load the relevant recipe game asset to obtain the recipe's data.
-                Dictionary<string, string> recipes;
-                switch (recipeType)
+                Dictionary<string, string> recipes = null;
+                switch (recipe.Type)
                 {
                     case RecipeType.Cooking:
                         // If the player already received the recipe -> don't attach the recipe to the mail.
-                        if (Game1.player.cookingRecipes.ContainsKey(recipeName))
+                        if (Game1.player.cookingRecipes.ContainsKey(recipe.Name))
                         {
-                            monitor.Log($"The player already learned the recipe \"{recipeType}\"!");
+                            monitor.Log($"The player already learned the recipe \"{recipe.Name}\"!");
                             return menu;
                         }
 
@@ -307,39 +312,37 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                         break;
                     case RecipeType.Crafting:
                         // If the player already received the recipe -> don't attach the recipe to the mail.
-                        if (Game1.player.craftingRecipes.ContainsKey(recipeName))
+                        if (Game1.player.craftingRecipes.ContainsKey(recipe.Name))
                         {
-                            monitor.Log($"The player already learned the recipe \"{recipeType}\"!");
+                            monitor.Log($"The player already learned the recipe \"{recipe.Name}\"!");
                             return menu;
                         }
 
                         recipes = Game1.content.Load<Dictionary<string, string>>("Data\\CraftingRecipes");
                         break;
-                    default:
-                        throw new ArgumentException($"Invalid value \"{recipeType}\" for the recipe type!", nameof(recipeType));
                 }
 
                 // If the specified recipe is not available in the loaded recipe game asset, we throw an error
-                if (!recipes.TryGetValue(recipeName, out string recipeData))
+                if (!recipes.TryGetValue(recipe.Name, out string recipeData))
                 {
-                    monitor.Log($"A recipe with the name \"{recipeName}\" was not found!", LogLevel.Warn);
-                    throw new ArgumentException($"Could not find a recipe with the specified recipeName \"{recipeName}\"!");
+                    monitor.Log($"A recipe with the name \"{recipe.Name}\" was not found!", LogLevel.Warn);
+                    throw new InvalidOperationException($"Could not find a recipe with the specified name \"{recipe.Name}\"!");
                 }
 
                 // Add the recipe to the recipes the player already obtained.
 
                 int translatedNameIndex;
-                if (recipeType == RecipeType.Cooking)
+                if (recipe.Type == RecipeType.Cooking)
                 {
                     translatedNameIndex = 4; // See Data/CookingRecipes{.lg-LG}.xnb files
                     menu.CookingOrCrafting = Game1.content.LoadString("Strings\\UI:LearnedRecipe_cooking");
-                    Game1.player.cookingRecipes.Add(recipeName, 0);
+                    Game1.player.cookingRecipes.Add(recipe.Name, 0);
                 }
                 else
                 {
                     translatedNameIndex = 5; // See Data/CraftingRecipes{.lg-LG}.xnb files
                     menu.CookingOrCrafting = Game1.content.LoadString("Strings\\UI:LearnedRecipe_crafting");
-                    Game1.player.craftingRecipes.Add(recipeName, 0);
+                    Game1.player.craftingRecipes.Add(recipe.Name, 0);
                 }
 
                 // Set the name of the recipe depending on the currently selected display language.
@@ -348,8 +351,8 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                 {
                     if (recipeParams.Length < translatedNameIndex + 1)
                     {
-                        menu.LearnedRecipe = recipeName;
-                        monitor.Log($"There is no translated name for the recipe \"{recipeName}\" available! Using the recipe name as a fallback name.",
+                        menu.LearnedRecipe = recipe.Name;
+                        monitor.Log($"There is no translated name for the recipe \"{recipe.Name}\" available! Using the recipe name as a fallback name.",
                             LogLevel.Warn);
                     }
                     else
@@ -361,7 +364,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                 else
                 {
                     // Language is English -> use the supplied recipe name.
-                    menu.LearnedRecipe = recipeName;
+                    menu.LearnedRecipe = recipe.Name;
                 }
 
                 return menu;
@@ -481,7 +484,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.UI
                         InteractionRecord = new MoneyMailInteractionRecord(this.MoneyIncluded, this.currency);
                         break;
                     case MailType.RecipeMail:
-                        InteractionRecord = new RecipeMailInteractionRecord(this.LearnedRecipe);
+                        InteractionRecord = new RecipeMailInteractionRecord(this.recipe);
                         break;
                     case MailType.QuestMail:
                         InteractionRecord = new QuestMailInteractionRecord(this.attachedQuestId, this.questAccepted);

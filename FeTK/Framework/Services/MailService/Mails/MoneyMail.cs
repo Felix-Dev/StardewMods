@@ -45,8 +45,8 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 throw new ArgumentOutOfRangeException(nameof(currency));
             }
 
-            AttachedMoney = attachedMoney;
-            Currency = currency;
+            this.attachedMoney = attachedMoney;
+            this.currency = currency;
         }
 
         /// <summary>
