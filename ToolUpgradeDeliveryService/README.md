@@ -12,7 +12,7 @@ the upgrade is finished. No more visiting the blacksmith simply to get your impr
 
 ## Install
 1. [Install the latest version of SMAPI](https://smapi.io/).
-2. [Install this mod from Nexus mods]().
+2. [Install this mod from Nexus mods](https://www.nexusmods.com/stardewvalley/mods/2938).
 3. Run the game using SMAPI.
 
 ## Use
