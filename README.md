@@ -1,5 +1,4 @@
-This repository contains my SMAPI mods for Stardew Valley. See the individual mods for
-documentation and release notes.
+This repository contains my SMAPI mods for Stardew Valley. See the individual mods for documentation and release notes.
 
 ## Mods
 * **[ArchaeologyHouseContentManagementHelper](http://www.nexusmods.com/stardewvalley/mods/2804)** <small>([source](ArchaeologyHouseContentManagementHelper))</small>  
@@ -9,8 +8,15 @@ documentation and release notes.
   Largely fixes the in-game item-placement bug.
   Lost Books can be "grabbed & sent" to the library even if the player's inventory has no space.
   Lost Books can be read without having to go the library._
-* **[ToolUpgradeDeliveryService](http://www.nexusmods.com/stardewvalley/mods/2938)** <small>([source](ToolUpgradeDeliveryService))</small> 
- _This mod makes retrieving upgraded farm tools less tedious. With this mod, Clint (the blacksmith) will simply send you a mail with the upgraded tool included as soon as the upgrade is finished. No more visiting the blacksmith simply to get your improved farm tool!_
+  
+* **[ToolUpgradeDeliveryService](http://www.nexusmods.com/stardewvalley/mods/2938)** <small>([source](ToolUpgradeDeliveryService))</small>  
+  _This mod makes retrieving upgraded farm tools less tedious. With this mod, Clint (the blacksmith) will simply send you a mail with the
+  upgraded tool included as soon as the upgrade is finished. No more visiting the blacksmith simply to get your improved farm tool!_
+  
+* **FeTK (TODO)** <small>([source](FeTK))</small>  
+   _This mod is a mod framework which can be used by other modders to create experience-rich and high-quality mods. Not only does it provide
+   APIs to simplify common mod tasks (such as adding mails to the game) but it also adds additional features on top of those provided by the
+   game to enable completely new experiences (such as dynamic mail content or colored text)!_
   
 ## Translating the mods
 The mods can be translated into any language supported by the game, and SMAPI will automatically
