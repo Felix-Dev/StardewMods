@@ -16,16 +16,16 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// Create a new instance of the <see cref="MailClosedCoreEventArgs"/> class.
         /// </summary>
-        /// <param name="mailId">The ID of the mail to be closed.</param>
+        /// <param name="id">The ID of the mail to be closed.</param>
         /// <param name="arrivalDay">The mail's day of arrival in the receiver's mailbox.</param>
-        /// <param name="selectedItems">Sets the items of the mail which were selected. Can be <c>null</c>.</param>
+        /// <param name="interactionRecord">Information about how the player interacted with the mail content.</param>
         /// <exception cref="ArgumentNullException">
-        /// The specified <paramref name="mailId"/> is <c>null</c> -or-
+        /// The specified <paramref name="id"/> is <c>null</c> -or-
         /// the specified <paramref name="arrivalDay"/> is <c>null</c> -or-
         /// the specified <paramref name="interactionRecord"/> is <c>null</c>.
         /// </exception>
-        public MailClosedCoreEventArgs(string mailId, SDate arrivalDay, MailInteractionRecord interactionRecord) 
-            : base(mailId, interactionRecord)
+        public MailClosedCoreEventArgs(string id, SDate arrivalDay, MailInteractionRecord interactionRecord) 
+            : base(id, interactionRecord)
         {
             ArrivalDay = arrivalDay ?? throw new ArgumentNullException(nameof(arrivalDay));
         }

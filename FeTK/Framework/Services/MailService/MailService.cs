@@ -261,10 +261,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
             // Remove the mail from the service. 
             // We don't need to do key checks here because the service is only notified 
             // for closed mails belonging to it.
-            this.mailListForDay[e.ArrivalDay.DaysSinceStart].Remove(e.MailId);
+            this.mailListForDay[e.ArrivalDay.DaysSinceStart].Remove(e.Id);
 
             // Raise the mail-closed event.
-            this.MailClosed?.Invoke(this, new MailClosedEventArgs(e.MailId, e.InteractionRecord));
+            this.MailClosed?.Invoke(this, new MailClosedEventArgs(e.Id, e.InteractionRecord));
         }
 
         /// <summary>

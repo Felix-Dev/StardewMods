@@ -212,7 +212,7 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
         private void OnMailClosed(object sender, MailClosedEventArgs e)
         {
             // If the mail is not a tool uprade mail by Clint or no tool was selected -> do nothing
-            if (!IsToolMail(e.MailId) || !(e.InteractionRecord is ItemMailInteractionRecord interactionRecord) 
+            if (!IsToolMail(e.Id) || !(e.InteractionRecord is ItemMailInteractionRecord interactionRecord) 
                 || interactionRecord.SelectedItems.Count == 0)
             {
                 return;

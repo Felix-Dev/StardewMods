@@ -13,22 +13,22 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
         /// <summary>
         /// Create a new instance of the <see cref="MailClosedEventArgs"/> class.
         /// </summary>
-        /// <param name="mailId">The ID of the mail which was closed.</param>
+        /// <param name="id">The ID of the mail which was closed.</param>
         /// <param name="interactionRecord">Information about how the player interacted with the mail content.</param>
         /// <exception cref="ArgumentNullException">
-        /// The given <paramref name="mailId"/> is <c>null</c> -or-
+        /// The given <paramref name="id"/> is <c>null</c> -or-
         /// the given <paramref name="interactionRecord"/> is <c>null</c>.
         /// </exception>
-        public MailClosedEventArgs(string mailId, MailInteractionRecord interactionRecord)
+        public MailClosedEventArgs(string id, MailInteractionRecord interactionRecord)
         {
-            MailId = mailId ?? throw new ArgumentNullException(nameof(mailId));
+            Id = id ?? throw new ArgumentNullException(nameof(id));
             InteractionRecord = interactionRecord ?? throw new ArgumentNullException(nameof(interactionRecord));
         }
 
         /// <summary>
         /// The ID of the closed mail.
         /// </summary>
-        public string MailId { get; }
+        public string Id { get; }
 
         /// <summary>
         /// Get information about how the player interacted with the mail.
