@@ -56,6 +56,14 @@ With the above line, we specify that our above created item mail will arrive in 
 ```cs
 mailService.AddMail(mail, 0 /* instant mailbox arrival */);
 ```
+
+The examples above show how to schedule mails by specifying a *day offset*. You can also, however, specfiy a *specific* mailbox arrival day. Here is how the above examples will look like using specific days:
+```cs
+mailService.AddMail(mail, SDate.Now() /* instant mailbox arrival */);
+
+mailService.AddMail(mail, SDate.Now().AddDays(1) /* mail for tomorrow */);
+```
+
 Please note that a mod cannot have multiple mails with the same ID scheduled for the same day in the player's mailbox *at the same time*.
 
 ### Supported Mail Types
