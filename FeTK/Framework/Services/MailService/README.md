@@ -273,7 +273,8 @@ Enclose the text you want to color with the `<color></color>` tags. See the foll
 ```
 The string "some text" will be rendered with the color specified by `COLOR_VALUE`. Color values can be specified using the following color representations:
 1. A hexadecimal color-code specified as `#RRGGBB`, where the RR (red), GG (green) and BB (blue) hexadecimal integers specify the components of the color. All values must be between 00 (lowest value) and FF (highest value) and the values are *case-insensitive*.
-2. A HTML color name. See [this color table](https://htmlcolorcodes.com/color-names/) for a list of all valid color names. Names are *case-insensitive*.
+2. A HTML color name. See [this color table](https://htmlcolorcodes.com/color-names/) for a list of all valid color names. Names are *case-insensitive* and *all* white-space characters are 
+ignored (i.e. `DodgerBlue` and `dodger blue` are both valid names).
 
 If we want to color the above text "some text" in red, we thus can write it as follows:
 ```
