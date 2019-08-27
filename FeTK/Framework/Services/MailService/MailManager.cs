@@ -210,7 +210,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 throw new ArgumentException("The mail ID needs to contain at least one non-whitespace character!", nameof(mailId));
             }
 
-            return Game1.mailbox.Any(s => s.StartsWith(modId + MAIL_ID_PREFIX + mailId));
+            return Game1.mailbox.Any(s => s.StartsWith(MAIL_ID_PREFIX + modId + mailId));
         }
 
         /// <summary>
