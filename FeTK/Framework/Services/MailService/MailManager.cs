@@ -263,7 +263,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
 
                 // If the opened mail is not a mail registered via the framework, we still parse the mail content
                 // for the framework's text coloring API and provide the item selection fix (only showing the last 
-                // item.
+                // item).
                 if (!this.registeredMailsMetaData.TryGetValue(mailId, out MailMetaData mailMetaData))
                 {
                     string mailContent = GetMailContentForGameMail(mailId);

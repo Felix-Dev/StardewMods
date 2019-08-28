@@ -354,7 +354,7 @@ As simple as that!
 ## Compatibility
 * Compatible with Stardew Valley 1.3 on Windows/Linux (Mac likely, but not tested).
 * Works in both single-player and multiplayer.
-* No known mod conflicts.
+* Not compatible with Digus' Mail Framework mod (compatibility might be added in later versions).
 
 ## See also
 * [FeTK Overview](../../../README.md)
