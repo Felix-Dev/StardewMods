@@ -1,4 +1,5 @@
-**FeTK** is a [Stardew Valley](http://stardewvalley.net/) mod framework which can be used by other modders to create experience-rich and high-quality mods. Not only does it provide APIs to simplify common mod tasks (such as adding mails to the game) but it also adds additional features on top of those provided by the game to enable completely new experiences (such as dynamic mail content or colored text)!
+**FeTK** is a [Stardew Valley](http://stardewvalley.net/) mod framework which is a collection of helper functions and mod services. It simplifies common developer tasks building Stardew-Valley mods and empowers developers to build rich 
+and high-quality mod experiences!
 
 **This documentation is for modders. If you are a player, please see the Nexus page (TODO) instead.**
 
@@ -15,7 +16,7 @@
 3. Run the game using SMAPI.
 
 ## Features
-For a list of APIs this framework provides please check the documentation [here](https://github.com/Felix-Dev/StardewMods/blob/dev-FeTK/FeTK/docs/features.md).
+For a list of APIs this framework provides please check the documentation [here](docs/features.md).
 
 ## Develop
 Make sure you have the framework [installed](#install). Include the following mod dependency in the [manifest](https://stardewvalleywiki.com/Modding:Modder_Guide/APIs/Manifest) of your consuming mod:

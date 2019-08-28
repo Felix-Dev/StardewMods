@@ -13,6 +13,8 @@ Note: Not every feature requires mails to be added to the game via the framework
 * [Dynamic Mail Content](#dynamic-mail-content)
 * [Get Player Interaction Feedback](#get-player-interaction-feedback)
 * [Add Visual Emphasis to Mail Content](#add-visual-emphasis-to-mail-content)
+* [Compatibility](#compatibility)
+* [See also](#see-also)
 
 ## Add Mails
 The Mail API provides an easy and powerful way to add mails to the game:
@@ -348,3 +350,11 @@ As you can see, we enclosed the words "Stardew Valley Fair" with `<color=#0000FF
 ![](../../../docs/images/mail-service-cp-edit-example.png)
 
 As simple as that!
+
+## Compatibility
+* Compatible with Stardew Valley 1.3 on Windows/Linux (Mac likely, but not tested).
+* Works in both single-player and multiplayer.
+* No known mod conflicts.
+
+## See also
+[FeTK Overview](../../../README.md)

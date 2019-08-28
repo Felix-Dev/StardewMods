@@ -10,7 +10,7 @@
   "Dependencies": [
     {
       "UniqueID": "Felix-Dev.FeTK",
-      "MinimumVersion": "1.0.0-alpha"
+      "MinimumVersion": "1.0.0"
     }
   ]
 }

@@ -14,9 +14,8 @@ This repository contains my SMAPI mods for Stardew Valley. See the individual mo
   upgraded tool included as soon as the upgrade is finished. No more visiting the blacksmith simply to get your improved farm tool!_
   
 * **FeTK (TODO)** <small>([source](FeTK))</small>  
-   _This mod is a mod framework which can be used by other modders to create experience-rich and high-quality mods. Not only does it provide
-   APIs to simplify common mod tasks (such as adding mails to the game) but it also adds additional features on top of those provided by the
-   game to enable completely new experiences (such as dynamic mail content or colored text)!_
+   _This mod is a collection of helper functions and mod services. It simplifies common developer tasks building Stardew-Valley mods and empowers developers to build rich 
+   and high-quality mod experiences!_
   
 ## Translating the mods
 The mods can be translated into any language supported by the game, and SMAPI will automatically
