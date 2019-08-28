@@ -113,8 +113,11 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="docs\features.md" />
     <None Include="Framework\Services\MailService\README.md" />
     <None Include="manifest.json" />
+    <None Include="README.md" />
+    <None Include="release-notes.md" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

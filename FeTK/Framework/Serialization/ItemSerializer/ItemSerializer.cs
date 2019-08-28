@@ -56,8 +56,7 @@ namespace FelixDev.StardewMods.FeTK.Framework.Serialization
                         {
                             string error = $"Cannot parse the given item data. The data doesn't appear to be valid XML!\nTechnical details: {ex.Message}";
                             throw new InvalidOperationException(error);
-                        }
-                        
+                        }                        
                     }
 
                 default:

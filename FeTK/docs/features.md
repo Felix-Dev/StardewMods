@@ -1,6 +1,6 @@
 # Features
 
-The framework currently provides features a mod developer can use in the following namespaces: 
+The framework currently provides features for SMAPI mods in the following namespaces: 
 * `FelixDev.StardewMods.FeTK.Framework.Services`
 * `FelixDev.StardewMods.FeTK.Framework.UI`
 

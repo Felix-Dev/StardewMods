@@ -18,7 +18,7 @@
 For a list of APIs this framework provides please check the documentation [here](https://github.com/Felix-Dev/StardewMods/blob/dev-FeTK/FeTK/docs/features.md).
 
 ## Develop
-Make sure you have the framework [installed](#install). Simply add a reference to the `FeTK.dll` library file to your project. Also include the following mod dependency in the [manifest](https://stardewvalleywiki.com/Modding:Modder_Guide/APIs/Manifest) of your consuming mod:
+Make sure you have the framework [installed](#install). Include the following mod dependency in the [manifest](https://stardewvalleywiki.com/Modding:Modder_Guide/APIs/Manifest) of your consuming mod:
 ```js
 "Dependencies": [
     {
@@ -27,6 +27,7 @@ Make sure you have the framework [installed](#install). Simply add a reference t
     }
   ]
 ```
+If you want to use SMAPI-mod specific APIs, you will also need to add a reference to the `FeTK.dll` library file to your project. This library is included in the downloaded mod folder.
 
 ## Compatibility
 For compatibility please check the documentation for each particular framework feature.

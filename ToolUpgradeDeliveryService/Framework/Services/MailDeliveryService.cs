@@ -131,12 +131,17 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework
             int daysLeftForToolUpgrade = Game1.player.daysLeftForToolUpgrade.Value;
             Tool upgradeTool = Game1.player.toolBeingUpgraded.Value;
 
+            // If the tool upgrade is done by tomorrow, send a tool-upgrade mail for the next day.
             if (daysLeftForToolUpgrade == 1)
             {
                 SetToolMailForDay(1, upgradeTool);
                 return;
             }
 
+            // Place a tool-upgrade mail in the player's mailbox in the morning if a tool upgrade
+            // is finished and and a tool-upgrade mail hasn't been sent yet. (This is mainly useful 
+            // to handle tool upgrades where the player installs this mod after the upgrade is 
+            // finished, i.e. the mod wasn't running when "daysLeftForToolUpgrade == 1" was true.)
             if (daysLeftForToolUpgrade == 0 && upgradeTool != null)
             {
                 if (!mailService.HasMailInMailbox(GetMailIdFromTool(upgradeTool)))
