@@ -1,7 +1,7 @@
 **FeTK** is a [Stardew Valley](http://stardewvalley.net/) mod framework which is a collection of helper functions and mod services. It simplifies common developer tasks building Stardew-Valley mods and empowers developers to build rich 
 and high-quality mod experiences!
 
-**This documentation is for modders. If you are a player, please see the Nexus page (TODO) instead.**
+**This documentation is for modders. If you are a player, please see the [Nexus page](https://www.nexusmods.com/stardewvalley/mods/4403) instead.**
 
 ## Contents
 * [Install](#install)
@@ -12,7 +12,7 @@ and high-quality mod experiences!
 
 ## Install
 1. [Install the latest version of SMAPI](https://smapi.io/).
-2. Install this mod from Nexus mods (TODO).
+2. [Install this mod from Nexus mods](https://www.nexusmods.com/stardewvalley/mods/4403).
 3. Run the game using SMAPI.
 
 ## Features
@@ -35,4 +35,4 @@ For compatibility please check the documentation for each particular framework f
 
 ## See also
 * [Release notes](release-notes.md)
-* Nexus mod (TODO)
+* [Nexus mod](https://www.nexusmods.com/stardewvalley/mods/4403)

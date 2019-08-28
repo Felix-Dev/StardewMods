@@ -6,5 +6,5 @@
   "UniqueID": "Felix-Dev.FeTK",
   "EntryDll": "FeTK.dll",
   "MinimumApiVersion": "2.11.0",
-  "UpdateKeys": [ "TODO" ]
+  "UpdateKeys": [ "nexus:4403" ]
 }

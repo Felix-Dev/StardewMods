@@ -13,7 +13,7 @@ This repository contains my SMAPI mods for Stardew Valley. See the individual mo
   _This mod makes retrieving upgraded farm tools less tedious. With this mod, Clint (the blacksmith) will simply send you a mail with the
   upgraded tool included as soon as the upgrade is finished. No more visiting the blacksmith simply to get your improved farm tool!_
   
-* **FeTK (TODO)** <small>([source](FeTK))</small>  
+* **[FeTK](https://www.nexusmods.com/stardewvalley/mods/4403)** <small>([source](FeTK))</small>  
    _This mod is a collection of helper functions and mod services. It simplifies common developer tasks building Stardew-Valley mods and empowers developers to build rich 
    and high-quality mod experiences!_
   
