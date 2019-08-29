@@ -4,7 +4,7 @@
 * The delivery service now also works when the mod is installed *during* a tool upgrade process.
 * The greetings in tool-upgrade mails are now gender-neutral.
 * Tool-upgrade mails for which the tool was already received by the player from Clint when they open the mail now show an added info message to the player explaining that they have already received the tool. 
-* Now requires the mod [FeTK](TODO:LINK).
+* Now requires the mod [FeTK](https://www.nexusmods.com/stardewvalley/mods/4403).
 * Added Japanese translation (thanks to shirutan from github and Queen from discord).
 * Added French translation (thanks to Lumina from discord).
 

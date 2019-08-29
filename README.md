@@ -30,7 +30,7 @@ French     | ❑ untranslated                                            | [✓]
 German     | [✓](ArchaeologyHouseContentManagementHelper/i18n/de.json) | [✓](ToolUpgradeDeliveryService/i18n/de.json)
 Hungarian  | ❑ untranslated                                            | ❑ untranslated 
 Italian    | ❑ untranslated                                            | ❑ untranslated 
-Japanese   | ❑ untranslated                                            | ❑ untranslated 
+Japanese   | ❑ untranslated                                            | [✓](ToolUpgradeDeliveryService/i18n/ja.json) 
 Korean     | [✓](ArchaeologyHouseContentManagementHelper/i18n/ko.json) | [✓](ToolUpgradeDeliveryService/i18n/ko.json) 
 Portuguese | [✓](ArchaeologyHouseContentManagementHelper/i18n/pt.json) | [✓](ToolUpgradeDeliveryService/i18n/pt.json)      
 Russian    | ❑ untranslated                                            | ❑ untranslated 

@@ -95,6 +95,7 @@
     <ProjectReference Include="..\FeTK\FeTK.csproj">
       <Project>{49f0430b-5e62-409c-bdf7-d653f3a39431}</Project>
       <Name>FeTK</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\Common\Common.projitems" Label="Shared" />
