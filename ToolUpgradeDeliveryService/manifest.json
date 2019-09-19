@@ -5,7 +5,7 @@
   "Description": "Clint sends you a mail when he finished upgrading your tool. Tool included.",
   "UniqueID": "Felix-Dev.ToolUpgradeDeliveryService",
   "EntryDll": "ToolUpgradeDeliveryService.dll",
-  "MinimumApiVersion": "2.10.1",
+  "MinimumApiVersion": "3.0.0-beta",
   "UpdateKeys": [ "Nexus:2938" ],
   "Dependencies": [
     {
