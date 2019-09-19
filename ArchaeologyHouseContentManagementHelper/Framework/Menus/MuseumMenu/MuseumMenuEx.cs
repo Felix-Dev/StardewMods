@@ -1,16 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Netcode;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.BellsAndWhistles;
 using StardewValley.Locations;
 using StardewValley.Menus;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
@@ -40,9 +34,10 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
         private static Timer infoFadeTimer;
 
-        private readonly System.Object lockInfoFadeTimer = new System.Object();
+        private readonly object lockInfoFadeTimer = new object();
 
         public MuseumMenuEx()
+            : base(((LibraryMuseum)Game1.getLocationFromName("Museum")).isItemSuitableForDonation)
         {
             holdingMuseumPieceRef = ModEntry.CommonServices.ReflectionHelper.GetField<bool>(this, "holdingMuseumPiece");
             multiplayer = ModEntry.CommonServices.ReflectionHelper.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();

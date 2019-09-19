@@ -1,15 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
 using xTile.Dimensions;
 
@@ -37,7 +31,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework.Menus
 
         private static Timer infoFadeTimer;
 
-        private readonly System.Object lockInfoFadeTimer = new System.Object();
+        private readonly object lockInfoFadeTimer = new object();
 
         public int fadeTimer;
         public int state;

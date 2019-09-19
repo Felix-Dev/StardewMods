@@ -5,12 +5,6 @@ using StardewValley;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-
 using SObject = StardewValley.Object;
 
 namespace StardewMods.ArchaeologyHouseContentManagementHelper.Patches
@@ -23,12 +17,11 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Patches
         /// <param name="harmony">The Harmony instance.</param>
         public void Apply(HarmonyInstance harmony)
         {
-            MethodBase method = AccessTools.Method(typeof(Farmer), "addItemToInventoryBool");
-
-            MethodInfo prefix = AccessTools.Method(this.GetType(), nameof(AddItemToInventoryBoolPatch.Prefix));
-            MethodInfo postfix = AccessTools.Method(this.GetType(), nameof(AddItemToInventoryBoolPatch.Postfix));
-
-            harmony.Patch(method, new HarmonyMethod(prefix), new HarmonyMethod(postfix));
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Farmer), nameof(Farmer.addItemToInventoryBool)),
+                prefix: new HarmonyMethod(this.GetType(), nameof(AddItemToInventoryBoolPatch.Prefix)),
+                postfix: new HarmonyMethod(this.GetType(), nameof(AddItemToInventoryBoolPatch.Postfix))
+            );
         }
 
         public static bool Prefix(Farmer __instance)
@@ -62,7 +55,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Patches
 
             if (item != null)
             {
-                if (farmer.IsLocalPlayer && !item.hasBeenInInventory)
+                if (farmer.IsLocalPlayer && !item.HasBeenInInventory)
                 {
                     if (item is SpecialItem)
                     {
@@ -118,7 +111,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Patches
                     }
                 }
 
-                if (item is SObject && !item.hasBeenInInventory)
+                if (item is SObject && !item.HasBeenInInventory)
                 {
                     if (!(item is Furniture) && !(item as SObject).bigCraftable.Value && !(item as SObject).HasBeenPickedUpByFarmer)
                     {
@@ -218,12 +211,12 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Patches
                     farmer.Items[indexOfInventoryItem] = obj2;
                 }
             }
-            if (item is SObject && !item.hasBeenInInventory)
+            if (item is SObject && !item.HasBeenInInventory)
             {
                 farmer.checkForQuestComplete((NPC)null, item.ParentSheetIndex, item.Stack, item, "", 10, -1);
             }
 
-            item.hasBeenInInventory = true;
+            item.HasBeenInInventory = true;
             return flag;
         }
     }
