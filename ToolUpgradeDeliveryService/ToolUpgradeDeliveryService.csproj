@@ -14,7 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FeTK\FeTK.csproj" />
+    <ProjectReference Include="..\FeTK\FeTK.csproj">
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <Import Project="..\Common\Common.projitems" Label="Shared" />
