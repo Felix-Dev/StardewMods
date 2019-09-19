@@ -49,7 +49,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
             lostBooksTab = prevSideTab.Key + 1;
 
             // Loads the [Lost Books] side-tab texture.
-            Texture2D bookTabTexture = ModEntry.CommonServices.ContentHelper.Load<Texture2D>("Assets/CollectionTab_LostBook.png", ContentSource.ModFolder);
+            Texture2D bookTabTexture = ModEntry.CommonServices.ContentHelper.Load<Texture2D>("assets/CollectionTab_LostBook.png", ContentSource.ModFolder);
 
             // Adds the [Lost Books] side-tab to the Collections Page.
             ClickableTextureComponent stLostBooks = new ClickableTextureComponent(
