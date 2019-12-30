@@ -266,6 +266,10 @@ namespace FelixDev.StardewMods.FeTK.Framework.Services
                 // item).
                 if (!this.registeredMailsMetaData.TryGetValue(mailId, out MailMetaData mailMetaData))
                 {
+                    if (typeof(LetterViewerMenu) != letterMenu.GetType())
+                    {
+                        return;
+                    }
                     string mailContent = GetMailContentForGameMail(mailId);
 
                     // Create and show the menu for this mail.

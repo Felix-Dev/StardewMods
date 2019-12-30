@@ -7,8 +7,6 @@ using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Translation = StardewMods.ArchaeologyHouseContentManagementHelper.Common.Translation;
 
@@ -19,21 +17,13 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
     /// </summary>
     internal class CollectionsPageEx : CollectionsPage
     {
-        public const int region_sideTabLostBooks = 7008;
+        public const int region_sideTabLostBooks = 7100;
 
         private const int LostBooksTab_ItemBaseId = 0x70080000;
 
-        public const int lostBooksTab = 7;
-
-        private readonly int lostBooksTabPageIndex;
+        private readonly int lostBooksTab;
 
         private const int sideTabs_FirstIndex = region_sideTabShipped;
-
-        // The number of side tabs of the Collection Page.
-        private readonly int numTabs = 8;
-
-        // Indicates whether the [Secret Notes] sidetab is shown or not.
-        private readonly bool showSecretNotesTab;
 
         // The length of the preview of a book's content.
         private const int BOOK_PREVIEW_LENGTH = 22;
@@ -47,23 +37,24 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
         private readonly IReflectedField<string> descriptionTextRef;
         private readonly IReflectedField<int> valueRef;
 
-        public CollectionsPageEx(int x, int y, int width, int height,
-            int selectedTab = organicsTab) : base(x, y, width, height)
+        public CollectionsPageEx(int x, int y, int width, int height, int selectedTab = organicsTab)
+            : base(x, y, width, height)
         {
             hoverTextRef = ModEntry.CommonServices.ReflectionHelper.GetField<string>(this, "hoverText");
             descriptionTextRef = ModEntry.CommonServices.ReflectionHelper.GetField<string>(this, "descriptionText");
             valueRef = ModEntry.CommonServices.ReflectionHelper.GetField<int>(this, "value");
 
-            showSecretNotesTab = Game1.player.secretNotesSeen.Count > 0;
-            lostBooksTabPageIndex = showSecretNotesTab ? lostBooksTab : lostBooksTab - 1;
+            var prevSideTab = this.sideTabs.OrderByDescending(p => p.Key).First();
+
+            lostBooksTab = prevSideTab.Key + 1;
 
             // Loads the [Lost Books] side-tab texture.
-            Texture2D bookTabTexture = ModEntry.CommonServices.ContentHelper.Load<Texture2D>("Assets/CollectionTab_LostBook.png", ContentSource.ModFolder);
+            Texture2D bookTabTexture = ModEntry.CommonServices.ContentHelper.Load<Texture2D>("assets/CollectionTab_LostBook.png", ContentSource.ModFolder);
 
             // Adds the [Lost Books] side-tab to the Collections Page.
             ClickableTextureComponent stLostBooks = new ClickableTextureComponent(
                 name: "", 
-                bounds: new Rectangle(this.xPositionOnScreen - 48, this.yPositionOnScreen + (showSecretNotesTab ? 576 : 512), 64, 64), 
+                bounds: new Rectangle(this.xPositionOnScreen - 48, prevSideTab.Value.bounds.Y + 64, 64, 64), 
                 label: "", 
                 hoverText: ModEntry.CommonServices.TranslationHelper.Get(Translation.GAMEMENU_COLLECTIONSPAGE_TAB_LABEL_LOST_BOOKS), 
                 texture: bookTabTexture, 
@@ -72,19 +63,18 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                 drawShadow: false)
             {
                 myID = region_sideTabLostBooks,
-                upNeighborID = showSecretNotesTab ? region_sideTabSecretNotes : region_sideTabAchivements,
+                upNeighborID = prevSideTab.Value.myID,
                 rightNeighborID = 0
             };
 
-            this.sideTabs.Add(stLostBooks);
-            this.collections.Add(lostBooksTabPageIndex, new List<List<ClickableTextureComponent>>());
-
-            var prevSideTab = this.sideTabs[showSecretNotesTab ? secretNotesTab : achievementsTab];
-            prevSideTab.downNeighborID = region_sideTabLostBooks;
+            this.sideTabs.Add(lostBooksTab, stLostBooks);
+            this.collections.Add(lostBooksTab, new List<List<ClickableTextureComponent>>());
+            
+            prevSideTab.Value.downNeighborID = stLostBooks.myID;
 
             // Fill [Lost Book] collection
 
-            this.collections[lostBooksTabPageIndex].Add(new List<ClickableTextureComponent>());
+            this.collections[lostBooksTab].Add(new List<ClickableTextureComponent>());
 
             var lostBooksIndices = LibraryMuseumHelper.GetLostBookIndexList();
 
@@ -97,13 +87,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 
             for (int i = 0; i < LibraryMuseumHelper.TotalLibraryBooks; i++)
             {
-                bool drawShadow = false;
-
-                // If the current Lost Book has already been discovered by the player, "enable" it in the collection
-                if (lostBooksIndices[i] <= LibraryMuseumHelper.LibraryBooks)
-                {
-                    drawShadow = true;
-                }
+                bool drawShadow = lostBooksIndices[i] <= LibraryMuseumHelper.LibraryBooks; // If the current Lost Book has already been discovered by the player, "enable" it in the collection
 
                 // Start a new page if the current page has already been filled completely
                 int x1 = startPosX + booksInCurrentPage % numBooksPerRow * BOOK_OFFSET;
@@ -111,7 +95,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                 if (y1 > this.yPositionOnScreen + height - 128)
                 {
                     // Add a new page to the collection.
-                    this.collections[lostBooksTabPageIndex].Add(new List<ClickableTextureComponent>());
+                    this.collections[lostBooksTab].Add(new List<ClickableTextureComponent>());
                     booksInCurrentPage = 0;
                     x1 = startPosX;
                     y1 = startPosY;
@@ -130,41 +114,39 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                 {
                     myID = LostBooksTab_ItemBaseId + i,
 
-                    rightNeighborID = (this.collections[lostBooksTabPageIndex].Last().Count + 1) % numBooksPerRow == 0 
+                    rightNeighborID = (this.collections[lostBooksTab].Last().Count + 1) % numBooksPerRow == 0 
                         ? -1 
                         : LostBooksTab_ItemBaseId + i + 1,
-                    leftNeighborID = this.collections[lostBooksTabPageIndex].Last().Count % numBooksPerRow == 0 
+                    leftNeighborID = this.collections[lostBooksTab].Last().Count % numBooksPerRow == 0 
                         ? region_sideTabLostBooks 
                         : LostBooksTab_ItemBaseId + i - 1,
                     downNeighborID = y1 + BOOK_OFFSET > this.yPositionOnScreen + height - 128 
                         ? -7777 
                         : LostBooksTab_ItemBaseId + i + numBooksPerRow,
-                    upNeighborID = this.collections[lostBooksTabPageIndex].Last().Count < numBooksPerRow 
+                    upNeighborID = this.collections[lostBooksTab].Last().Count < numBooksPerRow 
                         ? 12345 
                         : LostBooksTab_ItemBaseId + i - numBooksPerRow,
 
                     fullyImmutable = true
                 };
 
-                this.collections[lostBooksTabPageIndex].Last().Add(lostBookTextureObject);
+                this.collections[lostBooksTab].Last().Add(lostBookTextureObject);
                 ++booksInCurrentPage;
             }
 
-            SetCurrentSidetab();
-
-            void SetCurrentSidetab()
+            // Set the current side tab
             {
                 // Set the current side tab
-                if (selectedTab < 0 || selectedTab >= numTabs)
+                if (!this.sideTabs.ContainsKey(selectedTab))
                 {
-                    selectedTab = 0;
+                    selectedTab = CollectionsPage.organicsTab;
                 }
 
                 // [Lost Books] tab has a different Collection Page index depending on the visibility
                 // of the [Secret Notes] tab.
                 if (selectedTab == lostBooksTab)
                 {
-                    selectedTab = lostBooksTabPageIndex;
+                    selectedTab = lostBooksTab;
                     this.currentlySnappedComponent = snappedItem;
                     this.snapCursorToCurrentSnappedComponent();
                 }
@@ -194,7 +176,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 
         private void MoveCursorInDirectionNew(CursorDirection direction)
         {
-            if (this.currentlySnappedComponent == null && this.allClickableComponents != null && this.allClickableComponents.Count<ClickableComponent>() > 0)
+            if (this.currentlySnappedComponent == null && this.allClickableComponents != null && this.allClickableComponents.Any())
             {
                 this.snapToDefaultClickableComponent();
                 if (this.currentlySnappedComponent == null)
@@ -234,7 +216,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     // [Lost Book].
                     else if (this.currentlySnappedComponent.myID >= region_sideTabShipped
                         && this.currentlySnappedComponent.myID <= region_sideTabLostBooks
-                        && ModEntry.CommonServices.ReflectionHelper.GetField<int>(this, "currentTab").GetValue() == lostBooksTabPageIndex)
+                        && ModEntry.CommonServices.ReflectionHelper.GetField<int>(this, "currentTab").GetValue() == lostBooksTab)
                     {
                         this.currentlySnappedComponent = this.getComponentWithID(LostBooksTab_ItemBaseId);
                     }
@@ -245,7 +227,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     // Since the item offset is the same for every sidetab other than [Lost Books], we simply set the currently snapped item
                     // to the first item with ID = 0 which is the first item for every original sidetab.
                     else if (this.currentlySnappedComponent.myID == region_sideTabLostBooks 
-                        && ModEntry.CommonServices.ReflectionHelper.GetField<int>(this, "currentTab").GetValue() != lostBooksTabPageIndex)
+                        && ModEntry.CommonServices.ReflectionHelper.GetField<int>(this, "currentTab").GetValue() != lostBooksTab)
                     {
                         this.currentlySnappedComponent = this.getComponentWithID(0);
                     }
@@ -343,7 +325,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
 
             int currentTab = ModEntry.CommonServices.ReflectionHelper.GetField<int>(this, "currentTab").GetValue();
 
-            if (currentTab == lostBooksTabPageIndex)
+            if (currentTab == lostBooksTab)
             {
                 this.currentlySnappedComponent = this.getComponentWithID(LostBooksTab_ItemBaseId);
             }
@@ -368,7 +350,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
             valueRef.SetValue(-1);
             secretNoteImageRef.SetValue(-1);
 
-            foreach (ClickableTextureComponent sideTab in this.sideTabs)
+            foreach (ClickableTextureComponent sideTab in this.sideTabs.Values)
             {
                 if (sideTab.containsPoint(x, y))
                 {
@@ -393,7 +375,7 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                         }
 
                         // Book has already been found -> show book preview
-                        if (currentTab == lostBooksTabPageIndex)
+                        if (currentTab == lostBooksTab)
                         {                            
                             string index = textureComponent.name.Split(' ')[2];
                             string message = Game1.content.LoadString("Strings\\Notes:" + index).Replace('\n', '^');
@@ -431,9 +413,12 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
             int currentTab = currentTabRef.GetValue();
             int currentPage = currentPageRef.GetValue();
 
-            for (int index = 0; index < this.sideTabs.Count; ++index)
+            foreach (var pair in this.sideTabs)
             {
-                if (this.sideTabs[index].containsPoint(x, y) && currentTab != index)
+                var index = pair.Key;
+                var tab = pair.Value;
+
+                if (tab.containsPoint(x, y) && currentTab != index)
                 {
                     Game1.playSound("smallSelect");
                     this.sideTabs[currentTab].bounds.X -= CollectionsPage.widthToMoveActiveTab;
@@ -443,28 +428,23 @@ namespace StardewMods.ArchaeologyHouseContentManagementHelper.Framework
                     currentTab = index;
                     currentPage = 0;
 
-                    this.sideTabs[index].bounds.X += CollectionsPage.widthToMoveActiveTab;
+                    tab.bounds.X += CollectionsPage.widthToMoveActiveTab;
 
                     // On tab switch, we set the currently snapped element to the tab element
-                    currentlySnappedComponent = this.sideTabs[index];
+                    currentlySnappedComponent = tab;
 
-                    if (index == lostBooksTabPageIndex)
-                    {
-                        currentlySnappedComponent.rightNeighborID = LostBooksTab_ItemBaseId;
-                    }
-                    else
-                    {
-                        currentlySnappedComponent.rightNeighborID = 0;
-                    }
+                    currentlySnappedComponent.rightNeighborID = currentTab == lostBooksTab
+                        ? LostBooksTab_ItemBaseId 
+                        : 0;
 
                     return;
                 }
             }
 
             // Open a book when it has been clicked by the player.
-            if (currentTab == lostBooksTabPageIndex)
+            if (currentTab == lostBooksTab)
             {
-                foreach (ClickableTextureComponent textureComponent in collections[lostBooksTabPageIndex][currentPage])
+                foreach (ClickableTextureComponent textureComponent in collections[lostBooksTab][currentPage])
                 {
                     if (textureComponent.containsPoint(x, y))
                     {

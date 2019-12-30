@@ -1,10 +1,6 @@
 ﻿using FelixDev.StardewMods.ToolUpgradeDeliveryService.Framework;
 using StardewModdingAPI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using StardewModdingAPI.Events;
 
 namespace FelixDev.StardewMods.ToolUpgradeDeliveryService
 {
@@ -37,12 +33,19 @@ namespace FelixDev.StardewMods.ToolUpgradeDeliveryService
             _Monitor = this.Monitor;
             _ModManifest = this.ModManifest;
 
-            // Setup services & mod configuration
             ModConfig = helper.ReadConfig<ModConfig>();
 
-            mailDeliveryService = new MailDeliveryService();
+            helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+        }
 
+        /// <summary>Raised after the game is launched, right before the first update tick. This happens once per game session (unrelated to loading saves). All mods are loaded and initialized at this point, so this is a good time to set up mod integrations.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
             // Start services
+            mailDeliveryService = new MailDeliveryService();
+            
             mailDeliveryService.Start();
         }
     }
